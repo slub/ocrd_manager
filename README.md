@@ -1,1 +1,1 @@
-# ocrd_manager
+# OCR-D Manager
