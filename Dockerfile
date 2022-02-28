@@ -11,14 +11,21 @@ RUN apt-get update && \
 	apt-utils \
 	nano \
 	dos2unix \
+	openssh-server \
 	openssh-client && \
     apt-get clean
 
-RUN mkdir /root/.ssh
-COPY initialsetup.sh /usr/bin
-
-RUN dos2unix /usr/bin/initialsetup.sh
-
-ENTRYPOINT ["/usr/bin/initialsetup.sh"]
-
-CMD ["bash"]
+# run OpenSSH server
+RUN ssh-keygen -A
+RUN mkdir /run/sshd /.ssh
+RUN echo Banner none >> /etc/ssh/sshd_config
+RUN echo PrintMotd no >> /etc/ssh/sshd_config
+RUN echo PermitUserEnvironment yes >> /etc/ssh/sshd_config
+RUN echo PermitUserRC yes >> /etc/ssh/sshd_config
+RUN echo X11Forwarding no >> /etc/ssh/sshd_config
+RUN echo AllowUsers ocrd >> /etc/ssh/sshd_config
+RUN /usr/sbin/sshd -t # check the validity of the configuration file and sanity of the keys
+COPY start-sshd.sh /usr/bin
+RUN dos2unix /usr/bin/start-sshd.sh
+CMD ["/usr/bin/start-sshd.sh"]
+EXPOSE 22
