@@ -11,6 +11,7 @@ RUN apt-get update && \
 	apt-utils \
 	nano \
 	dos2unix \
+	openjdk-11-jre-headless \
 	openssh-server \
 	openssh-client && \
     apt-get clean
