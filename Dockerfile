@@ -16,6 +16,8 @@ RUN apt-get update && \
 	openssh-client && \
     apt-get clean
 
+COPY kitodo-activemq-client.jar /opt
+
 # run OpenSSH server
 RUN ssh-keygen -A
 RUN mkdir /run/sshd /.ssh
@@ -30,3 +32,4 @@ COPY start-sshd.sh /usr/bin
 RUN dos2unix /usr/bin/start-sshd.sh
 CMD ["/usr/bin/start-sshd.sh"]
 EXPOSE 22
+
