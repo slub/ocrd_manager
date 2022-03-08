@@ -2,4 +2,12 @@
 
 The OCR-D Manager currently contains an SSH client to connect to the OCR-D Controller.
 
-Further implementations and documentation will follow.
+## Usage
+
+### Building
+
+create the necessary mounted directories and SSH keys manually or use make file.
+
+#### Make
+
+  make build
