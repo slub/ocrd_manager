@@ -5,6 +5,8 @@ FROM ocrd/core:latest
 
 MAINTAINER markus.weigelt@slub-dresden.de
 
+ENV HOME=/
+
 # make apt system functional
 RUN apt-get update && \
     apt-get install -y \
