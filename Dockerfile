@@ -5,6 +5,8 @@ FROM ocrd/core:latest
 
 MAINTAINER markus.weigelt@slub-dresden.de
 
+ARG KITODO_MQ_CLIENT_VERSION=0.1
+
 ENV HOME=/
 
 # make apt system functional
@@ -18,7 +20,7 @@ RUN apt-get update && \
 	openssh-client && \
     apt-get clean
 
-COPY kitodo-activemq-client.jar /opt
+ADD https://github.com/markusweigelt/kitodo-activemq-client/releases/download/${KITODO_MQ_CLIENT_VERSION}/kitodo-activemq-client-${KITODO_MQ_CLIENT_VERSION}.jar /opt
 
 # run OpenSSH server
 RUN ssh-keygen -A
