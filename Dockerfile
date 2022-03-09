@@ -5,6 +5,10 @@ FROM ocrd/core:latest
 
 MAINTAINER markus.weigelt@slub-dresden.de
 
+ARG KITODO_MQ_CLIENT_VERSION=0.1
+
+ENV HOME=/
+
 # make apt system functional
 # get ImageMagick (OCR-D/core#796)
 # install SSH server
@@ -12,14 +16,18 @@ MAINTAINER markus.weigelt@slub-dresden.de
 RUN apt-get update && \
     apt-get install -y \
 	apt-utils \
-        imagemagick \
+	imagemagick \
 	rsyslog \
+	openjdk-11-jre-headless \
 	openssh-server \
 	openssh-client && \
     apt-get clean
 
 # configure writing to ocrd.log for profiling
 COPY ocrd_logging.conf /etc
+
+# add ActiveMQ client library
+ADD https://github.com/markusweigelt/kitodo-activemq-client/releases/download/${KITODO_MQ_CLIENT_VERSION}/kitodo-activemq-client-${KITODO_MQ_CLIENT_VERSION}.jar /opt
 
 # run OpenSSH server
 RUN ssh-keygen -A
@@ -44,4 +52,3 @@ VOLUME /data
 ENV PREFIX=/usr
 ENV VIRTUAL_ENV $PREFIX
 ENV HOME /
-
