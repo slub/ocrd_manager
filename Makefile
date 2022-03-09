@@ -69,6 +69,6 @@ $(DATA)/testdata:
 test: $(DATA)/testdata
 	ssh -Tn -p $(PORT) ocrd@localhost for_production.sh 1 3 testdata deu Fraktur ocr.sh
 	test -d $</ocr
-	test -f $</ocr/*.xml
+	test -s $</ocr/00000001.xml
 
 .PHONY: build run help test
