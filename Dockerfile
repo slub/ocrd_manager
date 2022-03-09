@@ -28,6 +28,8 @@ COPY ocrd_logging.conf /etc
 
 # add ActiveMQ client library
 ADD https://github.com/markusweigelt/kitodo-activemq-client/releases/download/${KITODO_MQ_CLIENT_VERSION}/kitodo-activemq-client-${KITODO_MQ_CLIENT_VERSION}.jar /opt
+ENV ACTIVEMQ_CLIENT /opt/kitodo-activemq-client-${KITODO_MQ_CLIENT_VERSION}.jar
+RUN chmod go+r $ACTIVEMQ_CLIENT
 
 # run OpenSSH server
 RUN ssh-keygen -A

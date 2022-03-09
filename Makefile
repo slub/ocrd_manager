@@ -33,6 +33,9 @@ Variables:
 	- CONTROLLER	network address:port for the controller client
 			(must be reachable from the container network)
 	  currently: $(CONTROLLER)
+	- ACTIVEMQ	network address:port for the ActiveMQ client
+			(must be reachable from the container network)
+	  currently: $(ACTIVEMQ)
 EOF
 endef
 export HELP
@@ -47,6 +50,7 @@ UMASK ?= 0002
 PORT ?= 9022
 NETWORK ?= bridge
 CONTROLLER ?= $(shell dig +short $$HOSTNAME):8022
+ACTIVEMQ ?= $(shell dig +short $$HOSTNAME):61616
 run: $(DATA)
 	docker run --rm \
 	-p $(PORT):22 \
@@ -57,7 +61,7 @@ run: $(DATA)
 	--mount type=bind,source=$(KEYS),target=/authorized_keys \
 	--mount type=bind,source=$(PRIVATE),target=/id_rsa \
 	-e UID=$(UID) -e GID=$(GID) -e UMASK=$(UMASK) \
-	-e CONTROLLER=$(CONTROLLER) \
+	-e CONTROLLER=$(CONTROLLER) -e ACTIVEMQ=$(ACTIVEMQ) \
 	$(TAGNAME)
 
 $(DATA)/testdata:

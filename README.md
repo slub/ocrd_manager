@@ -52,6 +52,8 @@ Then run the container â€“ providing a **host-side directory** for the volume â€
     defaults to 9022 (for non-priviledged access)
  * `CONTROLLER` network address:port for the controller client
 			(must be reachable from the container network)
+ * `ACTIVEMQ` network address:port of ActiveMQ server listening to result status
+			(must be reachable from the container network)
  * `NETWORK` name of the Docker network to use  
     defaults to `bridge` (the default Docker network)
 
@@ -71,12 +73,12 @@ without loss of generality):
 ### Processing
 
 In the manager, you can run shell scripts that do
-1. data management and validation via `ocrd` CLIs
-2. OCR processing by running workflows in the controller via `ssh ocrd@ocrd_controller` log-ins
+- data management and validation via `ocrd` CLIs
+- OCR processing by running workflows in the controller via `ssh ocrd@ocrd_controller` log-ins
 
 The data management will depend on which Kitodo context you want to integrate into (Production 2 / 3 or Presentation).
 
-For Kitodo.Production, there is a preconfigured script `for_production.sh` which takes the following parameters:
+For Kitodo.Production, there is a preconfigured script `for_production.sh` which takes the following arguments:
 1. process ID
 2. task ID
 3. directory path
