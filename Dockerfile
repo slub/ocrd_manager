@@ -6,14 +6,20 @@ FROM ocrd/core:latest
 MAINTAINER markus.weigelt@slub-dresden.de
 
 # make apt system functional
+# get ImageMagick (OCR-D/core#796)
+# install SSH server
+# install Syslogd
 RUN apt-get update && \
     apt-get install -y \
 	apt-utils \
-	nano \
-	dos2unix \
+        imagemagick \
+	rsyslog \
 	openssh-server \
 	openssh-client && \
     apt-get clean
+
+# configure writing to ocrd.log for profiling
+COPY ocrd_logging.conf /etc
 
 # run OpenSSH server
 RUN ssh-keygen -A
@@ -24,8 +30,18 @@ RUN echo PermitUserEnvironment yes >> /etc/ssh/sshd_config
 RUN echo PermitUserRC yes >> /etc/ssh/sshd_config
 RUN echo X11Forwarding no >> /etc/ssh/sshd_config
 RUN echo AllowUsers ocrd >> /etc/ssh/sshd_config
+RUN echo "cd /data" >> /etc/profile
 RUN /usr/sbin/sshd -t # check the validity of the configuration file and sanity of the keys
-COPY start-sshd.sh /usr/bin
-RUN dos2unix /usr/bin/start-sshd.sh
+COPY *.sh /usr/bin/
 CMD ["/usr/bin/start-sshd.sh"]
 EXPOSE 22
+
+WORKDIR /data
+VOLUME /data
+
+# simulate a virtual env for the makefile,
+# coinciding with the Python system prefix
+ENV PREFIX=/usr
+ENV VIRTUAL_ENV $PREFIX
+ENV HOME /
+

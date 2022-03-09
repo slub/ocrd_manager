@@ -2,12 +2,12 @@
 cat /authorized_keys >> /.ssh/authorized_keys
 cat /id_rsa >> /.ssh/id_rsa
 
-ssh-keyscan -H ocrd-controller >> /.ssh/known_hosts
+ssh-keyscan -H ${CONTROLLER%:*} >> /.ssh/known_hosts
 
 # turn off the login banner
 touch /.hushlogin
 
-set > /.ssh/environment
+set | fgrep -ve BASH > /.ssh/environment
 
 # /.ssh/rc autorun script when account is accessed by ssh
 echo "cd /data" >> /.ssh/rc 
@@ -28,4 +28,10 @@ echo ocrd:x:$UID:$GID:SSH user:/:/bin/bash >> /etc/passwd
 echo ocrd:*:19020:0:99999:7::: >> /etc/shadow
 
 # start ssh as daemon and send output to standard error
-/usr/sbin/sshd -D -e
+#/usr/sbin/sshd -D -e
+service ssh start
+
+service rsyslog start
+
+sleep 1
+tail -f /var/log/syslog
