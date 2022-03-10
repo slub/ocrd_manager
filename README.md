@@ -95,7 +95,7 @@ It can be replaced with the (path) name of any workflow script mounted under `/d
 
 For example (assuming `testdata` is a directory with image files mounted under `/data`):
 
-    ssh -T -p 9022 ocrd@localhost for_production.sh 1 3 testdata deu Fraktur ocr.sh
+    ssh -T -p 9022 ocrd@manager for_production.sh 1 3 testdata deu Fraktur ocr.sh
 
 
 ### Logging
