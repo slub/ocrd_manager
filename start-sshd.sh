@@ -33,5 +33,5 @@ service ssh start
 
 service rsyslog start
 
-sleep 1
+sleep 2
 tail -f /var/log/syslog
