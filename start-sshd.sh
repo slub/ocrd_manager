@@ -4,6 +4,7 @@ cat /id_rsa >> /.ssh/id_rsa
 
 ssh-keyscan -H ${CONTROLLER%:*} >> /.ssh/known_hosts
 
+
 # turn off the login banner
 touch /.hushlogin
 
@@ -30,6 +31,12 @@ echo ocrd:*:19020:0:99999:7::: >> /etc/shadow
 # start ssh as daemon and send output to standard error
 #/usr/sbin/sshd -D -e
 service ssh start
+
+# Replace imklog to prevent starting problems of rsyslog
+/bin/sed -i '/imklog/s/^/#/' /etc/rsyslog.conf
+
+# rsyslog upd reception on port 514
+/bin/sed -i '/imudp/s/^#//' /etc/rsyslog.conf
 
 service rsyslog start
 

@@ -74,7 +74,7 @@ CONTROLLERPORT=${CONTROLLER#*:}
         }
     # signal SUCCESS via ActiveMQ
     if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT"; then
-        java -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "KitodoProduction.FinalizeStep.Queue" $TASK_ID $PROC_ID
+        java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "KitodoProduction.FinalizeStep.Queue" $TASK_ID $PROC_ID
     fi
 )&
 
