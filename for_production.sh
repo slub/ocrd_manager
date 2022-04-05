@@ -56,7 +56,8 @@ CONTROLLERPORT=${CONTROLLER#*:}
     {
         echo "cd '$WORKDIR/images'"; cat "$WORKFLOW"; } | \
             ssh -T -p "${CONTROLLERPORT}" ocrd@${CONTROLLERHOST} 2>&1 | logger -p user.info -t $TASK
-    # todo: in case the data itself are not shared transparently, we would have to run the following steps on the controller as well (and use scp instead of cp for the result)
+    
+	# todo: in case the data itself are not shared transparently, we would have to run the following steps on the controller as well (and use scp instead of cp for the result)
     ocrd workspace -d "$WORKDIR/images" validate -s mets_unique_identifier -s mets_file_group_names -s pixel_density
     # use last fileGrp as single result
     ocrgrp=$(ocrd workspace -d "$WORKDIR/images" list-group | tail -1)
@@ -79,9 +80,11 @@ CONTROLLERPORT=${CONTROLLER#*:}
 )&
 
 if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT"; then
+	logger -p user.info -t $TASK "async mode - exit and signal end of processing using active mq client"
     # fail so Kitodo will listen to the actual time the job is done via ActiveMQ
     exit 1
 else
     # become synchronous again
+	logger -p user.info -t $TASK "sync mode - wait for workflow, validation and postprocessing of process $PROC_ID"
     wait $!
 fi
