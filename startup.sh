@@ -2,8 +2,11 @@
 cat /authorized_keys >> /.ssh/authorized_keys
 cat /id_rsa >> /.ssh/id_rsa
 
-ssh-keyscan -H ${CONTROLLER%:*} >> /.ssh/known_hosts
-
+# Add ocrd controller as global and  known_hosts if env exist
+if [ -n "${CONTROLLER%:*}" ]; then
+	ssh-keygen -R ${CONTROLLER%:*} -f /etc/ssh/ssh_known_hosts
+	ssh-keyscan -H ${CONTROLLER%:*} >> /etc/ssh/ssh_known_hosts
+fi
 
 # turn off the login banner
 touch /.hushlogin

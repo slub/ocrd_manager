@@ -47,7 +47,7 @@ RUN echo AllowUsers ocrd >> /etc/ssh/sshd_config
 RUN echo "cd /data" >> /etc/profile
 RUN /usr/sbin/sshd -t # check the validity of the configuration file and sanity of the keys
 COPY *.sh /usr/bin/
-CMD ["/usr/bin/start-sshd.sh"]
+CMD ["/usr/bin/startup.sh"]
 EXPOSE 22
 
 WORKDIR /data
