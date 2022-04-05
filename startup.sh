@@ -2,7 +2,11 @@
 cat /authorized_keys >> /.ssh/authorized_keys
 cat /id_rsa >> /.ssh/id_rsa
 
-ssh-keyscan -H ${CONTROLLER%:*} >> /.ssh/known_hosts
+# Add ocrd controller as global and  known_hosts if env exist
+if [ -n "${CONTROLLER%:*}" ]; then
+	ssh-keygen -R ${CONTROLLER%:*} -f /etc/ssh/ssh_known_hosts
+	ssh-keyscan -H ${CONTROLLER%:*} >> /etc/ssh/ssh_known_hosts
+fi
 
 # turn off the login banner
 touch /.hushlogin
@@ -31,7 +35,13 @@ echo ocrd:*:19020:0:99999:7::: >> /etc/shadow
 #/usr/sbin/sshd -D -e
 service ssh start
 
+# Replace imklog to prevent starting problems of rsyslog
+/bin/sed -i '/imklog/s/^/#/' /etc/rsyslog.conf
+
+# rsyslog upd reception on port 514
+/bin/sed -i '/imudp/s/^#//' /etc/rsyslog.conf
+
 service rsyslog start
 
-sleep 1
+sleep 2
 tail -f /var/log/syslog

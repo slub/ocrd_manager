@@ -12,7 +12,9 @@
 # - ACTIVEMQ: host name and port of ActiveMQ server listening to result status
 # assumptions:
 # - controller has same network share /data as manager (no transfer necessary)
-# - workflow name is preinstalled
+# - workflow file is preinstalled
+# - scans are in process subdirectory 'images'
+# - text results should reside in subdir 'ocr/alto'
 # To be called (after copying data to 3.) via manager, e.g.:
 #     ssh -Tn -p 9022 ocrd@ocrd-manager for_production.sh 501543 3 /home/goobi/work/daten/501543 deu Fraktur ocr.sh
 
@@ -53,39 +55,42 @@ CONTROLLERPORT=${CONTROLLER#*:}
     # todo: we could `scp -r "$WORKDIR" -p $CONTROLLERPORT ocrd@$CONTROLLERHOST:/data` here
     {
         echo "set -e"
-        echo "cd '$WORKDIR'"
+        echo "cd '$WORKDIR/images'"
         echo "ocrd-import -i"
         echo -n "ocrd process "
         cat "$WORKFLOW" | sed '/^[ ]*#/d;s/#.*//;s/"/\\"/g;s/^/"/;s/$/"/' | tr '\n' ' '
     } | \
             ssh -T -p "${CONTROLLERPORT}" ocrd@${CONTROLLERHOST} 2>&1 | logger -p user.info -t $TASK
-    # todo: in case the data itself are not shared transparently, we would have to run the following steps on the controller as well (and use scp instead of cp for the result)
-    ocrd workspace -d "$WORKDIR" validate -s mets_unique_identifier -s mets_file_group_names -s pixel_density
+    
+	# todo: in case the data itself are not shared transparently, we would have to run the following steps on the controller as well (and use scp instead of cp for the result)
+    ocrd workspace -d "$WORKDIR/images" validate -s mets_unique_identifier -s mets_file_group_names -s pixel_density
     # use last fileGrp as single result
-    ocrgrp=$(ocrd workspace -d "$WORKDIR" list-group | tail -1)
+    ocrgrp=$(ocrd workspace -d "$WORKDIR/images" list-group | tail -1)
     # map and copy to Kitodo filename conventions
-    mkdir "$WORKDIR/ocr"
-    ocrd workspace -d "$WORKDIR" find -G $ocrgrp -k pageId -k local_filename | \
+    mkdir -p "$WORKDIR/ocr/alto"
+    ocrd workspace -d "$WORKDIR/images" find -G $ocrgrp -k pageId -k local_filename | \
         { i=0; while read page path; do
                    # FIXME: use the same basename as the input,
                    # i.e. basename-pageId mapping instead of counting from 1
                    let i+=1 || true
                    basename=$(printf "%08d\n" $i)
                    extension=${path##*.}
-                   cp -v "$WORKDIR/$path" "$WORKDIR/ocr/$basename.$extension" | logger -p user.info -t $TASK
+                   cp -v "$WORKDIR/images/$path" "$WORKDIR/ocr/alto/$basename.$extension" | logger -p user.info -t $TASK
                done;
         }
     # signal SUCCESS via ActiveMQ
     if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT"; then
-        java -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "KitodoProduction.FinalizeStep.Queue" $TASK_ID $PROC_ID
+        java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "KitodoProduction.FinalizeStep.Queue" $TASK_ID $PROC_ID
     fi
 )&
 
 disown -a
 if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT"; then
+	logger -p user.info -t $TASK "async mode - exit and signal end of processing using active mq client"
     # fail so Kitodo will listen to the actual time the job is done via ActiveMQ
     exit 1
 else
     # become synchronous again
+	logger -p user.info -t $TASK "sync mode - wait for workflow, validation and postprocessing of process $PROC_ID"
     wait $!
 fi
