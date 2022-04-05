@@ -52,7 +52,12 @@ CONTROLLERPORT=${CONTROLLER#*:}
 (
     # todo: we could `scp -r "$WORKDIR" -p $CONTROLLERPORT ocrd@$CONTROLLERHOST:/data` here
     {
-        echo "cd '$WORKDIR'"; cat "$WORKFLOW"; } | \
+        echo "set -e"
+        echo "cd '$WORKDIR'"
+        echo "ocrd-import -i"
+        echo -n "ocrd process "
+        cat "$WORKFLOW" | sed '/^[ ]*#/d;s/#.*//;s/"/\\"/g;s/^/"/;s/$/"/' | tr '\n' ' '
+    } | \
             ssh -T -p "${CONTROLLERPORT}" ocrd@${CONTROLLERHOST} 2>&1 | logger -p user.info -t $TASK
     # todo: in case the data itself are not shared transparently, we would have to run the following steps on the controller as well (and use scp instead of cp for the result)
     ocrd workspace -d "$WORKDIR" validate -s mets_unique_identifier -s mets_file_group_names -s pixel_density
