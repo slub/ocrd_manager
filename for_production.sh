@@ -81,6 +81,7 @@ CONTROLLERPORT=${CONTROLLER#*:}
     fi
 )&
 
+disown -a
 if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT"; then
     # fail so Kitodo will listen to the actual time the job is done via ActiveMQ
     exit 1
