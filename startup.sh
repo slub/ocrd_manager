@@ -3,9 +3,13 @@ cat /authorized_keys >> /.ssh/authorized_keys
 cat /id_rsa >> /.ssh/id_rsa
 
 # Add ocrd controller as global and  known_hosts if env exist
-if [ -n "${CONTROLLER%:*}" ]; then
-	ssh-keygen -R ${CONTROLLER%:*} -f /etc/ssh/ssh_known_hosts
-	ssh-keyscan -H ${CONTROLLER%:*} >> /etc/ssh/ssh_known_hosts
+if [ -n "$CONTROLLER" ]; then
+    CONTROLLERHOST=${CONTROLLER%:*}
+    CONTROLLERPORT=${CONTROLLER#*:}
+    if test -e /etc/ssh/ssh_known_hosts; then
+        ssh-keygen -R $CONTROLLERHOST -f /etc/ssh/ssh_known_hosts
+    fi
+    ssh-keyscan -H -p ${CONTROLLERPORT:-22} $CONTROLLERHOST >> /etc/ssh/ssh_known_hosts
 fi
 
 # turn off the login banner
