@@ -65,14 +65,14 @@ run: $(DATA)
 	$(TAGNAME)
 
 $(DATA)/testdata:
-	mkdir -p $@
+	mkdir -p $@/images
 	for page in {00000009..00000014}; do \
-	  wget -P $@ https://digital.slub-dresden.de/data/kitodo/LankDres_1760234508/LankDres_1760234508_tif/jpegs/$$page.tif.original.jpg; \
+	  wget -P $@/images https://digital.slub-dresden.de/data/kitodo/LankDres_1760234508/LankDres_1760234508_tif/jpegs/$$page.tif.original.jpg; \
 	done
 
 test: $(DATA)/testdata
 	ssh -Tn -p $(PORT) ocrd@localhost for_production.sh 1 3 testdata deu Fraktur ocr.sh
-	test -d $</ocr
-	test -s $</ocr/00000001.xml
+	test -d $</ocr/alto
+	test -s $</ocr/alto/00000001.xml
 
 .PHONY: build run help test
