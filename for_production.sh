@@ -24,7 +24,7 @@ set -o pipefail
 TASK=$(basename $0)
 PROC_ID=$1
 TASK_ID=$2
-WORKDIR="$3"
+PROCDIR="$3"
 LANGUAGE="$4"
 SCRIPT="$5"
 WORKFLOW="${6:-ocr.sh}"
@@ -32,8 +32,8 @@ WORKFLOW="${6:-ocr.sh}"
 logger -p user.notice -t $TASK "running with $* CONTROLLER=$CONTROLLER"
 cd /data
 
-if ! test -d "$WORKDIR"; then
-    logger -p user.error -t $TASK "invalid process directory '$WORKDIR'"
+if ! test -d "$PROCDIR"; then
+    logger -p user.error -t $TASK "invalid process directory '$PROCDIR'"
     exit 2
 fi
 WORKFLOW=$(command -v "$WORKFLOW" || realpath "$WORKFLOW")
@@ -48,34 +48,45 @@ fi
 CONTROLLERHOST=${CONTROLLER%:*}
 CONTROLLERPORT=${CONTROLLER#*:}
 
+# copy the data from the process directory controlled by production
+# to the transient directory controlled by the manager
+# (currently the same share, but will be distinct volumes;
+#  so the admin can decide to either mount distinct shares,
+#  which means the images will have to be physically copied,
+#  or the same share twice, which means zero-cost copying).
+WORKDIR=ocr-d/"$PROCDIR" # will use other mount-point than /data soon
+mkdir -p $(dirname "$WORKDIR")
+cp -vr --reflink=auto "$PROCDIR/images" "$WORKDIR" | logger -p user.info -t $TASK
+
 # run the workflow script on the controller non-interactively and log its output locally
 # subsequently validate and postprocess the results
 # do all this in a subshell in the background, so we can return immediately
 (
-    # todo: we could `scp -r "$WORKDIR" -p $CONTROLLERPORT ocrd@$CONTROLLERHOST:/data` here
+    # TODO: copy the data explicitly from manager to controller here
+    # e.g. `rsync -avr "$WORKDIR" --port $CONTROLLERPORT ocrd@$CONTROLLERHOST:/data`
     {
         echo "set -e"
-        echo "cd '$WORKDIR/images'"
+        echo "cd '$WORKDIR'"
         echo "ocrd-import -i"
         echo -n "ocrd process "
         cat "$WORKFLOW" | sed '/^[ ]*#/d;s/#.*//;s/"/\\"/g;s/^/"/;s/$/"/' | tr '\n' ' '
-    } | \
-        ssh -T -p "${CONTROLLERPORT}" ocrd@${CONTROLLERHOST} 2>&1 | logger -p user.info -t $TASK
+    } | ssh -T -p "${CONTROLLERPORT}" ocrd@${CONTROLLERHOST} 2>&1 | logger -p user.info -t $TASK
+    # TODO: copy the results back here
+    # e.g. `rsync -avr --port $CONTROLLERPORT ocrd@$CONTROLLERHOST:/data/"$WORKDIR" "$WORKDIR"`
     
-    # todo: in case the data itself are not shared transparently, we would have to run the following steps on the controller as well (and use scp instead of cp for the result)
-    ocrd workspace -d "$WORKDIR/images" validate -s mets_unique_identifier -s mets_file_group_names -s pixel_density
+    ocrd workspace -d "$WORKDIR" validate -s mets_unique_identifier -s mets_file_group_names -s pixel_density
     # use last fileGrp as single result
-    ocrgrp=$(ocrd workspace -d "$WORKDIR/images" list-group | tail -1)
+    ocrgrp=$(ocrd workspace -d "$WORKDIR" list-group | tail -1)
     # map and copy to Kitodo filename conventions
-    mkdir -p "$WORKDIR/ocr/alto"
-    ocrd workspace -d "$WORKDIR/images" find -G $ocrgrp -k pageId -k local_filename | \
+    mkdir -p "$PROCDIR/ocr/alto"
+    ocrd workspace -d "$WORKDIR" find -G $ocrgrp -k pageId -k local_filename | \
         { i=0; while read page path; do
                    # FIXME: use the same basename as the input,
                    # i.e. basename-pageId mapping instead of counting from 1
                    let i+=1 || true
                    basename=$(printf "%08d\n" $i)
                    extension=${path##*.}
-                   cp -v "$WORKDIR/images/$path" "$WORKDIR/ocr/alto/$basename.$extension" | logger -p user.info -t $TASK
+                   cp -v "$WORKDIR/$path" "$PROCDIR/ocr/alto/$basename.$extension" | logger -p user.info -t $TASK
                done;
         }
     # signal SUCCESS via ActiveMQ
