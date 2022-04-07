@@ -69,7 +69,7 @@ cp -vr --reflink=auto "$PROCDIR/images" "$WORKDIR" | logger -p user.info -t $TAS
         echo "cd '$WORKDIR'"
         echo "ocrd-import -i"
         echo -n "ocrd process "
-        cat "$WORKFLOW" | sed '/^[ ]*#/d;s/#.*//;s/"/\\"/g;s/^/"/;s/$/"/' | tr '\n' ' '
+        cat "$WORKFLOW" | sed '/^[ ]*#/d;s/#.*//;s/"/\\"/g;s/^/"/;s/$/"/' | tr '\n\r' '  '
     } | ssh -T -p "${CONTROLLERPORT}" ocrd@${CONTROLLERHOST} 2>&1 | logger -p user.info -t $TASK
     # TODO: copy the results back here
     # e.g. `rsync -avr --port $CONTROLLERPORT ocrd@$CONTROLLERHOST:/data/"$WORKDIR" "$WORKDIR"`
