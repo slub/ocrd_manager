@@ -93,11 +93,10 @@ cp -vr --reflink=auto "$PROCDIR/images" "$WORKDIR" | logger -p user.info -t $TAS
     if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT"; then
         java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "KitodoProduction.FinalizeStep.Queue" $TASK_ID $PROC_ID
     fi
-)&
+) /dev/null 2>&1 & # without "/dev/null 2>&1" ssh does not closes the connection https://github.com/markusweigelt/ocrd_manager/issues/9
 
 if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT"; then
     logger -p user.info -t $TASK "async mode - exit and signal end of processing using active mq client"
-    disown -ah
     # fail so Kitodo will listen to the actual time the job is done via ActiveMQ
     exit 1
 else
