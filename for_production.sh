@@ -93,7 +93,7 @@ cp -vr --reflink=auto "$PROCDIR/images" "$WORKDIR" | logger -p user.info -t $TAS
     if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT"; then
         java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "KitodoProduction.FinalizeStep.Queue" $TASK_ID $PROC_ID
     fi
-) /dev/null 2>&1 & # without "/dev/null 2>&1" ssh does not closes the connection https://github.com/markusweigelt/ocrd_manager/issues/9
+) >/dev/null 2>&1 & # without output redirect, ssh will not close the connection upon exit, cf. #9
 
 if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT"; then
     logger -p user.info -t $TASK "async mode - exit and signal end of processing using active mq client"
