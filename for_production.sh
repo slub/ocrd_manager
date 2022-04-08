@@ -36,10 +36,15 @@ if ! test -d "$PROCDIR"; then
     logger -p user.error -t $TASK "invalid process directory '$PROCDIR'"
     exit 2
 fi
-WORKFLOW=$(command -v "$WORKFLOW" || realpath "$WORKFLOW")
-if ! test -f "$WORKFLOW"; then
-    logger -p user.error -t $TASK "invalid workflow '$WORKFLOW'"
-    exit 3
+WORKFLOWFILE="$PROCDIR/ocr-workflow.sh"
+if [ -f "$WORKFLOWFILE" ]; then
+  WORKFLOW=$(realpath "$WORKFLOWFILE")
+else
+  WORKFLOW=$(command -v "$WORKFLOW" || realpath "$WORKFLOW")
+	if ! test -f "$WORKFLOW"; then
+		logger -p user.error -t $TASK "invalid workflow '$WORKFLOW'"
+		exit 3
+	fi
 fi
 if test -z "$CONTROLLER" -o "$CONTROLLER" = "${CONTROLLER#*:}"; then
     logger -p user.error -t $TASK "envvar CONTROLLER='$CONTROLLER' must contain host:port"
