@@ -18,13 +18,13 @@ TASK=$(basename $0)
 # vars:
 # - CONTROLLER: host name and port of ocrd_controller for processing
 ocr_init () {	
-	logger -p user.info -t $TASK "ocr_init initialize variables and structure"
+	logger -p user.info -t $TASK "ocr_init initialize variables and directory structure"
 	PROC_ID=$1
 	TASK_ID=$2
 	PROCDIR="$3"
 	LANGUAGE="$4"
 	SCRIPT="$5"
-	ASYNC=${$6:true}	
+	ASYNC=${6:-true}	
 	WORKFLOW="${7:-ocr-workflow-default.sh}"
 
 	logger -p user.notice -t $TASK "running with $* CONTROLLER=$CONTROLLER"
