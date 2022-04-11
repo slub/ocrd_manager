@@ -24,7 +24,7 @@ set -o pipefail
 
 source ocr.sh
 
-ocr_init
+ocr_init $@
 
 # run the workflow script on the controller non-interactively and log its output locally
 # subsequently validate and postprocess the results
