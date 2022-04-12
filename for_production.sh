@@ -30,33 +30,20 @@ ocr_init $@
 # subsequently validate and postprocess the results
 # do all this in a subshell in the background, so we can return immediately
 (
-	ocr_process
+	# TODO: copy the data explicitly from manager to controller here
+    # e.g. `rsync -avr "$WORKDIR" --port $CONTROLLERPORT ocrd@$CONTROLLERHOST:/data`
+
+	ocr_controller_exec ocr_import_workdir ocr_process_workflow
+
+	# TODO: copy the results back here
+    # e.g. `rsync -avr --port $CONTROLLERPORT ocrd@$CONTROLLERHOST:/data/"$WORKDIR" "$WORKDIR"`
 	
-	post_process # specific post processing for Kitodo.Production
+	ocr_validate_workdir
+	
+	ocr_provide_results
+	
+	ocr_activemq_exec
 	
 ) >/dev/null 2>&1 & # without output redirect, ssh will not close the connection upon exit, cf. #9
 
 ocr_exit
-
-
-post_process () {
-    ocrd workspace -d "$WORKDIR" validate -s mets_unique_identifier -s mets_file_group_names -s pixel_density
-    # use last fileGrp as single result
-    ocrgrp=$(ocrd workspace -d "$WORKDIR" list-group | tail -1)
-    # map and copy to Kitodo filename conventions
-    mkdir -p "$PROCDIR/ocr/alto"
-    ocrd workspace -d "$WORKDIR" find -G $ocrgrp -k pageId -k local_filename | \
-        { i=0; while read page path; do
-                   # FIXME: use the same basename as the input,
-                   # i.e. basename-pageId mapping instead of counting from 1
-                   let i+=1 || true
-                   basename=$(printf "%08d\n" $i)
-                   extension=${path##*.}
-                   cp -v "$WORKDIR/$path" "$PROCDIR/ocr/alto/$basename.$extension" | logger -p user.info -t $TASK
-               done;
-        }
-    # signal SUCCESS via ActiveMQ
-    if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT"; then
-        java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "KitodoProduction.FinalizeStep.Queue" $TASK_ID $PROC_ID
-    fi
-}
