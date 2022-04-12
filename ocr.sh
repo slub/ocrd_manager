@@ -77,7 +77,7 @@ ocrd_process_workflow () {
 }
 
 # excute commands via ssh by the controller
-ocrd_controller_exec () {
+ocrd_exec () {
 	logger -p user.info -t $TASK "execute commands via ssh by the controller"
     {
         echo "set -e"
@@ -92,7 +92,7 @@ post_process_validate_workdir () {
     ocrd workspace -d "$WORKDIR" validate -s mets_unique_identifier -s mets_file_group_names -s pixel_density
 }
 
-post_process_provide_results () {
+post_process_to_ocrdir () {
 	# use last fileGrp as single result
     ocrgrp=$(ocrd workspace -d "$WORKDIR" list-group | tail -1)
     # map and copy to Kitodo filename conventions
@@ -109,7 +109,7 @@ post_process_provide_results () {
         }
 }
 
-post_process_activemq_exec () {
+activemq_close_task () {
     if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT"; then
         java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "KitodoProduction.FinalizeStep.Queue" $TASK_ID $PROC_ID
     fi
