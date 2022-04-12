@@ -18,7 +18,7 @@ TASK=$(basename $0)
 # 8. images dir path under process dir(default images)
 # vars:
 # - CONTROLLER: host name and port of ocrd_controller for processing
-ocr_init () {	
+init () {	
 	logger -p user.info -t $TASK "ocr_init initialize variables and directory structure"
 	PROC_ID=$1
 	TASK_ID=$2
@@ -65,19 +65,19 @@ ocr_init () {
 }
 
 # ocrd import from workdir
-ocr_import_workdir () {
+ocrd_import_workdir () {
 	echo "cd '$WORKDIR'"
 	echo "ocrd-import -i"
 }
 
 # ocrd process with $WORKFLOW
-ocr_process_workflow () {
+ocrd_process_workflow () {
 	echo -n "ocrd process "
     cat "$WORKFLOW" | sed '/^[ ]*#/d;s/#.*//;s/"/\\"/g;s/^/"/;s/$/"/' | tr '\n\r' '  '
 }
 
 # excute commands via ssh by the controller
-ocr_controller_exec () {
+ocrd_controller_exec () {
 	logger -p user.info -t $TASK "execute commands via ssh by the controller"
     {
         echo "set -e"
@@ -88,11 +88,11 @@ ocr_controller_exec () {
     } | ssh -T -p "${CONTROLLERPORT}" ocrd@${CONTROLLERHOST} 2>&1 | logger -p user.info -t $TASK
 }
 
-ocr_validate_workdir () {
+post_process_validate_workdir () {
     ocrd workspace -d "$WORKDIR" validate -s mets_unique_identifier -s mets_file_group_names -s pixel_density
 }
 
-ocr_provide_results () {
+post_process_provide_results () {
 	# use last fileGrp as single result
     ocrgrp=$(ocrd workspace -d "$WORKDIR" list-group | tail -1)
     # map and copy to Kitodo filename conventions
@@ -109,14 +109,14 @@ ocr_provide_results () {
         }
 }
 
-ocr_activemq_exec () {
+post_process_activemq_exec () {
     if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT"; then
         java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "KitodoProduction.FinalizeStep.Queue" $TASK_ID $PROC_ID
     fi
 }
 
 # exit in async or sync mode
-ocr_exit () {
+close () {
 	if test "$ASYNC" = true; then
 		logger -p user.info -t $TASK "ocr_exit in async mode - immediate termination of the script"
 		# fail so Kitodo will listen to the actual time the job is done via ActiveMQ
