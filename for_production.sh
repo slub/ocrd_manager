@@ -24,7 +24,7 @@ set -o pipefail
 
 source ocr.sh
 
-ocr_init $@
+init $@
 
 # run the workflow script on the controller non-interactively and log its output locally
 # subsequently validate and postprocess the results
@@ -33,17 +33,17 @@ ocr_init $@
 	# TODO: copy the data explicitly from manager to controller here
     # e.g. `rsync -avr "$WORKDIR" --port $CONTROLLERPORT ocrd@$CONTROLLERHOST:/data`
 
-	ocr_controller_exec ocr_import_workdir ocr_process_workflow
+	ocrd_controller_exec ocrd_import_workdir ocrd_process_workflow
 
 	# TODO: copy the results back here
     # e.g. `rsync -avr --port $CONTROLLERPORT ocrd@$CONTROLLERHOST:/data/"$WORKDIR" "$WORKDIR"`
 	
-	ocr_validate_workdir
+	post_process_validate_workdir
 	
-	ocr_provide_results
+	post_process_provide_results
 	
-	ocr_activemq_exec
+	post_process_activemq_exec
 	
 ) >/dev/null 2>&1 & # without output redirect, ssh will not close the connection upon exit, cf. #9
 
-ocr_exit
+close
