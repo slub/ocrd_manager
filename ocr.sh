@@ -10,11 +10,12 @@ TASK=$(basename $0)
 # args:
 # 1. process ID
 # 2. task ID
-# 3. directory path
+# 3. process dir path
 # 4. language
 # 5. script
 # 6. async (default true)
 # 7. workflow name (default preinstalled ocr-workflow-default.sh)
+# 8. images dir path under process dir(default images)
 # vars:
 # - CONTROLLER: host name and port of ocrd_controller for processing
 ocr_init () {	
@@ -26,6 +27,7 @@ ocr_init () {
 	SCRIPT="$5"
 	ASYNC=${6:-true}	
 	WORKFLOW="${7:-ocr-workflow-default.sh}"
+	PROCIMAGEDIR="${8:-images}"
 
 	logger -p user.notice -t $TASK "running with $* CONTROLLER=$CONTROLLER"
 	cd /data
@@ -59,23 +61,58 @@ ocr_init () {
 	#  or the same share twice, which means zero-cost copying).
 	WORKDIR=ocr-d/"$PROCDIR" # will use other mount-point than /data soon
 	mkdir -p $(dirname "$WORKDIR")
-	cp -vr --reflink=auto "$PROCDIR/images" "$WORKDIR" | logger -p user.info -t $TASK
+	cp -vr --reflink=auto "$PROCDIR/$PROCIMAGEDIR" "$WORKDIR" | logger -p user.info -t $TASK
 }
 
-# processing data via ssh by the controller
-ocr_process () {
-	logger -p user.info -t $TASK "ocr_process processing data via ssh by the controller"
-    # TODO: copy the data explicitly from manager to controller here
-    # e.g. `rsync -avr "$WORKDIR" --port $CONTROLLERPORT ocrd@$CONTROLLERHOST:/data`
+# ocrd import from workdir
+ocr_import_workdir () {
+	echo "cd '$WORKDIR'"
+	echo "ocrd-import -i"
+}
+
+# ocrd process with $WORKFLOW
+ocr_process_workflow () {
+	echo -n "ocrd process "
+    cat "$WORKFLOW" | sed '/^[ ]*#/d;s/#.*//;s/"/\\"/g;s/^/"/;s/$/"/' | tr '\n\r' '  '
+}
+
+# excute commands via ssh by the controller
+ocr_controller_exec () {
+	logger -p user.info -t $TASK "execute commands via ssh by the controller"
     {
         echo "set -e"
-        echo "cd '$WORKDIR'"
-        echo "ocrd-import -i"
-        echo -n "ocrd process "
-        cat "$WORKFLOW" | sed '/^[ ]*#/d;s/#.*//;s/"/\\"/g;s/^/"/;s/$/"/' | tr '\n\r' '  '
+		for param in "$@"
+		do
+			$param
+		done
     } | ssh -T -p "${CONTROLLERPORT}" ocrd@${CONTROLLERHOST} 2>&1 | logger -p user.info -t $TASK
-    # TODO: copy the results back here
-    # e.g. `rsync -avr --port $CONTROLLERPORT ocrd@$CONTROLLERHOST:/data/"$WORKDIR" "$WORKDIR"`
+}
+
+ocr_validate_workdir () {
+    ocrd workspace -d "$WORKDIR" validate -s mets_unique_identifier -s mets_file_group_names -s pixel_density
+}
+
+ocr_provide_results () {
+	# use last fileGrp as single result
+    ocrgrp=$(ocrd workspace -d "$WORKDIR" list-group | tail -1)
+    # map and copy to Kitodo filename conventions
+    mkdir -p "$PROCDIR/ocr/alto"
+    ocrd workspace -d "$WORKDIR" find -G $ocrgrp -k pageId -k local_filename | \
+        { i=0; while read page path; do
+                   # FIXME: use the same basename as the input,
+                   # i.e. basename-pageId mapping instead of counting from 1
+                   let i+=1 || true
+                   basename=$(printf "%08d\n" $i)
+                   extension=${path##*.}
+                   cp -v "$WORKDIR/$path" "$PROCDIR/ocr/alto/$basename.$extension" | logger -p user.info -t $TASK
+               done;
+        }
+}
+
+ocr_activemq_exec () {
+    if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT"; then
+        java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "KitodoProduction.FinalizeStep.Queue" $TASK_ID $PROC_ID
+    fi
 }
 
 # exit in async or sync mode
