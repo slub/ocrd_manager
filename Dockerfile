@@ -16,6 +16,7 @@ ENV HOME=/
 RUN apt-get update && \
     apt-get install -y \
 	apt-utils \
+	dnsutils \
 	imagemagick \
 	rsyslog \
 	openjdk-11-jre-headless \
