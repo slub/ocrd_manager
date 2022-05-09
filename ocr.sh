@@ -52,7 +52,7 @@ init () {
 	fi
 	CONTROLLERHOST=${CONTROLLER%:*}
 	CONTROLLERPORT=${CONTROLLER#*:}
-	
+
 	# copy the data from the process directory controlled by production
 	# to the transient directory controlled by the manager
 	# (currently the same share, but will be distinct volumes;
@@ -61,7 +61,13 @@ init () {
 	#  or the same share twice, which means zero-cost copying).
 	WORKDIR=ocr-d/"$PROCDIR" # will use other mount-point than /data soon
 	mkdir -p $(dirname "$WORKDIR")
-	cp -vr --reflink=auto "$PROCDIR/$PROCIMAGEDIR" "$WORKDIR" | logger -p user.info -t $TASK
+
+	pre_process_to_workdir
+}
+
+# parse shell script notation into tasks syntax
+ocrd_format_workflow () {
+    cat "$WORKFLOW" | sed '/^[ ]*#/d;s/#.*//;s/"/\\"/g;s/^/"/;s/$/"/' | tr '\n\r' '  '
 }
 
 # ocrd import from workdir
@@ -73,7 +79,7 @@ ocrd_import_workdir () {
 # ocrd process with $WORKFLOW
 ocrd_process_workflow () {
 	echo -n "ocrd process "
-    cat "$WORKFLOW" | sed '/^[ ]*#/d;s/#.*//;s/"/\\"/g;s/^/"/;s/$/"/' | tr '\n\r' '  '
+    ocrd_format_workflow
 }
 
 # excute commands via ssh by the controller
@@ -86,6 +92,24 @@ ocrd_exec () {
 			$param
 		done
     } | ssh -T -p "${CONTROLLERPORT}" ocrd@${CONTROLLERHOST} 2>&1 | logger -p user.info -t $TASK
+}
+
+pre_process_to_workdir () {
+	# copy the data from the process directory controlled by production
+	# to the transient directory controlled by the manager
+	# (currently the same share, but will be distinct volumes;
+	#  so the admin can decide to either mount distinct shares,
+	#  which means the images will have to be physically copied,
+	#  or the same share twice, which means zero-cost copying).
+	WORKDIR=ocr-d/"$PROCDIR" # will use other mount-point than /data soon
+	mkdir -p $(dirname "$WORKDIR")
+    cp -vr --reflink=auto "$PROCDIR/$PROCIMAGEDIR" "$WORKDIR" | logger -p user.info -t $TASK
+}
+
+# validate workflow
+pre_process_validate_workflow () {
+    echo -n "ocrd validate tasks "
+    ocrd_format_workflow
 }
 
 post_process_validate_workdir () {
