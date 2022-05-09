@@ -6,11 +6,11 @@ cat /id_rsa >> /.ssh/id_rsa
 if [ -n "$CONTROLLER" ]; then
     CONTROLLER_HOST=${CONTROLLER%:*}
     CONTROLLER_PORT=${CONTROLLER#*:}
-	CONTROLLER_IP=nslookup $CONTROLLER_HOST | grep 'Address\:' | awk 'NR==2 {print $2}'
+    CONTROLLER_IP=nslookup $CONTROLLER_HOST | grep 'Address\:' | awk 'NR==2 {print $2}'
 	
     if test -e /etc/ssh/ssh_known_hosts; then
         ssh-keygen -R $CONTROLLER_HOST -f /etc/ssh/ssh_known_hosts
-		ssh-keygen -R $CONTROLLER_IP -f /etc/ssh/ssh_known_hosts
+        ssh-keygen -R $CONTROLLER_IP -f /etc/ssh/ssh_known_hosts
     fi
     ssh-keyscan -H -p ${CONTROLLER_PORT:-22} $CONTROLLER_HOST,$CONTROLLER_IP >> /etc/ssh/ssh_known_hosts
 fi
