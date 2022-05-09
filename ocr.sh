@@ -95,14 +95,6 @@ ocrd_exec () {
 }
 
 pre_process_to_workdir () {
-    # copy the data from the process directory controlled by production
-    # to the transient directory controlled by the manager
-    # (currently the same share, but will be distinct volumes;
-    #  so the admin can decide to either mount distinct shares,
-    #  which means the images will have to be physically copied,
-    #  or the same share twice, which means zero-cost copying).
-    WORKDIR=ocr-d/"$PROCDIR" # will use other mount-point than /data soon
-    mkdir -p $(dirname "$WORKDIR")
     cp -vr --reflink=auto "$PROCDIR/$PROCIMAGEDIR" "$WORKDIR" | logger -p user.info -t $TASK
 }
 
