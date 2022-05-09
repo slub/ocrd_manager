@@ -30,20 +30,20 @@ init "$@"
 # subsequently validate and postprocess the results
 # do all this in a subshell in the background, so we can return immediately
 (
-	# TODO: copy the data explicitly from manager to controller here
+    # TODO: copy the data explicitly from manager to controller here
     # e.g. `rsync -avr "$WORKDIR" --port $CONTROLLERPORT ocrd@$CONTROLLERHOST:/data`
 
-	ocrd_exec ocrd_import_workdir ocrd_process_workflow
+    ocrd_exec ocrd_import_workdir ocrd_process_workflow
 
-	# TODO: copy the results back here
+    # TODO: copy the results back here
     # e.g. `rsync -avr --port $CONTROLLERPORT ocrd@$CONTROLLERHOST:/data/"$WORKDIR" "$WORKDIR"`
-	
-	post_process_validate_workdir
-	
-	post_process_to_ocrdir
-	
-	activemq_close_task
-	
+
+    post_process_validate_workdir
+
+    post_process_to_ocrdir
+
+    activemq_close_task
+
 ) >/dev/null 2>&1 & # without output redirect, ssh will not close the connection upon exit, cf. #9
 
 close
