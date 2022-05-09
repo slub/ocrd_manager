@@ -30,7 +30,9 @@ init "$@"
 # subsequently validate and postprocess the results
 # do all this in a subshell in the background, so we can return immediately
 (
-    # TODO: copy the data explicitly from manager to controller here
+    pre_process_to_workdir
+	
+	# TODO: copy the data explicitly from manager to controller here
     # e.g. `rsync -avr "$WORKDIR" --port $CONTROLLERPORT ocrd@$CONTROLLERHOST:/data`
 
     ocrd_exec ocrd_import_workdir ocrd_process_workflow
