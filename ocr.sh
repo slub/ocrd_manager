@@ -18,51 +18,51 @@ TASK=$(basename $0)
 # 8. images dir path under process dir(default images)
 # vars:
 # - CONTROLLER: host name and port of ocrd_controller for processing
-init () {	
-	logger -p user.info -t $TASK "ocr_init initialize variables and directory structure"
-	PROC_ID=$1
-	TASK_ID=$2
-	PROCDIR="$3"
-	LANGUAGE="$4"
-	SCRIPT="$5"
-	ASYNC=${6:-true}	
-	WORKFLOW="${7:-ocr-workflow-default.sh}"
-	PROCIMAGEDIR="${8:-images}"
+init () {    
+    logger -p user.info -t $TASK "ocr_init initialize variables and directory structure"
+    PROC_ID=$1
+    TASK_ID=$2
+    PROCDIR="$3"
+    LANGUAGE="$4"
+    SCRIPT="$5"
+    ASYNC=${6:-true}    
+    WORKFLOW="${7:-ocr-workflow-default.sh}"
+    PROCIMAGEDIR="${8:-images}"
 
-	logger -p user.notice -t $TASK "running with $* CONTROLLER=$CONTROLLER"
-	cd /data
+    logger -p user.notice -t $TASK "running with $* CONTROLLER=$CONTROLLER"
+    cd /data
 
-	if ! test -d "$PROCDIR"; then
-		logger -p user.error -t $TASK "invalid process directory '$PROCDIR'"
-		exit 2
-	fi
-	WORKFLOWFILE="$PROCDIR/ocr-workflow.sh"
-	if test -f "$WORKFLOWFILE"; then
-	  WORKFLOW=$(realpath "$WORKFLOWFILE")
-	else
-	  WORKFLOW=$(command -v "$WORKFLOW" || realpath "$WORKFLOW")
-		if ! test -f "$WORKFLOW"; then
-			logger -p user.error -t $TASK "invalid workflow '$WORKFLOW'"
-			exit 3
-		fi
-	fi
-	if test -z "$CONTROLLER" -o "$CONTROLLER" = "${CONTROLLER#*:}"; then
-		logger -p user.error -t $TASK "envvar CONTROLLER='$CONTROLLER' must contain host:port"
-		exit 4
-	fi
-	CONTROLLERHOST=${CONTROLLER%:*}
-	CONTROLLERPORT=${CONTROLLER#*:}
+    if ! test -d "$PROCDIR"; then
+        logger -p user.error -t $TASK "invalid process directory '$PROCDIR'"
+        exit 2
+    fi
+    WORKFLOWFILE="$PROCDIR/ocr-workflow.sh"
+    if test -f "$WORKFLOWFILE"; then
+      WORKFLOW=$(realpath "$WORKFLOWFILE")
+    else
+      WORKFLOW=$(command -v "$WORKFLOW" || realpath "$WORKFLOW")
+        if ! test -f "$WORKFLOW"; then
+            logger -p user.error -t $TASK "invalid workflow '$WORKFLOW'"
+            exit 3
+        fi
+    fi
+    if test -z "$CONTROLLER" -o "$CONTROLLER" = "${CONTROLLER#*:}"; then
+        logger -p user.error -t $TASK "envvar CONTROLLER='$CONTROLLER' must contain host:port"
+        exit 4
+    fi
+    CONTROLLERHOST=${CONTROLLER%:*}
+    CONTROLLERPORT=${CONTROLLER#*:}
 
-	# copy the data from the process directory controlled by production
-	# to the transient directory controlled by the manager
-	# (currently the same share, but will be distinct volumes;
-	#  so the admin can decide to either mount distinct shares,
-	#  which means the images will have to be physically copied,
-	#  or the same share twice, which means zero-cost copying).
-	WORKDIR=ocr-d/"$PROCDIR" # will use other mount-point than /data soon
-	mkdir -p $(dirname "$WORKDIR")
+    # copy the data from the process directory controlled by production
+    # to the transient directory controlled by the manager
+    # (currently the same share, but will be distinct volumes;
+    #  so the admin can decide to either mount distinct shares,
+    #  which means the images will have to be physically copied,
+    #  or the same share twice, which means zero-cost copying).
+    WORKDIR=ocr-d/"$PROCDIR" # will use other mount-point than /data soon
+    mkdir -p $(dirname "$WORKDIR")
 
-	pre_process_to_workdir
+    pre_process_to_workdir
 }
 
 # parse shell script notation into tasks syntax
@@ -72,37 +72,37 @@ ocrd_format_workflow () {
 
 # ocrd import from workdir
 ocrd_import_workdir () {
-	echo "cd '$WORKDIR'"
-	echo "ocrd-import -i"
+    echo "cd '$WORKDIR'"
+    echo "ocrd-import -i"
 }
 
 # ocrd process with $WORKFLOW
 ocrd_process_workflow () {
-	echo -n "ocrd process "
+    echo -n "ocrd process "
     ocrd_format_workflow
 }
 
 # excute commands via ssh by the controller
 ocrd_exec () {
-	logger -p user.info -t $TASK "execute commands via ssh by the controller"
+    logger -p user.info -t $TASK "execute commands via ssh by the controller"
     {
         echo "set -e"
-		for param in "$@"
-		do
-			$param
-		done
+        for param in "$@"
+        do
+            $param
+        done
     } | ssh -T -p "${CONTROLLERPORT}" ocrd@${CONTROLLERHOST} 2>&1 | logger -p user.info -t $TASK
 }
 
 pre_process_to_workdir () {
-	# copy the data from the process directory controlled by production
-	# to the transient directory controlled by the manager
-	# (currently the same share, but will be distinct volumes;
-	#  so the admin can decide to either mount distinct shares,
-	#  which means the images will have to be physically copied,
-	#  or the same share twice, which means zero-cost copying).
-	WORKDIR=ocr-d/"$PROCDIR" # will use other mount-point than /data soon
-	mkdir -p $(dirname "$WORKDIR")
+    # copy the data from the process directory controlled by production
+    # to the transient directory controlled by the manager
+    # (currently the same share, but will be distinct volumes;
+    #  so the admin can decide to either mount distinct shares,
+    #  which means the images will have to be physically copied,
+    #  or the same share twice, which means zero-cost copying).
+    WORKDIR=ocr-d/"$PROCDIR" # will use other mount-point than /data soon
+    mkdir -p $(dirname "$WORKDIR")
     cp -vr --reflink=auto "$PROCDIR/$PROCIMAGEDIR" "$WORKDIR" | logger -p user.info -t $TASK
 }
 
@@ -117,7 +117,7 @@ post_process_validate_workdir () {
 }
 
 post_process_to_ocrdir () {
-	# use last fileGrp as single result
+    # use last fileGrp as single result
     ocrgrp=$(ocrd workspace -d "$WORKDIR" list-group | tail -1)
     # map and copy to Kitodo filename conventions
     mkdir -p "$PROCDIR/ocr/alto"
@@ -141,13 +141,13 @@ activemq_close_task () {
 
 # exit in async or sync mode
 close () {
-	if test "$ASYNC" = true; then
-		logger -p user.info -t $TASK "ocr_exit in async mode - immediate termination of the script"
-		# fail so Kitodo will listen to the actual time the job is done via ActiveMQ
-		exit 1
-	else
-		# become synchronous again
-		logger -p user.info -t $TASK "ocr_exit in sync mode - wait until the processing is completed"
-		wait $!
-	fi
+    if test "$ASYNC" = true; then
+        logger -p user.info -t $TASK "ocr_exit in async mode - immediate termination of the script"
+        # fail so Kitodo will listen to the actual time the job is done via ActiveMQ
+        exit 1
+    else
+        # become synchronous again
+        logger -p user.info -t $TASK "ocr_exit in sync mode - wait until the processing is completed"
+        wait $!
+    fi
 }
