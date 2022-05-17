@@ -35,10 +35,12 @@ init "$@"
 	# TODO: copy the data explicitly from manager to controller here
     # e.g. `rsync -avr "$WORKDIR" --port $CONTROLLERPORT ocrd@$CONTROLLERHOST:/data`
 
-    ocrd_exec ocrd_import_workdir pre_process_validate_workflow ocrd_process_workflow
+    ocrd_exec ocrd_import_workdir ocrd_validate_workflow ocrd_process_workflow
 
     # TODO: copy the results back here
     # e.g. `rsync -avr --port $CONTROLLERPORT ocrd@$CONTROLLERHOST:/data/"$WORKDIR" "$WORKDIR"`
+    # maybe also schedule cleanup (or have a cron job delete dirs in /data which are older than N days)
+    # e.g. `ssh --port $CONTROLLERPORT ocrd@$CONTROLLERHOST rm -fr /data/"$WORKDIR"`
 
     post_process_validate_workdir
 
