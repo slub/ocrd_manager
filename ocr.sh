@@ -95,7 +95,7 @@ pre_process_to_workdir () {
     cp -vr --reflink=auto "$PROCDIR/$PROCIMAGEDIR" "$WORKDIR" | logger -p user.info -t $TASK
 }
 
-pre_process_validate_workflow () {
+ocrd_validate_workflow () {
     echo -n "ocrd validate tasks --workspace . "
     ocrd_format_workflow
 }
