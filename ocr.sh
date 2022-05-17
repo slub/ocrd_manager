@@ -96,7 +96,7 @@ pre_process_to_workdir () {
 }
 
 pre_process_validate_workflow () {
-    echo -n "ocrd validate tasks "
+    echo -n "ocrd validate tasks --workspace . "
     ocrd_format_workflow
 }
 
