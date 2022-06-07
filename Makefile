@@ -1,8 +1,11 @@
 TAGNAME ?= bertsky/ocrd_manager
+TAGNAME_MONITOR ?= bertsky/ocrd_monitor
 SHELL = /bin/bash
 
 build:
 	docker build -t $(TAGNAME) .
+build-monitor:
+	docker build --tag $(TAGNAME_MONITOR) ocrd_monitor
 
 define HELP
 cat <<"EOF"
@@ -52,7 +55,7 @@ NETWORK ?= bridge
 CONTROLLER ?= $(shell dig +short $$HOSTNAME):8022
 ACTIVEMQ ?= $(shell dig +short $$HOSTNAME):61616
 run: $(DATA)
-	docker run --rm \
+	docker run -d --rm \
 	-p $(PORT):22 \
 	-h ocrd_manager \
 	--name ocrd_manager \
@@ -63,6 +66,14 @@ run: $(DATA)
 	-e UID=$(UID) -e GID=$(GID) -e UMASK=$(UMASK) \
 	-e CONTROLLER=$(CONTROLLER) -e ACTIVEMQ=$(ACTIVEMQ) \
 	$(TAGNAME)
+
+run-monitor:
+	docker run -d --rm \
+	-p 8085:8085 -p 8080:8080 \
+	--name ocrd_monitor \
+	--network=$(NETWORK) \
+	-v $(DATA):/data \
+	$(TAGNAME_MONITOR)
 
 $(DATA)/testdata:
 	mkdir -p $@/images
@@ -75,4 +86,4 @@ test: $(DATA)/testdata
 	test -d $</ocr/alto
 	test -s $</ocr/alto/00000001.xml
 
-.PHONY: build run help test
+.PHONY: build build-monitor run run-monitor help test

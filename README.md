@@ -18,6 +18,7 @@ It is currently implemented as SSH login server with an installation of [OCR-D c
    * [Processing](#processing)
    * [Data transfer](#data-transfer)
    * [Logging](#logging)
+   * [Monitoring](#monitoring)
  * [Testing](#testing)
 
 ## Usage
@@ -103,6 +104,24 @@ For example (assuming `testdata` is a directory with image files mounted under `
 All logs are accumulated on standard output, which can be inspected via Docker:
 
     docker logs ocrd_controller
+
+### Monitoring
+
+The repo also provides a web server featuring
+- (intermediate) results for all current document workspaces (via [OCR-D Browser](https://github.com/hnesk/browse-ocrd))
+- :construction: log viewer
+- :construction: task viewer
+- :construction: workflow editor
+
+Build or pull the Docker image:
+
+    make build-monitor # or docker pull bertsky/ocrd_monitor
+
+Then run the container – providing the same variables as above:
+
+    make run-monitor DATA=/mnt/workspaces
+
+You can then open `http://localhost:8080` in your browser.
 
 ## Testing
 
