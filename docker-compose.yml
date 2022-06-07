@@ -1,0 +1,31 @@
+services:
+
+  ocrd-manager:
+    image: ${MANAGER_IMAGE}:${MANAGER_IMAGE_TAG}
+
+    hostname: ${MANAGER_HOST}
+
+    environment:
+      - UID=${MANAGER_ENV_UID}
+      - GID=${MANAGER_ENV_GID}
+      - UMASK=${MANAGER_ENV_UMASK}
+      - "CONTROLLER=${CONTROLLER_HOST}:22"
+      - "ACTIVEMQ=kitodo-mq:61616"
+
+    ports:
+        - ${MANAGER_PORT_SSH}:22
+
+    # must have been started independently:
+    # depends_on:
+    #   - ocrd-controller
+
+    volumes:
+      - type: bind
+        source: ${MANAGER_KEYS} # Kitodo public key (for access to Manager)
+        target: /authorized_keys
+      - type: bind
+        source: ${MANAGER_KEY} # Manager private key (for access to Controller)
+        target: /id_rsa
+      - ${MANAGER_DATA}:/data # metadata directory
+
+    tty: true # docker run -t
