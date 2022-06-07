@@ -62,6 +62,8 @@ Then run the container – providing a **host-side directory** for the volume �
 
     make run DATA=/mnt/workspaces MODELS=~/.local/share KEYS=~/.ssh/id_rsa.pub PORT=9022 PRIVATE=~/.ssh/id_rsa
 
+For an integration as a **service container**, orchestrated with other containers (Kitodo+Controller), see [this meta-repo](https://github.com/markusweigelt/kitodo_production_ocrd). (You can also run the service via `docker-compose` manually – just `cp .env.example .env` and edit to your needs.)
+
 ### General management
 
 Then you can **log in** as user `ocrd` from remote (but let's use `manager` in the following – 
