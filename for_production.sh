@@ -38,7 +38,7 @@ init "$@"
 
     post_sync_workdir
 
-    post_process_validate_workdir
+    post_validate_workdir
 
     post_process_to_ocrdir
 
