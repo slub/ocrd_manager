@@ -79,7 +79,7 @@ without loss of generality):
 
 ### Processing
 
-In the manager, you can run shell scripts that do
+In the Manager, you can run shell scripts that do
 - data management and validation via `ocrd` CLIs
 - OCR processing by running workflows in the controller via `ssh ocrd@ocrd_controller` log-ins
 
@@ -105,11 +105,24 @@ For example (assuming `testdata` is a directory with image files mounted under `
     ssh -T -p 9022 ocrd@manager for_production.sh 1 3 testdata deu Fraktur ocr.sh
 
 
+### Data transfer
+
+For sharing data between the Manager and Controller, it is recommended to transfer files _explicitly_
+(as this will make the costs more measurable and controllable).
+
+(This is currently implemented via `rsync`.)
+
+The data lifecycle should be:
+- on Controller: short-lived
+- on Manager: as long as process is active in Production
+
+(This is currently not managed.)
+
 ### Logging
 
 All logs are accumulated on standard output, which can be inspected via Docker:
 
-    docker logs ocrd_controller
+    docker logs ocrd_manager
 
 ### Monitoring
 

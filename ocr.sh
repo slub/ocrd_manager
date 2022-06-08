@@ -109,9 +109,21 @@ pre_process_to_workdir () {
     cp -vr --reflink=auto "$PROCDIR/$PROCIMAGEDIR" "$WORKDIR" | logger -p user.info -t $TASK
 }
 
+pre_sync_workdir () {
+    # copy the data explicitly from Manager to Controller
+    rsync -avr "$WORKDIR/" --port $CONTROLLERPORT ocrd@$CONTROLLERHOST:/data/"$WORKDIR"
+}
+
 ocrd_validate_workflow () {
     echo -n "ocrd validate tasks --workspace . "
     ocrd_format_workflow
+}
+
+post_sync_workdir () {
+    # copy the results back from Controller to Manager
+    rsync -avr --port $CONTROLLERPORT ocrd@$CONTROLLERHOST:/data/"$WORKDIR/" "$WORKDIR"
+    # TODO: maybe also schedule cleanup (or have a cron job delete dirs in /data which are older than N days)
+    # e.g. `ssh --port $CONTROLLERPORT ocrd@$CONTROLLERHOST rm -fr /data/"$WORKDIR"`
 }
 
 post_process_validate_workdir () {
