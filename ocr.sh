@@ -18,14 +18,15 @@ TASK=$(basename $0)
 # 8. images dir path under process dir(default images)
 # vars:
 # - CONTROLLER: host name and port of ocrd_controller for processing
-init () {    
+init () {
     logger -p user.info -t $TASK "ocr_init initialize variables and directory structure"
+    PID=$$
     PROC_ID=$1
     TASK_ID=$2
     PROCDIR="$3"
     LANGUAGE="$4"
     SCRIPT="$5"
-    ASYNC=${6:-true}    
+    ASYNC=${6:-true}
     WORKFLOW="${7:-ocr-workflow-default.sh}"
     PROCIMAGEDIR="${8:-images}"
 
@@ -46,6 +47,9 @@ init () {
             exit 3
         fi
     fi
+    logger -p user.notice -t $TASK "using workflow '$WORKFLOW':"
+    ocrd_format_workflow | logger -p user.notice -t $TASK
+
     if test -z "$CONTROLLER" -o "$CONTROLLER" = "${CONTROLLER#*:}"; then
         logger -p user.error -t $TASK "envvar CONTROLLER='$CONTROLLER' must contain host:port"
         exit 4
@@ -55,6 +59,16 @@ init () {
 
     WORKDIR=ocr-d/"$PROCDIR" # will use other mount-point than /data soon
     mkdir -p $(dirname "$WORKDIR")
+
+    # create stats for monitor
+    mkdir -p /run/lock/ocr.pid/
+    { echo PROC_ID=$PROC_ID
+      echo TASK_ID=$TASK_ID
+      echo PROCDIR=$PROCDIR
+      echo WORKDIR=$WORKDIR
+      echo WORKFLOW=$WORKFLOW
+      echo CONTROLLER=$CONTROLLER
+    } > /run/lock/ocr.pid/$PID
 }
 
 # parse shell script notation into tasks syntax
@@ -75,7 +89,7 @@ ocrd_process_workflow () {
 
 # execute commands via ssh by the controller
 ocrd_exec () {
-    logger -p user.info -t $TASK "execute commands via ssh by the controller"
+    logger -p user.info -t $TASK "execute $# commands via SSH by the Controller"
     {
         echo "set -e"
         for param in "$@"
@@ -125,6 +139,7 @@ activemq_close_task () {
     if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT"; then
         java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "KitodoProduction.FinalizeStep.Queue" $TASK_ID $PROC_ID
     fi
+    rm -f /run/lock/ocr.pid/$PID
 }
 
 # exit in async or sync mode
@@ -137,5 +152,6 @@ close () {
         # become synchronous again
         logger -p user.info -t $TASK "ocr_exit in sync mode - wait until the processing is completed"
         wait $!
+        rm -f /run/lock/ocr.pid/$PID
     fi
 }
