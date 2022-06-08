@@ -1,8 +1,12 @@
 # OCR-D Manager
 
-The OCR-D Manager is a server that mediates between [Kitodo](https://github.com/kitodo) and [OCR-D](https://ocr-d.de). It resides on the site of the Kitodo installation (so the actual OCR server can be managed independently) but runs in its own container (so Kitodo can be managed independently).
+OCR-D Manager is a server that mediates between [Kitodo](https://github.com/kitodo) and [OCR-D](https://ocr-d.de). It resides on the site of the Kitodo installation (so the actual OCR server can be managed independently) but runs in its own container (so Kitodo can be managed independently).
 
-Specifically, it gets called by [Kitodo.Production](https://github.com/kitodo/kitodo-production) or [Kitodo.Presentation](https://github.com/kitodo-presentation) to handle OCR for a document, and in turn calls the [OCR-D Controller](https://github.com/bertsky/ocrd_controller) for workflow processing. It is responsible for
+Specifically, it gets called by [Kitodo.Production](https://github.com/kitodo/kitodo-production) or [Kitodo.Presentation](https://github.com/kitodo-presentation) to handle OCR for a document, and in turn calls the [OCR-D Controller](https://github.com/bertsky/ocrd_controller) for workflow processing. 
+
+For an integration as a **service container**, orchestrated with other containers (Kitodo+Controller), see [this meta-repo](https://github.com/markusweigelt/kitodo_production_ocrd).
+
+OCR-D Manager is responsible for
 - data transfer from Kitodo to Controller and back,
 - delegation to Controller,
 - signalling/reporting,
@@ -62,7 +66,7 @@ Then run the container – providing a **host-side directory** for the volume �
 
     make run DATA=/mnt/workspaces MODELS=~/.local/share KEYS=~/.ssh/id_rsa.pub PORT=9022 PRIVATE=~/.ssh/id_rsa
 
-For an integration as a **service container**, orchestrated with other containers (Kitodo+Controller), see [this meta-repo](https://github.com/markusweigelt/kitodo_production_ocrd). (You can also run the service via `docker-compose` manually – just `cp .env.example .env` and edit to your needs.)
+(You can also run the service via `docker-compose` manually – just `cp .env.example .env` and edit to your needs.)
 
 ### General management
 
