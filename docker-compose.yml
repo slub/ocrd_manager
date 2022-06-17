@@ -1,6 +1,9 @@
 services:
 
   ocrd-manager:
+    build:
+      context: .
+  
     image: ${MANAGER_IMAGE}:${MANAGER_IMAGE_TAG}
 
     hostname: ${MANAGER_HOST}
