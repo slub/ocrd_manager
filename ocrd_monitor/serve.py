@@ -19,7 +19,7 @@ class RequestHandler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         # FIXME: HTTP auth # self.server.auth / self.checkAuthentication()
-        self.bwhost = self.headers.get('Host')
+        self.bwhost = self.headers.get('Host').split(':')[0]
         # serve a listing of available workspaces with links to ocrd-browse them
         if self.path == '/':
             self._serve_workspaces()
