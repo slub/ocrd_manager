@@ -20,6 +20,7 @@ TASK=$(basename $0)
 # - CONTROLLER: host name and port of ocrd_controller for processing
 init() {
   logger -p user.info -t $TASK "ocr_init initialize variables and directory structure"
+  PID=$$
   PROCESS_ID=$1
   TASK_ID=$2
   PROCESS_DIR="$3"
@@ -42,6 +43,8 @@ init() {
     logger -p user.error -t $TASK "invalid workflow '$WORKFLOW'"
     exit 3
   fi
+  logger -p user.notice -t $TASK "using workflow '$WORKFLOW':"
+  ocrd_format_workflow | logger -p user.notice -t $TASK
 
   if test -z "$CONTROLLER" -o "$CONTROLLER" = "${CONTROLLER#*:}"; then
     logger -p user.error -t $TASK "envvar CONTROLLER='$CONTROLLER' must contain host:port"
@@ -55,6 +58,16 @@ init() {
     logger -p user.error -t $TASK "insufficient permissions on /data volume"
     exit 5
   fi
+
+  # create stats for monitor
+  mkdir -p /run/lock/ocr.pid/
+  { echo PROCESS_ID=$PROCESS_ID
+    echo TASK_ID=$TASK_ID
+    echo PROCESS_DIR=$PROCESS_DIR
+    echo WORKDIR=$WORKDIR
+    echo WORKFLOW=$WORKFLOW
+    echo CONTROLLER=$CONTROLLER
+  } > /run/lock/ocr.pid/$PID
 }
 
 # parse shell script notation into tasks syntax
@@ -75,7 +88,7 @@ ocrd_process_workflow() {
 
 # execute commands via ssh by the controller
 ocrd_exec() {
-  logger -p user.info -t $TASK "execute commands via ssh by the controller"
+  logger -p user.info -t $TASK "execute $# commands via SSH by the controller"
   {
     echo "set -e"
     for param in "$@"; do
@@ -94,9 +107,21 @@ pre_process_to_workdir() {
   cp -vr --reflink=auto "$PROCESS_DIR/$PROCESS_IMAGES_DIR" "$WORKDIR" | logger -p user.info -t $TASK
 }
 
-ocrd_validate_workflow() {
-  echo -n "ocrd validate tasks --workspace . "
-  ocrd_format_workflow
+pre_sync_workdir () {
+    # copy the data explicitly from Manager to Controller
+    rsync -avr "$WORKDIR/" --port $CONTROLLERPORT ocrd@$CONTROLLERHOST:/data/"$WORKDIR"
+}
+
+ocrd_validate_workflow () {
+    echo -n "ocrd validate tasks --workspace . "
+    ocrd_format_workflow
+}
+
+post_sync_workdir () {
+    # copy the results back from Controller to Manager
+    rsync -avr --port $CONTROLLERPORT ocrd@$CONTROLLERHOST:/data/"$WORKDIR/" "$WORKDIR"
+    # TODO: maybe also schedule cleanup (or have a cron job delete dirs in /data which are older than N days)
+    # e.g. `ssh --port $CONTROLLERPORT ocrd@$CONTROLLERHOST rm -fr /data/"$WORKDIR"`
 }
 
 post_process_validate_workdir() {
@@ -138,5 +163,6 @@ close() {
     # become synchronous again
     logger -p user.info -t $TASK "ocr_exit in sync mode - wait until the processing is completed"
     wait $!
+    rm -f /run/lock/ocr.pid/$PID
   fi
 }
