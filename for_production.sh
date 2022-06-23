@@ -23,7 +23,7 @@
 set -eu
 set -o pipefail
 
-source ocr.sh
+source ocrd_lib.sh
 
 init "$@"
 
