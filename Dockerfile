@@ -15,13 +15,14 @@ ENV HOME=/
 # install Syslogd
 RUN apt-get update && \
     apt-get install -y \
-	apt-utils \
-	dnsutils \
-	imagemagick \
-	rsyslog \
-	openjdk-11-jre-headless \
-	openssh-server \
-	openssh-client && \
+    apt-utils \
+    dnsutils \
+    imagemagick \
+    rsyslog \
+    rsync \
+    openjdk-11-jre-headless \
+    openssh-server \
+    openssh-client && \
     apt-get clean
 
 # configure writing to ocrd.log for profiling
