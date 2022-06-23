@@ -51,7 +51,10 @@ init() {
   CONTROLLERPORT=${CONTROLLER#*:}
 
   WORKDIR=ocr-d/"$PROCESS_DIR" # will use other mount-point than /data soon
-  mkdir -p $(dirname "$WORKDIR")
+  if ! mkdir -p $(dirname "$WORKDIR"); then
+    logger -p user.error -t $TASK "insufficient permissions on /data volume"
+    exit 5
+  fi
 }
 
 # parse shell script notation into tasks syntax
