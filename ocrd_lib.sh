@@ -109,7 +109,7 @@ pre_process_to_workdir() {
 
 pre_sync_workdir () {
     # copy the data explicitly from Manager to Controller
-    rsync -avr -e "ssh -p $CONTROLLERPORT" "$WORKDIR/" ocrd@$CONTROLLERHOST:/data/"$WORKDIR" |& logger -p user.info -t $TASK
+    rsync -avr -e "ssh -p $CONTROLLERPORT -l ocrd" "$WORKDIR/" $CONTROLLERHOST:/data/"$WORKDIR" |& logger -p user.info -t $TASK
 }
 
 ocrd_validate_workflow () {
@@ -119,7 +119,7 @@ ocrd_validate_workflow () {
 
 post_sync_workdir () {
     # copy the results back from Controller to Manager
-    rsync -avr -e "ssh -p $CONTROLLERPORT" ocrd@$CONTROLLERHOST:/data/"$WORKDIR/" "$WORKDIR" |& logger -p user.info -t $TASK
+    rsync -avr -e "ssh -p $CONTROLLERPORT -l ocrd" $CONTROLLERHOST:/data/"$WORKDIR/" "$WORKDIR" |& logger -p user.info -t $TASK
     # TODO: maybe also schedule cleanup (or have a cron job delete dirs in /data which are older than N days)
     # e.g. `ssh --port $CONTROLLERPORT ocrd@$CONTROLLERHOST rm -fr /data/"$WORKDIR"`
 }
