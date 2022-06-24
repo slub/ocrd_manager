@@ -73,6 +73,7 @@ init() {
 # parse shell script notation into tasks syntax
 ocrd_format_workflow() {
   cat "$WORKFLOW" | sed '/^[ ]*#/d;s/#.*//;s/"/\\"/g;s/^/"/;s/$/"/' | tr '\n\r' '  '
+  echo
 }
 
 # ocrd import from workdir
