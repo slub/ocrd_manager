@@ -58,6 +58,7 @@ init() {
     logger -p user.error -t $TASK "insufficient permissions on /data volume"
     exit 5
   fi
+  REMOTEDIR="KitodoJob${PID}_$(basename $PROCESS_DIR)"
 
   # create stats for monitor
   mkdir -p /run/lock/ocr.pid/
@@ -65,6 +66,7 @@ init() {
     echo TASK_ID=$TASK_ID
     echo PROCESS_DIR=$PROCESS_DIR
     echo WORKDIR=$WORKDIR
+    echo REMOTEDIR=$REMOTEDIR
     echo WORKFLOW=$WORKFLOW
     echo CONTROLLER=$CONTROLLER
   } > /run/lock/ocr.pid/$PID
@@ -78,7 +80,7 @@ ocrd_format_workflow() {
 
 # ocrd import from workdir
 ocrd_import_workdir() {
-  echo "cd '$WORKDIR'"
+  echo "cd '$REMOTEDIR'"
   echo "ocrd-import -i"
 }
 
@@ -109,18 +111,18 @@ pre_process_to_workdir() {
 }
 
 pre_sync_workdir () {
-    # copy the data explicitly from Manager to Controller
-    rsync -avr -e "ssh -p $CONTROLLERPORT -l ocrd" "$WORKDIR/" $CONTROLLERHOST:/data/"$WORKDIR"
+  # copy the data explicitly from Manager to Controller
+  rsync -avr -e "ssh -p $CONTROLLERPORT -l ocrd" "$WORKDIR/" $CONTROLLERHOST:/data/$REMOTEDIR
 }
 
 ocrd_validate_workflow () {
-    echo -n "ocrd validate tasks --workspace . "
-    ocrd_format_workflow
+  echo -n "ocrd validate tasks --workspace . "
+  ocrd_format_workflow
 }
 
 post_sync_workdir () {
     # copy the results back from Controller to Manager
-    rsync -avr -e "ssh -p $CONTROLLERPORT -l ocrd" $CONTROLLERHOST:/data/"$WORKDIR/" "$WORKDIR"
+    rsync -avr -e "ssh -p $CONTROLLERPORT -l ocrd" $CONTROLLERHOST:/data/$REMOTEDIR/ "$WORKDIR"
     # TODO: maybe also schedule cleanup (or have a cron job delete dirs in /data which are older than N days)
     # e.g. `ssh --port $CONTROLLERPORT ocrd@$CONTROLLERHOST rm -fr /data/"$WORKDIR"`
 }
