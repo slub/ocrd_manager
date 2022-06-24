@@ -45,6 +45,6 @@ init "$@"
 
   activemq_close_task
 
-) >/dev/null 2>&1 & # without output redirect, ssh will not close the connection upon exit, cf. #9
+) |& logger -p user.info -t $TASK & # without output redirect, ssh will not close the connection upon exit, cf. #9
 
 close
