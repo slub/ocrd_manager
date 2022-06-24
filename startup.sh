@@ -30,7 +30,7 @@ echo "umask $UMASK" >>/.ssh/rc
 chmod go-rwx /.ssh/*
 
 # set owner and group
-chown $UID:$GID /.ssh/*
+chown -R $UID:$GID /.ssh
 
 # set login information for SSH user
 echo ocrd:x:$UID:$GID:SSH user:/:/bin/bash >>/etc/passwd
