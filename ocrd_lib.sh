@@ -94,7 +94,7 @@ ocrd_exec() {
     for param in "$@"; do
       $param
     done
-  } | ssh -T -p "${CONTROLLERPORT}" ocrd@${CONTROLLERHOST} 2>&1 | logger -p user.info -t $TASK
+  } | ssh -T -p "${CONTROLLERPORT}" ocrd@${CONTROLLERHOST} 2>&1
 }
 
 pre_process_to_workdir() {
@@ -104,12 +104,12 @@ pre_process_to_workdir() {
   #  so the admin can decide to either mount distinct shares,
   #  which means the images will have to be physically copied,
   #  or the same share twice, which means zero-cost copying).
-  cp -vr --reflink=auto "$PROCESS_DIR/$PROCESS_IMAGES_DIR" "$WORKDIR" |& logger -p user.info -t $TASK
+  cp -vr --reflink=auto "$PROCESS_DIR/$PROCESS_IMAGES_DIR" "$WORKDIR"
 }
 
 pre_sync_workdir () {
     # copy the data explicitly from Manager to Controller
-    rsync -avr -e "ssh -p $CONTROLLERPORT -l ocrd" "$WORKDIR/" $CONTROLLERHOST:/data/"$WORKDIR" |& logger -p user.info -t $TASK
+    rsync -avr -e "ssh -p $CONTROLLERPORT -l ocrd" "$WORKDIR/" $CONTROLLERHOST:/data/"$WORKDIR"
 }
 
 ocrd_validate_workflow () {
@@ -119,7 +119,7 @@ ocrd_validate_workflow () {
 
 post_sync_workdir () {
     # copy the results back from Controller to Manager
-    rsync -avr -e "ssh -p $CONTROLLERPORT -l ocrd" $CONTROLLERHOST:/data/"$WORKDIR/" "$WORKDIR" |& logger -p user.info -t $TASK
+    rsync -avr -e "ssh -p $CONTROLLERPORT -l ocrd" $CONTROLLERHOST:/data/"$WORKDIR/" "$WORKDIR"
     # TODO: maybe also schedule cleanup (or have a cron job delete dirs in /data which are older than N days)
     # e.g. `ssh --port $CONTROLLERPORT ocrd@$CONTROLLERHOST rm -fr /data/"$WORKDIR"`
 }
@@ -142,7 +142,7 @@ post_process_to_ocrdir() {
         let i+=1 || true
         basename=$(printf "%08d\n" $i)
         extension=${path##*.}
-        cp -v "$WORKDIR/$path" "$PROCESS_DIR/ocr/alto/$basename.$extension" |& logger -p user.info -t $TASK
+        cp -v "$WORKDIR/$path" "$PROCESS_DIR/ocr/alto/$basename.$extension"
       done
     }
 }
