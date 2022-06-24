@@ -124,7 +124,7 @@ post_sync_workdir () {
     # e.g. `ssh --port $CONTROLLERPORT ocrd@$CONTROLLERHOST rm -fr /data/"$WORKDIR"`
 }
 
-post_process_validate_workdir() {
+post_validate_workdir() {
   ocrd workspace -d "$WORKDIR" validate -s mets_unique_identifier -s mets_file_group_names -s pixel_density
 }
 
