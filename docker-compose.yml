@@ -12,11 +12,11 @@ services:
       - UID=${MANAGER_ENV_UID}
       - GID=${MANAGER_ENV_GID}
       - UMASK=${MANAGER_ENV_UMASK}
-      - "CONTROLLER=${CONTROLLER_HOST}:${MANAGER_CONTROLLER_PORT_SSH}"
+      - "CONTROLLER=${CONTROLLER_HOST}:22"
       - "ACTIVEMQ=kitodo-mq:61616"
 
-    ports:
-        - ${MANAGER_PORT_SSH}:22
+    expose:
+      - "22"
 
     # must have been started independently:
     # depends_on:
