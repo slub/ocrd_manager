@@ -80,12 +80,12 @@ ocrd_format_workflow() {
 
 # ocrd import from workdir
 ocrd_import_workdir() {
+  echo "if test -f '$REMOTEDIR/mets.xml'; then OV=--overwrite; else OV=; ocrd-import -i '$REMOTEDIR'; fi"
   echo "cd '$REMOTEDIR'"
-  echo "ocrd-import -i"
 }
 
 ocrd_process_workflow() {
-  echo -n "ocrd process "
+  echo -n 'ocrd process $OV '
   ocrd_format_workflow
 }
 
@@ -107,22 +107,26 @@ pre_process_to_workdir() {
   #  so the admin can decide to either mount distinct shares,
   #  which means the images will have to be physically copied,
   #  or the same share twice, which means zero-cost copying).
-  cp -vr --reflink=auto "$PROCESS_DIR/$PROCESS_IMAGES_DIR" "$WORKDIR"
+  if test -d "$WORKDIR"; then
+    rsync -T /tmp -av "$PROCESS_DIR/$PROCESS_IMAGES_DIR/" "$WORKDIR"
+  else
+    cp -vr --reflink=auto "$PROCESS_DIR/$PROCESS_IMAGES_DIR" "$WORKDIR"
+  fi
 }
 
 pre_sync_workdir () {
   # copy the data explicitly from Manager to Controller
-  rsync -avr -e "ssh -p $CONTROLLERPORT -l ocrd" "$WORKDIR/" $CONTROLLERHOST:/data/$REMOTEDIR
+  rsync -av -e "ssh -p $CONTROLLERPORT -l ocrd" "$WORKDIR/" $CONTROLLERHOST:/data/$REMOTEDIR
 }
 
 ocrd_validate_workflow () {
-  echo -n "ocrd validate tasks --workspace . "
+  echo -n 'ocrd validate tasks $OV --workspace . '
   ocrd_format_workflow
 }
 
 post_sync_workdir () {
     # copy the results back from Controller to Manager
-    rsync -avr -e "ssh -p $CONTROLLERPORT -l ocrd" $CONTROLLERHOST:/data/$REMOTEDIR/ "$WORKDIR"
+    rsync -av -e "ssh -p $CONTROLLERPORT -l ocrd" $CONTROLLERHOST:/data/$REMOTEDIR/ "$WORKDIR"
     # TODO: maybe also schedule cleanup (or have a cron job delete dirs in /data which are older than N days)
     # e.g. `ssh --port $CONTROLLERPORT ocrd@$CONTROLLERHOST rm -fr /data/"$WORKDIR"`
 }
