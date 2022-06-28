@@ -12,8 +12,8 @@ services:
       - UID=${MANAGER_ENV_UID}
       - GID=${MANAGER_ENV_GID}
       - UMASK=${MANAGER_ENV_UMASK}
-      - "CONTROLLER=${CONTROLLER_HOST}:22"
-      - "ACTIVEMQ=kitodo-mq:61616"
+      - "CONTROLLER=${CONTROLLER_HOST}:${CONTROLLER_SSH_PORT}"
+      - "ACTIVEMQ=${MQ_HOST}:${MQ_PORT}"
 
     expose:
       - "22"
