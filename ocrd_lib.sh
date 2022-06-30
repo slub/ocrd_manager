@@ -58,7 +58,7 @@ init() {
     logger -p user.error -t $TASK "insufficient permissions on /data volume"
     exit 5
   fi
-  REMOTEDIR="KitodoJob${PID}_$(basename $PROCESS_DIR)"
+  REMOTEDIR="KitodoJob_${PROCESS_ID}_${TASK_ID}_$(basename $PROCESS_DIR)"
 
   # create stats for monitor
   mkdir -p /run/lock/ocr.pid/
