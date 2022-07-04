@@ -18,3 +18,7 @@ services:
 
     volumes:
       - ${MONITOR_DATA}:/data
+      - lock:/run/lock/ocrd.jobs
+
+volumes:
+  lock:
