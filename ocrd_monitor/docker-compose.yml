@@ -12,13 +12,28 @@ services:
 
     hostname: ${MONITOR_HOST}
 
+    environment:
+      - "CONTROLLER=${CONTROLLER_HOST}:${CONTROLLER_SSH_PORT}"
+
     ports:
       - ${MONITOR_PORT_WEB}:8080
       - ${MONITOR_PORT_GTK}:8085
 
     volumes:
       - ${MONITOR_DATA}:/data
+      - ${MANAGER_KEY}:/id_rsa
       - lock:/run/lock/ocrd.jobs
+
+  dozzle:
+    image: amir20/dozzle:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - ${MONITOR_PORT_LOG}:8080
+    environment:
+      - DOZZLE_FILTER=name=kitodo_production_ocrd
+      # DOZZLE_USERNAME=
+      # DOZZLE_PASSWORD=
 
 volumes:
   lock:
