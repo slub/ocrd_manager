@@ -16,8 +16,8 @@ services:
       - "CONTROLLER=${CONTROLLER_HOST}:${CONTROLLER_SSH_PORT}"
 
     ports:
-      - ${MONITOR_PORT_WEB}:8080
-      - ${MONITOR_PORT_GTK}:8085
+      - ${MONITOR_WEB_PORT}:8080
+      - ${MONITOR_GTK_PORT}:8085
 
     volumes:
       - ${MONITOR_DATA}:/data
@@ -27,9 +27,9 @@ services:
   dozzle:
     image: amir20/dozzle:latest
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ${MONITOR_DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
     ports:
-      - ${MONITOR_PORT_LOG}:8080
+      - ${MONITOR_LOG_PORT}:8080
     environment:
       - DOZZLE_FILTER=name=kitodo_production_ocrd
       # DOZZLE_USERNAME=
