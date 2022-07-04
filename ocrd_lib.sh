@@ -82,6 +82,7 @@ ocrd_format_workflow() {
 ocrd_import_workdir() {
   echo "if test -f '$REMOTEDIR/mets.xml'; then OV=--overwrite; else OV=; ocrd-import -i '$REMOTEDIR'; fi"
   echo "cd '$REMOTEDIR'"
+  echo 'echo $$ > ocrd.pid'
 }
 
 ocrd_process_workflow() {
