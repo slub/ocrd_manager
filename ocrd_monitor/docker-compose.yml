@@ -13,11 +13,11 @@ services:
     hostname: ${MONITOR_HOST}
 
     environment:
-      - "CONTROLLER=${CONTROLLER_HOST}:${CONTROLLER_SSH_PORT}"
+      - "CONTROLLER=${CONTROLLER_HOST}:${CONTROLLER_PORT_SSH}"
 
     ports:
-      - ${MONITOR_WEB_PORT}:8080
-      - ${MONITOR_GTK_PORT}:8085
+      - ${MONITOR_PORT_WEB}:8080
+      - ${MONITOR_PORT_GTK}:8085
 
     volumes:
       - ${MONITOR_DATA}:/data
@@ -27,9 +27,10 @@ services:
   dozzle:
     image: amir20/dozzle:latest
     volumes:
-      - ${MONITOR_DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
+      # double slash is mandatory to support windows
+      - //var/run/docker.sock:/var/run/docker.sock
     ports:
-      - ${MONITOR_LOG_PORT}:8080
+      - ${MONITOR_PORT_LOG}:8080
     environment:
       - DOZZLE_FILTER=name=kitodo_production_ocrd
       # DOZZLE_USERNAME=
