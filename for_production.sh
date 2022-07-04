@@ -45,6 +45,6 @@ init "$@"
 
   activemq_close_task
 
-) |& logger -p user.info -t $TASK &>/dev/null & # without output redirect, ssh will not close the connection upon exit, cf. #9
+) |& tee -a $WORKDIR/ocrd.log | logger -p user.info -t $TASK &>/dev/null & # without output redirect, ssh will not close the connection upon exit, cf. #9
 
 close
