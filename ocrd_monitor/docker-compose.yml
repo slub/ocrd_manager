@@ -22,7 +22,7 @@ services:
     volumes:
       - ${MONITOR_DATA}:/data
       - ${MANAGER_KEY}:/id_rsa
-      - lock:/run/lock/ocrd.jobs
+      - shared:/run/lock/ocrd.jobs
 
   dozzle:
     image: amir20/dozzle:latest
@@ -36,4 +36,4 @@ services:
       # DOZZLE_PASSWORD=
 
 volumes:
-  lock:
+  shared:
