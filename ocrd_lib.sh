@@ -66,15 +66,17 @@ init() {
   REMOTEDIR="KitodoJob_${PROCESS_ID}_${TASK_ID}_$(basename $PROCESS_DIR)"
 
   # create stats for monitor
-  mkdir -p /run/lock/ocr.pid/
-  { echo PROCESS_ID=$PROCESS_ID
+  mkdir -p /run/lock/ocrd.jobs/
+  {
+    echo PID=$PID
+    echo PROCESS_ID=$PROCESS_ID
     echo TASK_ID=$TASK_ID
     echo PROCESS_DIR=$PROCESS_DIR
     echo WORKDIR=$WORKDIR
     echo REMOTEDIR=$REMOTEDIR
     echo WORKFLOW=$WORKFLOW
     echo CONTROLLER=$CONTROLLER
-  } > /run/lock/ocr.pid/$PID
+  } > /run/lock/ocrd.jobs/$REMOTEDIR
 }
 
 # parse shell script notation into tasks syntax
@@ -176,6 +178,6 @@ close() {
     # become synchronous again
     logger -p user.info -t $TASK "ocr_exit in sync mode - wait until the processing is completed"
     wait $!
-    rm -f /run/lock/ocr.pid/$PID
+    #rm -f /run/lock/ocrd.jobs/$REMOTEDIR
   fi
 }
