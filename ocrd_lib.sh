@@ -6,6 +6,9 @@ set -o pipefail
 
 TASK=$(basename $0)
 
+logexit() {
+  logger -p user.info -t $TASK "terminating with \$?=$?"
+}
 # initialize variables, create ord-d work directory and exit if something is missing
 # args:
 # 1. process ID
@@ -19,6 +22,8 @@ TASK=$(basename $0)
 # vars:
 # - CONTROLLER: host name and port of ocrd_controller for processing
 init() {
+  trap logexit ERR # EXIT
+
   logger -p user.info -t $TASK "ocr_init initialize variables and directory structure"
   PID=$$
   PROCESS_ID=$1
