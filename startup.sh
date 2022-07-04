@@ -28,6 +28,7 @@ echo "umask $UMASK" >>/.ssh/rc
 
 # removes read/write/execute permissions from group and others, but preserves whatever permissions the owner had
 chmod go-rwx /.ssh/*
+chmod go+rwx /run/lock/ocrd.jobs
 
 # set owner and group
 chown -R $UID:$GID /.ssh

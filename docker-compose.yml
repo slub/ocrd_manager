@@ -3,7 +3,7 @@ services:
   ocrd-manager:
     build:
       context: .
-  
+
     image: ${MANAGER_IMAGE}:${MANAGER_IMAGE_TAG}
 
     hostname: ${MANAGER_HOST}
@@ -30,5 +30,9 @@ services:
         source: ${MANAGER_KEY} # Manager private key (for access to Controller)
         target: /id_rsa
       - ${MANAGER_DATA}:/data # metadata directory
+      - lock:/run/lock/ocrd.jobs
 
     tty: true # docker run -t
+
+volumes:
+  lock:
