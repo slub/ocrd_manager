@@ -113,7 +113,7 @@ class RequestHandler(SimpleHTTPRequestHandler):
         # FIXME: make resource consumption cumulative/persistent
         # FIXME: also show WORKDIR/ocrd.log via extra log-viewer endpoint
         title = 'OCR-D Tasks'
-        content = ('<hr>\n<table>\n<tr>\n'
+        content = ('<table>\n<tr>\n'
                    '<th>PID</th>\n'
                    '<th>STATUS</th>\n'
                    '<th>% CPU</th>\n'
@@ -136,10 +136,11 @@ class RequestHandler(SimpleHTTPRequestHandler):
                 workflow = os.path.join(self.basedir, workflow)
             # log into Controller to list all child processes of job script
             controller = os.environ['CONTROLLER']
-            command = 'ssh -T -p %s ocrd@%s' % tuple(controller.split(':')[::-1])
+            command = 'ssh -T -p %s admin@%s' % tuple(controller.split(':')[::-1])
             script = ('DIR=%s; test -e $DIR/ocrd.pid || exit 1\n'
                       'PID=`cat $DIR/ocrd.pid`\n'
-                      'ps -g `ps -q $PID -o sid=` --forest -o pid,stat,pcpu,rss,cputime --no-headers' % remotedir)
+                      #'PID=`ps -q "$PID" -o sid=` || exit 2\n'
+                      'ps -g "$PID" --forest -o pid,stat,pcpu,rss,cputime --no-headers' % remotedir)
             result = subprocess.run(command, input=script,
                                     shell=True, stdout=subprocess.PIPE,
                                     universal_newlines=True, encoding='utf-8')
@@ -201,7 +202,7 @@ class RequestHandler(SimpleHTTPRequestHandler):
             else:
                 content += ('<td>%s</td>\n' % os.path.basename(workflow))
         content += ('</table>\n')
-        self._serve(title, content, headers='<meta http-equiv="refresh" content="30"/>')
+        self._serve(title, content, headers='<meta http-equiv="refresh" content="5"/>')
 
     def _configure_workflow(self, path):
         title = 'OCR-D Workflow Configuration'
