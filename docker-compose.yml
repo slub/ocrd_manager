@@ -4,7 +4,7 @@ services:
     build:
       context: .
 
-    image: ${MANAGER_IMAGE}:${MANAGER_IMAGE_TAG}
+    image: ${MANAGER_IMAGE}
 
     hostname: ${MANAGER_HOST}
 
