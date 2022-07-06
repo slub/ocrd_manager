@@ -3,6 +3,9 @@ services:
   ocrd-manager:
     build:
       context: .
+      # args:
+      #   VCS_REF: ...
+      #   BUILD_DATE: ...
 
     image: ${MANAGER_IMAGE}
 
