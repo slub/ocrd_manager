@@ -18,4 +18,5 @@ if [ -n "$CONTROLLER" ]; then
 fi
 
 broadwayd :5 &
-python -u serve.py -p 8080 -P 8085 -d "${1:-/data}"
+
+flask --app /usr/local/ocrd-monitor/app --debug run 

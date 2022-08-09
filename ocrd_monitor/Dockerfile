@@ -21,11 +21,23 @@ ENV BROADWAY_DISPLAY :5
 
 EXPOSE 8085
 EXPOSE 8080
+EXPOSE 5000
 
 VOLUME /data
 
 COPY init.sh /init.sh
 COPY serve.py /serve.py
+
+# flask
+RUN mkdir -p /usr/local/ocrd-monitor/app
+
+COPY flask/ /usr/local/ocrd-monitor/
+
+WORKDIR /usr/local/ocrd-monitor/
+
+RUN python3 -m venv venv && \
+	. venv/bin/activate && \
+	pip install -r requirements.txt
 
 WORKDIR /
 CMD ["/init.sh", "/data"]

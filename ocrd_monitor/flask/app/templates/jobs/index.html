@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}OCR-D Jobs{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <table>
+    <tr>
+      <th>PID</th>
+      <th>STATUS</th>
+      <th>% CPU</th>
+      <th>MB RSS</th>
+      <th>DURATION</th>
+      <th>TASK ID</th>
+      <th>PROCESS ID</th>
+      <th>WORKSPACE</th>
+      <th>WORKFLOW</th>
+    </tr>
+    {% for job in jobs %}
+      <tr>
+        <td>{{ job.resource_consumption[0] }}</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>{{ job.id }}</td>
+        <td>{{ job.process.id }}</td>
+        <td></td>
+        <td></td>
+      </tr>
+      {% if not loop.last %}
+        <hr>
+      {% endif %}
+    {% endfor %}
+  </table>
+{% endblock %}
