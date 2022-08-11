@@ -1,6 +1,8 @@
 import os
 import subprocess
 
+import sys
+
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -17,7 +19,7 @@ def get_resource_consumption(remotedir):
                     'PID=`cat $DIR/ocrd.pid`\n'
                     #'PID=`ps -q "$PID" -o sid=` || exit 2\n'
                     'ps -g "$PID" --forest -o pid,stat,pcpu,rss,cputime --no-headers' % remotedir)
-    controller = "localhost:8022"
+    controller = os.environ['CONTROLLER']
     command = 'ssh -T -p %s admin@%s' % tuple(controller.split(':')[::-1])                
     result = subprocess.run(command, input=script,
                     shell=True, stdout=subprocess.PIPE,
@@ -63,7 +65,7 @@ def get_resource_consumption(remotedir):
 def get_jobs():
     jobs = []
     for jobfile in Path('/run/lock/ocrd.jobs').rglob('*'):
-        print(jobfile)
+        
         jobfile_values = dotenv_values(jobfile)
         remotedir = jobfile_values['REMOTEDIR']
         workdir = jobfile_values['WORKDIR']
@@ -73,20 +75,25 @@ def get_jobs():
         if workflow[0] != '/':
             workflow = os.path.join(current_app.config["BASEDIR"], workflow)
         job = {
-            "id": jobfile_values['TASK_ID'],
+            "task": {
+                "id" : jobfile_values['TASK_ID']
+            },
             "process": {
                 "id" : jobfile_values['PROCESS_ID']
             }, 
            "resource_consumption": get_resource_consumption(remotedir)
         }
-        if os.path.exists(os.path.join(workdir, 'mets.xml')) :
-            job["process"]["dir"] = os.path.basename(job['PROCESS_DIR'])
-            job["process"]["url"] = os.path.relpath(workdir, current_app.config["BASEDIR"])
+
+        if os.path.exists(os.path.join(workdir, 'mets.xml')):
+            job["workspace"] = {
+                "name" : os.path.basename(job['PROCESS_DIR']),
+                "path" : os.path.relpath(workdir, current_app.config["BASEDIR"])
+            }
 
         if os.path.exists(workflow) :
             job["workflow"] = {
                 "name" : os.path.basename(workflow),
-                "url" : os.path.relpath(workflow, current_app.config["BASEDIR"])
+                "path" : os.path.relpath(workflow, current_app.config["BASEDIR"])
             }
 
         jobs.append(job)
@@ -95,4 +102,4 @@ def get_jobs():
 
 @bp.route('/jobs')
 def index():
-    return render_template('jobs/index.html', tasks=get_jobs())
+    return render_template('jobs/index.html', jobs=get_jobs())

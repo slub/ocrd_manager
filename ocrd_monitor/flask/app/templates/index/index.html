@@ -1,11 +1,13 @@
 {% extends 'base.html' %}
 
-{% block header %}
-  <h1>{% block title %}OCR-D Monitor{% endblock %}</h1>
+{% block headline %}
+  {% block title %}Home{% endblock %}
 {% endblock %}
 
 {% block content %}
-  <h2><a href="/data">Show data</a></h2>
-  <h2><a href="/jobs">Show jobs</a></h2>
-  <h2><a href="/logs">Show logs</a></h2>
+  <ul>
+    <li><a href="{{ url_for('workspace.index') }}">Workspaces</a></li>
+    <li><a href="{{ url_for('job.index') }}">Jobs</a></li>
+    <li><a href="{{ url_for('index.logs') }}">Logs</a></li>
+  </ul>
 {% endblock %}

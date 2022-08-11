@@ -2,7 +2,6 @@ import os
 
 from flask import Flask
 
-
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
@@ -11,8 +10,8 @@ def create_app(test_config=None):
         DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
         BASEDIR=".",
         BWHOST="localhost",
-        BWPORT="8085",
-        LOGPORT="8088",
+        BWPORT=8085,
+        LOGPORT=8088,
     )
 
     if test_config is None:
@@ -27,12 +26,6 @@ def create_app(test_config=None):
         os.makedirs(app.instance_path)
     except OSError:
         pass
-
-    from . import db
-    db.init_app(app)
-
-    from . import auth
-    app.register_blueprint(auth.bp)
 
     from . import index
     app.register_blueprint(index.bp)

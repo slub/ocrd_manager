@@ -26,18 +26,11 @@ EXPOSE 5000
 VOLUME /data
 
 COPY init.sh /init.sh
-COPY serve.py /serve.py
-
-# flask
-RUN mkdir -p /usr/local/ocrd-monitor/app
-
-COPY flask/ /usr/local/ocrd-monitor/
-
-WORKDIR /usr/local/ocrd-monitor/
+COPY flask /usr/local/ocrd-monitor
 
 RUN python3 -m venv venv && \
 	. venv/bin/activate && \
-	pip install -r requirements.txt
+	pip install -r /usr/local/ocrd-monitor/requirements.txt
 
 WORKDIR /
 CMD ["/init.sh", "/data"]
