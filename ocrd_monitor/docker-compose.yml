@@ -16,7 +16,7 @@ services:
       - "CONTROLLER=${CONTROLLER_HOST}:${CONTROLLER_PORT_SSH}"
 
     ports:
-      - ${MONITOR_PORT_WEB}:8080
+      - ${MONITOR_PORT_WEB}:5000
       - ${MONITOR_PORT_GTK}:8085
 
     volumes:

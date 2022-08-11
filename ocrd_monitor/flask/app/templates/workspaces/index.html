@@ -1,9 +1,13 @@
 {% extends 'base.html' %}
 
-{% block header %}
-  <h1>{% block title %}OCR-D Browser for workspaces at "."{% endblock %}</h1>
+{% block headline %}
+  {% block title %}Workspaces{% endblock %}
 {% endblock %}
 
 {% block content %}
-
+<ul>
+  {% for relname in relnames %}
+  <li><a href="{{ url_for('workspace.browse', path=relname) }}">{{ relname }}</a></li>
+  {% endfor %}
+</ul>
 {% endblock %}

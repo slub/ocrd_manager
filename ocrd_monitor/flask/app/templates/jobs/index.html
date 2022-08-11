@@ -1,11 +1,16 @@
 {% extends 'base.html' %}
 
-{% block header %}
-  <h1>{% block title %}OCR-D Jobs{% endblock %}</h1>
+{% block meta %}
+<meta http-equiv="refresh" content="5" />
+{% endblock %}
+
+{% block headline %}
+{% block title %}Jobs{% endblock %}
 {% endblock %}
 
 {% block content %}
-  <table>
+<table class="table">
+  <thead>
     <tr>
       <th>PID</th>
       <th>STATUS</th>
@@ -17,20 +22,21 @@
       <th>WORKSPACE</th>
       <th>WORKFLOW</th>
     </tr>
+  </thead>
+  <tbody>
     {% for job in jobs %}
-      <tr>
-        <td>{{ job.resource_consumption[0] }}</td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td>{{ job.id }}</td>
-        <td>{{ job.process.id }}</td>
-        <td></td>
-        <td></td>
-      </tr>
-      {% if not loop.last %}
-        <hr>
-      {% endif %}
+    <tr>
+      <td>{{ job.resource_consumption[0] }}</td>
+      <td>{{ job.resource_consumption[1] }}</td>
+      <td>{{ job.resource_consumption[2] }}</td>
+      <td>{{ job.resource_consumption[3] }}</td>
+      <td>{{ job.resource_consumption[4] }}</td>
+      <td>{{ job.task.id }}</td>
+      <td>{{ job.process.id }}</td>
+      <td>{% if job.workspace is defined %}{{ job.workspace.name }}{% endif %}</td>
+      <td><a href="{{ url_for('workflow.detail', path=job.workflow.path) }}">{{ job.workflow.name }}</a></td>
+    </tr>
     {% endfor %}
-  </table>
+  </tbody>
+</table>
 {% endblock %}

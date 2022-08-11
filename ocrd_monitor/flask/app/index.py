@@ -10,4 +10,4 @@ def index():
 
 @bp.route('/logs')
 def logs():
-    return redirect("http://" + current_app.config["BWHOST"] + ":" + current_app.config["LOGPORT"])
+    return redirect("http://" + current_app.config["BWHOST"] + ":" + str(current_app.config["LOGPORT"]))
