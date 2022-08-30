@@ -65,8 +65,8 @@ def get_resource_consumption(remotedir):
 def get_jobs():
     jobs = []
     for jobfile in Path('/run/lock/ocrd.jobs').rglob('*'):
-        
         jobfile_values = dotenv_values(jobfile)
+
         remotedir = jobfile_values['REMOTEDIR']
         workdir = jobfile_values['WORKDIR']
         if workdir[0] != '/':
@@ -84,10 +84,11 @@ def get_jobs():
            "resource_consumption": get_resource_consumption(remotedir)
         }
 
-        if os.path.exists(os.path.join(workdir, 'mets.xml')):
+        workspace = os.path.join(workdir, 'mets.xml')
+        if os.path.exists(workspace):
             job["workspace"] = {
-                "name" : os.path.basename(job['PROCESS_DIR']),
-                "path" : os.path.relpath(workdir, current_app.config["BASEDIR"])
+                "name" : os.path.basename(workspace),
+                "path" : os.path.relpath(workspace, current_app.config["BASEDIR"])
             }
 
         if os.path.exists(workflow) :
@@ -97,7 +98,6 @@ def get_jobs():
             }
 
         jobs.append(job)
-    print(jobs)
     return jobs
 
 @bp.route('/jobs')

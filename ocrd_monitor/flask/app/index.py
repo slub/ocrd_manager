@@ -1,5 +1,5 @@
 from flask import (
-    Blueprint, redirect, render_template, current_app
+    Blueprint, redirect, render_template, current_app, request
 )
 
 bp = Blueprint('index', __name__)
@@ -10,4 +10,4 @@ def index():
 
 @bp.route('/logs')
 def logs():
-    return redirect("http://" + current_app.config["BWHOST"] + ":" + str(current_app.config["LOGPORT"]))
+    return redirect("http://" + request.headers['Host'].split(':')[0] + ":" + current_app.config["LOG_PORT"])
