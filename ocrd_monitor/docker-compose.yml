@@ -23,7 +23,6 @@ services:
       - ${MONITOR_DATA}:/data
       - ${MANAGER_KEY}:/id_rsa
       - shared:/run/lock/ocrd.jobs
-      - /home/weigelt/Work/OCR-D/kitodo_production_ocrd/_modules/ocrd_manager/ocrd_monitor/flask/app:/usr/local/ocrd-monitor/app
 
   dozzle:
     image: amir20/dozzle:latest
