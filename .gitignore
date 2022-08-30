@@ -1,2 +1,3 @@
 *~
 authorized_keys
+ocrd_monitor/flask/app/__pycache__/**

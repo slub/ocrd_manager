@@ -19,4 +19,4 @@ fi
 
 broadwayd :5 &
 
-flask --app /usr/local/ocrd-monitor/app --debug run --host='0.0.0.0'
+flask --app /usr/local/ocrd-monitor/app --debug run --host='0.0.0.0' --reload

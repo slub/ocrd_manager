@@ -19,6 +19,13 @@ RUN apt-get update \
 ENV GDK_BACKEND broadway
 ENV BROADWAY_DISPLAY :5
 
+# environment variables used by flask application
+ENV APP_BASEDIR=/data
+# broadway 
+ENV APP_BW_PORT=8085
+# logviewer
+ENV APP_LOG_PORT=8088
+
 EXPOSE 8085
 EXPOSE 8080
 EXPOSE 5000
@@ -28,9 +35,7 @@ VOLUME /data
 COPY init.sh /init.sh
 COPY flask /usr/local/ocrd-monitor
 
-RUN python3 -m venv venv && \
-	. venv/bin/activate && \
-	pip install -r /usr/local/ocrd-monitor/requirements.txt
+RUN pip install -r /usr/local/ocrd-monitor/requirements.txt
 
 WORKDIR /
 CMD ["/init.sh", "/data"]
