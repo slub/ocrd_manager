@@ -13,7 +13,10 @@ services:
     hostname: ${MONITOR_HOST}
 
     environment:
-      - "CONTROLLER=${CONTROLLER_HOST}:${CONTROLLER_PORT_SSH}"
+      APP_BW_PORT: ${MONITOR_PORT_GTK}
+      APP_LOG_PORT: ${MONITOR_PORT_LOG}
+      CONTROLLER: "${CONTROLLER_HOST}:${CONTROLLER_PORT_SSH}"
+
 
     ports:
       - ${MONITOR_PORT_WEB}:5000

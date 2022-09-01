@@ -21,10 +21,6 @@ ENV BROADWAY_DISPLAY :5
 
 # environment variables used by flask application
 ENV APP_BASEDIR=/data
-# broadway 
-ENV APP_BW_PORT=8085
-# logviewer
-ENV APP_LOG_PORT=8088
 
 EXPOSE 8085
 EXPOSE 8080
