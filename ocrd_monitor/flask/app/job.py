@@ -78,9 +78,14 @@ def get_jobs():
             },
             "process": {
                 "id" : jobfile_values['PROCESS_ID']
-            }, 
-           "resource_consumption": get_resource_consumption(remotedir)
+            },
         }
+        if jobfile_values.get('PID', None):
+            job["pid"], job["status"], job["cpuutil"], job["memrss"], job["duration"] = \
+                get_resource_consumption(remotedir)
+
+        if jobfile_values.get('RETVAL', None):
+            job["retval"] = jobfile_values['RETVAL']
 
         workspace = os.path.join(workdir, 'mets.xml')
         if os.path.exists(workspace):

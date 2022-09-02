@@ -30,4 +30,7 @@ def create_app():
     from . import workspace
     app.register_blueprint(workspace.bp)
 
+    from . import logs
+    app.register_blueprint(logs.bp)
+
     return app
