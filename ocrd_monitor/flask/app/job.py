@@ -20,7 +20,7 @@ def get_resource_consumption(remotedir):
                     #'PID=`ps -q "$PID" -o sid=` || exit 2\n'
                     'ps -g "$PID" --forest -o pid,stat,pcpu,rss,cputime --no-headers' % remotedir)
     controller = os.environ['CONTROLLER']
-    command = 'ssh -T -p %s admin@%s' % tuple(controller.split(':')[::-1])                
+    command = 'ssh -T -p %s admin@%s' % tuple(controller.split(':')[::-1])
     result = subprocess.run(command, input=script,
                     shell=True, stdout=subprocess.PIPE,
                     universal_newlines=True, encoding='utf-8')
@@ -60,20 +60,18 @@ def get_resource_consumption(remotedir):
     else:
         pid, status, cpuutil, memrss, duration = '?', 'terminated', '?', '?', '??:??:??'
 
-    return pid, status, cpuutil, memrss, duration                    
+    return pid, status, cpuutil, memrss, duration
 
 def get_jobs():
     jobs = []
     for jobfile in Path('/run/lock/ocrd.jobs').rglob('*'):
+
         jobfile_values = dotenv_values(jobfile)
 
         remotedir = jobfile_values['REMOTEDIR']
+        procdir = jobfile_values['PROCESS_DIR']
         workdir = jobfile_values['WORKDIR']
-        if workdir[0] != '/':
-            workdir = os.path.join(current_app.config["BASEDIR"], workdir)
         workflow = jobfile_values['WORKFLOW']
-        if workflow[0] != '/':
-            workflow = os.path.join(current_app.config["BASEDIR"], workflow)
         job = {
             "task": {
                 "id" : jobfile_values['TASK_ID']
@@ -87,14 +85,14 @@ def get_jobs():
         workspace = os.path.join(workdir, 'mets.xml')
         if os.path.exists(workspace):
             job["workspace"] = {
-                "name" : os.path.basename(workspace),
-                "path" : os.path.relpath(workspace, current_app.config["BASEDIR"])
+                "name" : os.path.basename(procdir),
+                "path" : workdir
             }
 
         if os.path.exists(workflow) :
             job["workflow"] = {
                 "name" : os.path.basename(workflow),
-                "path" : os.path.relpath(workflow, current_app.config["BASEDIR"])
+                "path" : workflow
             }
 
         jobs.append(job)

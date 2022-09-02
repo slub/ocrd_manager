@@ -6,7 +6,7 @@ from shutil import which
 from functools import lru_cache
 
 from flask import (
-    Blueprint, redirect, render_template, current_app, request
+    Blueprint, redirect, request, render_template, current_app, request
 )
 from werkzeug.exceptions import abort
 
@@ -16,7 +16,7 @@ bp = Blueprint('workspace', __name__)
 def get_workspace_paths():
     # recursively find METS file paths
     paths = []
-    for mets in Path(current_app.config["BASEDIR"]).rglob('mets.xml'):
+    for mets in Path().rglob('mets.xml'):
         if mets.match('.backup/*/mets.xml'):
             continue
         paths.append(str(mets))
@@ -25,15 +25,13 @@ def get_workspace_paths():
 @bp.route('/workspaces/browse', methods=['GET'])
 def browse():
     path = request.args.get('path')
-    path = path.lstrip('/')
-    path = os.path.join(current_app.config["BASEDIR"], path)
     if not os.path.exists(path):
         abort(404)
     else:
-        
+
         if not path.endswith('mets.xml'):
             path = os.path.join(path, 'mets.xml')
-        
+
         ## run app
         ret = Popen([which('browse-ocrd'),
                         '--display', ':' + str(int(current_app.config["BW_PORT"]) - 8080),
@@ -50,10 +48,7 @@ def browse():
 
 @bp.route('/workspaces')
 def index():
-    relnames = []
-    for path in get_workspace_paths():
-        relnames.append(os.path.relpath(path, current_app.config["BASEDIR"]))
-    return render_template('workspaces/index.html', relnames=relnames)
+    return render_template('workspaces/index.html', relnames=get_workspace_paths())
 
 @bp.route('/workspaces/reindex')
 def reindex():
