@@ -6,8 +6,8 @@ set -o pipefail
 
 TASK=$(basename $0)
 
-logexit() {
-  logger -p user.info -t $TASK "terminating with \$?=$?"
+logerr() {
+  logger -p user.info -t $TASK "terminating with error \$?=$? from ${BASH_COMMAND}"
 }
 # initialize variables, create ord-d work directory and exit if something is missing
 # args:
@@ -22,7 +22,7 @@ logexit() {
 # vars:
 # - CONTROLLER: host name and port of ocrd_controller for processing
 init() {
-  trap logexit ERR # EXIT
+  trap logerr ERR
 
   logger -p user.info -t $TASK "ocr_init initialize variables and directory structure"
   PID=$$
@@ -77,6 +77,15 @@ init() {
     echo WORKFLOW=$WORKFLOW
     echo CONTROLLER=$CONTROLLER
   } > /run/lock/ocrd.jobs/$REMOTEDIR
+
+}
+
+logret() {
+    sed -i 1s/.*/RETVAL=$?/ /run/lock/ocrd.jobs/$REMOTEDIR
+}
+
+init_task() {
+  trap logret EXIT
 }
 
 # parse shell script notation into tasks syntax
@@ -101,7 +110,7 @@ ocrd_process_workflow() {
 ocrd_exec() {
   logger -p user.info -t $TASK "execute $# commands via SSH by the controller"
   {
-    echo "set -e"
+    echo "set -Ee"
     for param in "$@"; do
       $param
     done
@@ -162,16 +171,19 @@ post_process_to_ocrdir() {
     }
 }
 
-activemq_close_task() {
+close_task() {
   if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT"; then
     java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "KitodoProduction.FinalizeStep.Queue" $TASK_ID $PROCESS_ID
   fi
+  logret # communicate retval 0
 }
 
 # exit in async or sync mode
 close() {
   if test "$ASYNC" = true; then
     logger -p user.info -t $TASK "ocr_exit in async mode - immediate termination of the script"
+    # prevent any RETVAL from being written yet
+    trap - EXIT
     # fail so Kitodo will listen to the actual time the job is done via ActiveMQ
     exit 1
   else

@@ -20,7 +20,7 @@
 # To be called (after copying data to 3.) via Manager, e.g.:
 #     ssh -Tn -p 9022 ocrd@ocrd-manager for_production.sh 501543 3 /home/goobi/work/daten/501543 deu Fraktur
 
-set -eu
+set -Eeu
 set -o pipefail
 
 source ocrd_lib.sh
@@ -31,6 +31,8 @@ init "$@"
 # subsequently validate and postprocess the results
 # do all this in a subshell in the background, so we can return immediately
 (
+  init_task
+
   pre_process_to_workdir
 
   pre_sync_workdir
@@ -43,7 +45,7 @@ init "$@"
 
   post_process_to_ocrdir
 
-  activemq_close_task
+  close_task
 
 ) |& tee -a $WORKDIR/ocrd.log | logger -p user.info -t $TASK &>/dev/null & # without output redirect, ssh will not close the connection upon exit, cf. #9
 
