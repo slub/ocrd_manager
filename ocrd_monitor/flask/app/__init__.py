@@ -7,7 +7,6 @@ def create_app():
     app = Flask(__name__, instance_relative_config=True)
 
     app.config.from_mapping(
-        BASEDIR=os.getenv("APP_BASEDIR"),
         BW_PORT=os.getenv("APP_BW_PORT"),
         LOG_PORT=os.getenv("APP_LOG_PORT"),
     )

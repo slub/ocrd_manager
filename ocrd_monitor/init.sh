@@ -19,4 +19,5 @@ fi
 
 broadwayd :5 &
 
+cd "${1:-/data}"
 flask --app /usr/local/ocrd-monitor/app --debug run --host='0.0.0.0' --reload
