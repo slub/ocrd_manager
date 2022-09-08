@@ -6,8 +6,8 @@
 
 {% block content %}
 <ul>
-  {% for relname in relnames %}
-  <li><a href="{{ url_for('workspace.browse', path=relname) }}">{{ relname }}</a></li>
+  {% for w in workspaces %}
+  <li><a class="workspace-name" href="{{ url_for('workspaces.view_workspace', workspace=w) }}">{{ w }}</a></li>
   {% endfor %}
 </ul>
 {% endblock %}
