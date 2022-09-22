@@ -1,4 +1,6 @@
-from typing import Optional
+from __future__ import annotations
+
+from typing import Optional, Set
 
 
 class NoPortsAvailableError(RuntimeError):
@@ -6,7 +8,7 @@ class NoPortsAvailableError(RuntimeError):
 
 
 class Port:
-    def __init__(self, available_ports: set[int]) -> None:
+    def __init__(self, available_ports: Set[int]) -> None:
         self._available_ports = available_ports
         self._port: Optional[int] = self._try_pop()
 
