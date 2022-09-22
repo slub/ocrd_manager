@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import subprocess as sp
 from shutil import which
+import os
 from typing import Optional
 
 from ocrdbrowser import OcrdBrowser
@@ -45,7 +48,7 @@ class SubProcessOcrdBrowser:
 
 
 class SubProcessOcrdBrowserFactory:
-    def __init__(self, host: str, available_ports: set[int]) -> None:
+    def __init__(self, host: str, available_ports: Set[int]) -> None:
         self._host = host
         self._available_ports = available_ports
 

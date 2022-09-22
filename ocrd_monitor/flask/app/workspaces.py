@@ -1,3 +1,4 @@
+from typing import Set
 import atexit
 import uuid
 from os import path
@@ -15,7 +16,7 @@ from ocrdbrowser import (
 def create_blueprint(
     process_factory: OcrdBrowserFactory, workspace_dir: str
 ) -> Blueprint:
-    running_browsers: set[OcrdBrowser] = set()
+    running_browsers: Set[OcrdBrowser] = set()
 
     bp = Blueprint("workspaces", __name__, url_prefix="/workspaces")
 

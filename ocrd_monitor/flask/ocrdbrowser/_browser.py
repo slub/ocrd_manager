@@ -1,5 +1,10 @@
+import sys
 from os import path
-from typing import Optional, Protocol, TypeAlias
+from typing import Optional, Set
+if sys.version_info >= (3, 8):
+    from typing import Protocol, TypeAlias
+else:
+    from typing_extensions import Protocol, TypeAlias
 
 
 class OcrdBrowser(Protocol):
@@ -24,7 +29,7 @@ class OcrdBrowserFactory(Protocol):
         ...
 
 
-BrowserProcesses: TypeAlias = set[OcrdBrowser]
+BrowserProcesses: TypeAlias = Set[OcrdBrowser]
 
 
 def launch(
