@@ -6,8 +6,8 @@
 
 {% block content %}
 <ul>
-  {% for w in workspaces %}
-  <li><a class="workspace-name" href="{{ url_for('workspaces.view_workspace', workspace=w) }}">{{ w }}</a></li>
+  {% for workspace in workspaces %}
+  <li><a class="workspace-name" href="{{ url_for('workspaces.view_workspace', workspace=workspace) }}">{{ workspace }}</a></li>
   {% endfor %}
 </ul>
 {% endblock %}
