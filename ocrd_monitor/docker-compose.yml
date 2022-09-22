@@ -20,7 +20,7 @@ services:
 
     ports:
       - ${MONITOR_PORT_WEB}:5000
-      - ${MONITOR_PORT_GTK}:8085
+      - ${MONITOR_PORT_GTK}-8600:8085-8185
 
     volumes:
       - ${MONITOR_DATA}:/data

@@ -37,8 +37,8 @@ def create_app(
     browser_factory = get_or_default(
         browser_factory,
         SubProcessOcrdBrowserFactory(
-            host="http://0.0.0.0",
-            available_ports=set(range(8500, 8601)),
+            port=app.config["BW_PORT"],
+            available_ports=set(range(8085, 8186)),
         ),
     )
 

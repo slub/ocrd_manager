@@ -22,6 +22,7 @@ class Port:
         self._port = None
 
     def _try_pop(self) -> int:
+        # FIXME: check if port is still free
         try:
             return self._available_ports.pop()
         except KeyError as err:

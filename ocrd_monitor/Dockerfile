@@ -16,14 +16,11 @@ RUN apt-get update \
     && pip3 install -U setuptools wheel \
     && pip3 install browse-ocrd psutil python-dotenv
 
-ENV GDK_BACKEND broadway
-ENV BROADWAY_DISPLAY :5
-
-# environment variables used by flask application
-ENV APP_BASEDIR=/data
-
+# MONITOR_PORT_GTK
 EXPOSE 8085
+# MONITOR_PORT_LOG
 EXPOSE 8080
+# MONITOR_PORT_WEB
 EXPOSE 5000
 
 VOLUME /data
