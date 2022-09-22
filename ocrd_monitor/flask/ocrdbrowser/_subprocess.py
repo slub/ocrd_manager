@@ -49,7 +49,8 @@ class SubProcessOcrdBrowser:
         self._process = sp.Popen(
             ' '.join([
                 "broadwayd", ":" + displayport + " &",
-                browse_ocrd, self._workspace + '/mets.xml',
+                browse_ocrd, self._workspace + '/mets.xml ;',
+                "kill $!"
             ]),
             shell=True, env=environment
         )
