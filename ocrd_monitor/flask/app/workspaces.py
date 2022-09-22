@@ -23,10 +23,9 @@ def create_blueprint(
     @bp.route("/")
     def index() -> str:
         workspaces = workspace.list_all(workspace_dir)
-        names = [path.basename(ws) for ws in workspaces]
-        return render_template("workspaces/index.html.j2", workspaces=names)
+        return render_template("workspaces/index.html.j2", workspaces=workspaces)
 
-    @bp.route("/<string:workspace>")
+    @bp.route("/<path:workspace>")
     def view_workspace(workspace: str) -> str:
         session_id = session.setdefault("id", str(uuid.uuid4()))
         full_path = path.join(workspace_dir, workspace)
