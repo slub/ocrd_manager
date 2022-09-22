@@ -4,7 +4,7 @@ import uuid
 from os import path
 
 import ocrdbrowser
-from flask import Blueprint, flash, render_template, session
+from flask import Blueprint, flash, render_template, request, session
 from ocrdbrowser import (
     NoPortsAvailableError,
     OcrdBrowser,
@@ -35,7 +35,9 @@ def create_blueprint(
             flash("Not a valid workspace", category="error")
         else:
             stop_owned_browsers_in_other_workspaces(session_id, full_path)
-            address = try_launch_browser(session_id, full_path)
+            port = try_launch_browser(session_id, full_path)
+            host = request.headers['Host'].split(':')[0]
+            address = 'http://' + host + ':' + port
 
         return render_template("workspaces/view_workspace.html.j2", address=address)
 

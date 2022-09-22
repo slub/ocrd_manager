@@ -17,7 +17,5 @@ if [ -n "$CONTROLLER" ]; then
   ssh-keyscan -H -p ${CONTROLLER_PORT:-22} $CONTROLLER_HOST,$CONTROLLER_IP >>/etc/ssh/ssh_known_hosts
 fi
 
-broadwayd :5 &
-
 cd "${1:-/data}"
-flask --app /usr/local/ocrd-monitor/app --debug run --host='0.0.0.0' --reload
+flask --app /usr/local/ocrd-monitor/app run --host='0.0.0.0' --reload
