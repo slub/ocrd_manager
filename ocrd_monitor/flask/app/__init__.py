@@ -42,7 +42,7 @@ def create_app(
         ),
     )
 
-    workspace_dir = get_or_default(workspace_dir, ".backup")
+    workspace_dir = get_or_default(workspace_dir, ".")
     app.register_blueprint(workspaces.create_blueprint(browser_factory, workspace_dir))
 
     from . import logs

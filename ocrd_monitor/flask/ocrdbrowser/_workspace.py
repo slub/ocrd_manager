@@ -11,5 +11,6 @@ def is_valid(workspace: str) -> bool:
 def list_all(path: str) -> List[str]:
     # recursively enumerate METS file paths (excluding .backup subdirs)
     return [
-        str(workspace) for workspace in Path(path).iterdir() if is_valid(str(workspace))
+        str(workspace.parent) for workspace in Path(path).rglob('mets.xml')
+        if not workspace.match('.backup/*/mets.xml')
     ]
