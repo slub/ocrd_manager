@@ -18,9 +18,36 @@
             width: 100%;
             height: 100%;
         }
+
     </style>
 
-    {% if address %}
-    <iframe src="{{ address }}" frameborder="0" />
-    {% endif %}
+    <script>
+        function checkBrowserAndAddIframe(host, port, sessionId) {
+          var request = new XMLHttpRequest();
+          request.open("GET", '/workspaces/check-browser-availability/' + port + '?sessionId=' + sessionId, true);
+          request.send();
+          request.onload = function() {
+            status = request.status;
+            if (request.status == 200) {
+                let main = document.getElementById("main")
+                const iframe = document.createElement("iframe");
+                iframe.src = "http://" + host + ":" + port;
+                iframe.frameBorder = 0;
+                main.appendChild(iframe);
+                main.getElementsByClassName("loader-wrapper")[0].remove();
+            } else {
+              setTimeout(function() {
+                checkBrowserAndAddIframe(host, port, sessionId);
+              }, 5000);
+            }
+          }
+        }
+
+        {% if host and port and session_id %}
+        checkBrowserAndAddIframe('{{ host }}','{{ port }}','{{ session_id }}');
+        {% endif %}
+    </script>
+    <div class="loader-wrapper">
+        <div class="loader"></div>
+    </div>
 {% endblock %}

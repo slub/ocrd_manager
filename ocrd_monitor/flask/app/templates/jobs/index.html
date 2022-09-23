@@ -61,7 +61,7 @@
       <td>{% if job.workflow is defined %}<a href="{{ url_for('workflow.detail', path=job.workflow.path) }}">{{ job.workflow.name }}</a>{% endif %}</td>
       <td>{{ job.retval }} {% if job.retval == "0" %}(SUCCESS){% else %}(FAILURE){% endif %}</td>
       <td>{% if job.workspace is defined: %}
-        <a href="{{ url_for('workspace.browse', path=job.workspace.path) }}">{{ job.workspace.name }}</a>
+        <a href="{{ url_for('workspaces.index', workspace=job.workspace.path) }}">{{ job.workspace.name }}</a>
         {% endif %}
       </td>
       <td>{% if job.workspace is defined: %}
