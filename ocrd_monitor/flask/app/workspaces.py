@@ -1,7 +1,9 @@
-from typing import Set
+from typing import Set, Tuple, Dict
 import atexit
 import uuid
 from os import path
+
+from werkzeug.exceptions import abort
 
 import ocrdbrowser
 from flask import Blueprint, flash, render_template, request, session
@@ -11,7 +13,6 @@ from ocrdbrowser import (
     OcrdBrowserFactory,
     workspace,
 )
-
 
 def create_blueprint(
     process_factory: OcrdBrowserFactory, workspace_dir: str
@@ -29,16 +30,26 @@ def create_blueprint(
     def view_workspace(workspace: str) -> str:
         session_id = session.setdefault("id", str(uuid.uuid4()))
         full_path = path.join(workspace_dir, workspace)
-        address = ""
+        host=""
+        port=""
         if not ocrdbrowser.workspace.is_valid(full_path):
             flash("Not a valid workspace", category="error")
         else:
             stop_owned_browsers_in_other_workspaces(session_id, full_path)
             port = try_launch_browser(session_id, full_path)
             host = request.headers['Host'].split(':')[0]
-            address = 'http://' + host + ':' + port
 
-        return render_template("workspaces/view_workspace.html.j2", address=address)
+        return render_template("workspaces/view_workspace.html.j2", host=host, port=port, session_id=session_id)
+
+    @bp.route("/check-browser-availability/<int:port>")
+    def check_port(port) -> Tuple[Dict[str, str], int]:
+        session_id = request.args.get('sessionId')
+        own_browsers = ocrdbrowser.filter_owned(session_id, running_browsers)
+        for browser in own_browsers:
+            if browser.address() == str(port):
+                return {"msg": "Browser is available"}, 200
+
+        abort(404)
 
     def stop_owned_browsers_in_other_workspaces(
         session_id: str, full_path: str
