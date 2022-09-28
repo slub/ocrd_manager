@@ -7,7 +7,7 @@ set -o pipefail
 TASK=$(basename $0)
 
 logerr() {
-  logger -p user.info -t $TASK "terminating with error \$?=$? from ${BASH_COMMAND}"
+  logger -p user.info -t $TASK "terminating with error \$?=$? from ${BASH_COMMAND} on line $(caller)"
 }
 # initialize variables, create ord-d work directory and exit if something is missing
 # args:
