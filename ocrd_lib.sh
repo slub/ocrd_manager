@@ -59,11 +59,12 @@ init() {
   CONTROLLERPORT=${CONTROLLER#*:}
 
   WORKDIR=ocr-d/"$PROCESS_DIR" # will use other mount-point than /data soon
-  if ! mkdir -p $(dirname "$WORKDIR"); then
+  if ! mkdir -p "$WORKDIR"; then
     logger -p user.error -t $TASK "insufficient permissions on /data volume"
     exit 5
   fi
-  REMOTEDIR="KitodoJob_${PROCESS_ID}_${TASK_ID}_$(basename $PROCESS_DIR)"
+  # try to be unique here (to avoid clashes)
+  REMOTEDIR="KitodoJob_${PID}_$(basename $PROCESS_DIR)"
 
   # create stats for monitor
   mkdir -p /run/lock/ocrd.jobs/
@@ -118,13 +119,14 @@ ocrd_exec() {
 }
 
 pre_process_to_workdir() {
-  # copy the data from the process directory controlled by production
-  # to the transient directory controlled by the manager
+  # copy the data from the process directory controlled by Kitodo.Production
+  # to the transient directory controlled by the Manager
   # (currently the same share, but will be distinct volumes;
   #  so the admin can decide to either mount distinct shares,
   #  which means the images will have to be physically copied,
   #  or the same share twice, which means zero-cost copying).
-  if test -d "$WORKDIR"; then
+  if test -f "$WORKDIR/mets.xml"; then
+    # already a workspace - repeated run
     rsync -T /tmp -av "$PROCESS_DIR/$PROCESS_IMAGES_DIR/" "$WORKDIR"
   else
     cp -vr --reflink=auto "$PROCESS_DIR/$PROCESS_IMAGES_DIR" "$WORKDIR"
