@@ -73,6 +73,64 @@ EOF
   fi
 }
 
+parse_args_for_presentation() {
+  LANGUAGE=
+  SCRIPT=
+  PROCESS_ID=
+  TASK_ID=
+  WORKFLOW=ocr-workflow-default.sh
+  PAGES=
+  IMAGES_GRP=DEFAULT
+  RESULT_GRP=FULLTEXT
+  URL_PREFIX=
+  while (($#)); do
+    case "$1" in
+      --help|-h) cat <<EOF
+SYNOPSIS:
+
+$0 [OPTIONS] METS
+
+where OPTIONS can be any/all of:
+ --workflow FILE    workflow file to use for processing, default:
+                    $WORKFLOW
+ --pages RANGE      selection of physical page range to process
+ --img-grp GRP      fileGrp to read input images from, default:
+                    $IMAGES_GRP
+ --ocr-grp GRP      fileGrp to write output OCR text to, default:
+                    $RESULT_GRP
+ --url-prefix URL   convert result text file refs from local to URL
+                    and prefix them
+ --help             show this message and exit
+
+and METS is the path of the METS file to process. The script will copy
+the METS into a new (temporary) workspace and transfer this to the
+Controller for processing. After resyncing back, it will then extract
+OCR results and copy them to METS (adding file references to the file
+and copying files to the parent directory).
+
+ENVIRONMENT VARIABLES:
+
+ CONTROLLER: host name and port of OCR-D Controller for processing
+EOF
+                 exit;;
+      --workflow) WORKFLOW="$2"; shift;;
+      --img-grp) IMAGES_GRP="$2"; shift;;
+      --ocr-grp) RESULT_GRP="$2"; shift;;
+      --pages) PAGES="$2"; shift;;
+      --url-prefix) URL_PREFIX="$2"; shift;;
+      *) METS_PATH="$1";
+         PROCESS_ID=$(ocrd workspace -m "$METS_PATH" get-id)
+         PROCESS_DIR=$(dirname "$METS_PATH");
+         break;;
+    esac
+    shift
+  done
+  if (($#>1)); then
+    logger -p user.error -t $TASK "invalid extra arguments $*"
+    exit 1
+  fi
+}
+
 # initialize variables, create ord-d work directory and exit if something is missing
 init() {
   trap logerr ERR
@@ -87,6 +145,8 @@ init() {
   case $TASK in
     *for_production.sh)
       parse_args_for_production "$@";;
+    *for_presentation.sh)
+      parse_args_for_presentation "$@";;
     *)
       logger -p user.error -t $TASK "unknown scenario $TASK"
       exit 1
@@ -156,8 +216,15 @@ ocrd_import_workdir() {
   echo 'echo $$ > ocrd.pid'
 }
 
+ocrd_enter_workdir() {
+  echo "if test -f '$REMOTEDIR/mets.xml'; then OV=--overwrite; else OV=; fi"
+  echo "cd '$REMOTEDIR'"
+  echo 'echo $$ > ocrd.pid'
+}
+
 ocrd_process_workflow() {
   echo -n 'ocrd process $OV '
+  if test -n "${PAGES:-}"; then echo -n "-g $PAGES "; fi
   ocrd_format_workflow
 }
 
@@ -184,6 +251,32 @@ pre_process_to_workdir() {
     rsync -T /tmp -av "$PROCESS_DIR/$IMAGES_SUBDIR/" "$WORKDIR"
   else
     cp -vr --reflink=auto "$PROCESS_DIR/$IMAGES_SUBDIR" "$WORKDIR"
+  fi
+}
+
+pre_clone_to_workdir() {
+  # copy the METS and its directory controlled by Kitodo.Presentation
+  # to the transient directory controlled by the Manager
+  if test -f "$WORKDIR/mets.xml"; then
+    # already a workspace - repeated run
+    # there is no command for METS synchronization,
+    # so just check roughly
+    # (also fails if either side is not a valid METS)
+    diff -u <(ocrd workspace -m "$METS_PATH" list-page) <(ocrd workspace -d "$WORKDIR" list-page)
+  else
+    # we cannot use ocrd workspace clone, because it does not offer copying local files
+    # (only download all remote or download nothing)
+    cp -v "$METS_PATH" "$WORKDIR"/mets.xml
+    rsync -T /tmp --exclude=$(basename "$METS_PATH") -av "$(dirname "$METS_PATH")"/ "$WORKDIR"
+    # now rename the input file grp to the OCR-D default
+    # (cannot use ocrd workspace rename-group due to core#913)
+    #ocrd workspace -d "$WORKDIR" rename-group $IMAGES_GRP OCR-D-IMG
+    xmlstarlet ed -L -N mods=http://www.loc.gov/mods/v3 -N mets=http://www.loc.gov/METS/ -N xlink=http://www.w3.org/1999/xlink \
+               -u "/mets:mets/mets:fileSec/mets:fileGrp[@USE='$IMAGES_GRP']/@USE" -v OCR-D-IMG "$WORKDIR/mets.xml"
+    # now remove the output file grp, if it exists
+    ocrd workspace -d "$WORKDIR" remove-group -fr $RESULT_GRP
+    # workaround for core#485
+    ocrd workspace -d "$WORKDIR" remove -f FULLDOWNLOAD
   fi
 }
 
@@ -223,6 +316,26 @@ post_process_to_procdir() {
     basename="${page2base[$page]}"; extension=${path##*.}
     cp -v "$WORKDIR/$path" "$PROCESS_DIR/$RESULT_SUBDIR/$basename.$extension"
   done < <(ocrd workspace -d "$WORKDIR" find -G $ocrgrp -k pageId -k local_filename)
+}
+
+post_process_to_mets() {
+ # use fileGrp of newest ALTO file as single result
+  lastpage=$(ocrd workspace -d "$WORKDIR" \
+                  list-page | tail -1)
+  ocrgrp=$(ocrd workspace -d "$WORKDIR" \
+                find -m "//(application/alto[+]xml|text/xml)" -g ${PAGES:-$lastpage} -k fileGrp | tail -1)
+  # extract text result
+  mkdir -p "$PROCESS_DIR/$RESULT_GRP"
+  while read page path file; do
+    # remove any existing files for this page
+    ocrd workspace -m "$METS_PATH" remove -f $(ocrd workspace -m "$METS_PATH" find -G $RESULT_GRP -g $page -k ID)
+    # copy and reference new file for this page
+    cp -v "$WORKDIR/$path" "$PROCESS_DIR/$RESULT_GRP/"
+    fname="$(basename "$path")"
+    ocrd workspace -m "$METS_PATH" add -C -G $RESULT_GRP -i $file -m application/alto+xml -g $page "$RESULT_GRP/$fname"
+  done < <(ocrd workspace -d "$WORKDIR" \
+                find -G $ocrgrp -m "//(application/alto[+]xml|text/xml)" -g ${PAGES:-//.*} \
+                -k pageId -k local_filename -k ID)
 }
 
 close_task() {

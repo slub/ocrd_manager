@@ -29,7 +29,8 @@ RUN apt-get update && \
     rsync \
     openjdk-11-jre-headless \
     openssh-server \
-    openssh-client && \
+    openssh-client \
+    xmlstarlet && \
     apt-get clean
 
 # configure writing to ocrd.log for profiling
