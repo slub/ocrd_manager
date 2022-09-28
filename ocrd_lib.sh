@@ -152,23 +152,21 @@ post_validate_workdir() {
   ocrd workspace -d "$WORKDIR" validate -s mets_unique_identifier -s mets_file_group_names -s pixel_density
 }
 
-post_process_to_ocrdir() {
+post_process_to_procdir() {
+  imggrp=OCR-D-IMG
   # use last fileGrp as single result
   ocrgrp=$(ocrd workspace -d "$WORKDIR" list-group | tail -1)
   # map and copy to Kitodo filename conventions
   mkdir -p "$PROCESS_DIR/ocr/alto"
-  ocrd workspace -d "$WORKDIR" find -G $ocrgrp -k pageId -k local_filename |
-    {
-      i=0
-      while read page path; do
-        # FIXME: use the same basename as the input,
-        # i.e. basename-pageId mapping instead of counting from 1
-        let i+=1 || true
-        basename=$(printf "%08d\n" $i)
-        extension=${path##*.}
-        cp -v "$WORKDIR/$path" "$PROCESS_DIR/ocr/alto/$basename.$extension"
-      done
-    }
+  # use the same basename as the input image
+  declare -A page2base
+  while read page path; do
+    page2base["$page"]="$(basename ${path%.*})"
+  done < <(ocrd workspace -d "$WORKDIR" find -G $imggrp -k pageId -k local_filename)
+  while read page path; do
+    basename="${page2base[$page]}"; extension=${path##*.}
+    cp -v "$WORKDIR/$path" "$PROCESS_DIR/ocr/alto/$basename.$extension"
+  done < <(ocrd workspace -d "$WORKDIR" find -G $ocrgrp -k pageId -k local_filename)
 }
 
 close_task() {

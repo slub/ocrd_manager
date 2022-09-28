@@ -43,7 +43,7 @@ init "$@"
 
   post_validate_workdir
 
-  post_process_to_ocrdir
+  post_process_to_procdir
 
   close_task
 
