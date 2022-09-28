@@ -9,37 +9,91 @@ TASK=$(basename $0)
 logerr() {
   logger -p user.info -t $TASK "terminating with error \$?=$? from ${BASH_COMMAND} on line $(caller)"
 }
+
+parse_args_for_production() {
+  LANGUAGE=
+  SCRIPT=
+  PROCESS_ID=
+  TASK_ID=
+  WORKFLOW=ocr-workflow-default.sh
+  IMAGES_SUBDIR=images
+  RESULT_SUBDIR=ocr/alto
+  while (($#)); do
+    case "$1" in
+      --help|-h) cat <<EOF
+SYNOPSIS:
+
+$0 [OPTIONS] DIRECTORY
+
+where OPTIONS can be any/all of:
+ --lang LANGUAGE    overall language of the material to process via OCR
+ --script SCRIPT    overall script of the material to process via OCR
+ --workflow FILE    workflow file to use for processing, default:
+                    $WORKFLOW
+ --img-subdir IMG   name of the subdirectory to read images from, default:
+                    $IMAGES_SUBDIR
+ --ocr-subdir OCR   name of the subdirectory to write OCR results to, default:
+                    $RESULT_SUBDIR
+ --proc-id ID       process ID to communicate in ActiveMQ callback
+ --task-id ID       task ID to communicate in ActiveMQ callback
+ --help             show this message and exit
+
+and DIRECTORY is the local path to process. The script will import
+the images from DIRECTORY/IMG into a new (temporary) METS and
+transfer this to the Controller for processing. After resyncing back
+to the Manager, it will then extract OCR results and export them to
+DIRECTORY/OCR.
+
+If ActiveMQ is used, the script will exit directly after initialization,
+and run processing in the background. Completion will then be signalled
+via ActiveMQ network protocol (using the proc and task ID as message).
+
+ENVIRONMENT VARIABLES:
+
+ CONTROLLER: host name and port of OCR-D Controller for processing
+ ACTIVEMQ: URL of ActiveMQ server for result callback (optional)
+ ACTIVEMQ_CLIENT: path to ActiveMQ client library JAR file (optional)
+EOF
+                 exit;;
+      --lang) LANGUAGE="$2"; shift;;
+      --script) SCRIPT="$2"; shift;;
+      --workflow) WORKFLOW="$2"; shift;;
+      --img-subdir) IMAGES_SUBDIR="$2"; shift;;
+      --ocr-subdir) RESULT_SUBDIR="$2"; shift;;
+      --proc-id) PROCESS_ID="$2"; shift;;
+      --task-id) TASK_ID="$2"; shift;;
+      *) PROCESS_DIR="$1";
+         break;;
+    esac
+    shift
+  done
+  if (($#>1)); then
+    logger -p user.error -t $TASK "invalid extra arguments $*"
+    exit 1
+  fi
+}
+
 # initialize variables, create ord-d work directory and exit if something is missing
-# args:
-# 1. process ID
-# 2. task ID
-# 3. process dir path
-# 4. language
-# 5. script
-# 6. async (default true)
-# 7. workflow name (default preinstalled ocr-workflow-default.sh)
-# 8. images dir path under process dir (default images)
-# vars:
-# - CONTROLLER: host name and port of ocrd_controller for processing
 init() {
   trap logerr ERR
 
-  logger -p user.info -t $TASK "ocr_init initialize variables and directory structure"
   PID=$$
-  PROCESS_ID=$1
-  TASK_ID=$2
-  PROCESS_DIR="$3"
-  LANGUAGE="$4"
-  SCRIPT="$5"
-  ASYNC=${6:-true}
-  WORKFLOW="${7:-ocr-workflow-default.sh}"
-  PROCESS_IMAGES_DIR="${8:-images}"
 
-  logger -p user.notice -t $TASK "running with $* CONTROLLER=$CONTROLLER"
   cd /data
 
+  logger -p user.info -t $TASK "ocr_init initialize variables and directory structure"
+  logger -p user.notice -t $TASK "running with $* CONTROLLER=${CONTROLLER:-} ACTIVEMQ=${ACTIVEMQ:-}"
+
+  case $TASK in
+    *for_production.sh)
+      parse_args_for_production "$@";;
+    *)
+      logger -p user.error -t $TASK "unknown scenario $TASK"
+      exit 1
+  esac
+
   if ! test -d "$PROCESS_DIR"; then
-    logger -p user.error -t $TASK "invalid process directory '$PROCESS_DIR'"
+    logger -p user.error -t $TASK "invalid input directory '$PROCESS_DIR'"
     exit 2
   fi
 
@@ -127,9 +181,9 @@ pre_process_to_workdir() {
   #  or the same share twice, which means zero-cost copying).
   if test -f "$WORKDIR/mets.xml"; then
     # already a workspace - repeated run
-    rsync -T /tmp -av "$PROCESS_DIR/$PROCESS_IMAGES_DIR/" "$WORKDIR"
+    rsync -T /tmp -av "$PROCESS_DIR/$IMAGES_SUBDIR/" "$WORKDIR"
   else
-    cp -vr --reflink=auto "$PROCESS_DIR/$PROCESS_IMAGES_DIR" "$WORKDIR"
+    cp -vr --reflink=auto "$PROCESS_DIR/$IMAGES_SUBDIR" "$WORKDIR"
   fi
 }
 
@@ -159,7 +213,7 @@ post_process_to_procdir() {
   # use last fileGrp as single result
   ocrgrp=$(ocrd workspace -d "$WORKDIR" list-group | tail -1)
   # map and copy to Kitodo filename conventions
-  mkdir -p "$PROCESS_DIR/ocr/alto"
+  mkdir -p "$PROCESS_DIR/$RESULT_SUBDIR"
   # use the same basename as the input image
   declare -A page2base
   while read page path; do
@@ -167,12 +221,12 @@ post_process_to_procdir() {
   done < <(ocrd workspace -d "$WORKDIR" find -G $imggrp -k pageId -k local_filename)
   while read page path; do
     basename="${page2base[$page]}"; extension=${path##*.}
-    cp -v "$WORKDIR/$path" "$PROCESS_DIR/ocr/alto/$basename.$extension"
+    cp -v "$WORKDIR/$path" "$PROCESS_DIR/$RESULT_SUBDIR/$basename.$extension"
   done < <(ocrd workspace -d "$WORKDIR" find -G $ocrgrp -k pageId -k local_filename)
 }
 
 close_task() {
-  if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT"; then
+  if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT" -a -n "$TASK_ID" -a -n "$PROCESS_ID"; then
     java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "KitodoProduction.FinalizeStep.Queue" $TASK_ID $PROCESS_ID
   fi
   logret # communicate retval 0
@@ -180,7 +234,7 @@ close_task() {
 
 # exit in async or sync mode
 close() {
-  if test "$ASYNC" = true; then
+  if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT" -a -n "$TASK_ID" -a -n "$PROCESS_ID"; then
     logger -p user.info -t $TASK "ocr_exit in async mode - immediate termination of the script"
     # prevent any RETVAL from being written yet
     trap - EXIT
