@@ -32,9 +32,10 @@
                 let main = document.getElementById("main")
                 const iframe = document.createElement("iframe");
                 iframe.src = "http://" + host + ":" + port;
+                iframe.onload = function() { main.getElementsByClassName("loader-wrapper")[0].remove(); iframe.classList.remove("is-hidden"); };
                 iframe.frameBorder = 0;
+                iframe.classList.add("is-hidden")
                 main.appendChild(iframe);
-                main.getElementsByClassName("loader-wrapper")[0].remove();
             } else {
               setTimeout(function() {
                 checkBrowserAndAddIframe(host, port, sessionId);
