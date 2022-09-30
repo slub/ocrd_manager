@@ -1,15 +1,13 @@
 import os
 import subprocess
 
-import sys
-
 from datetime import datetime, timedelta
 from pathlib import Path
 
 from dotenv import dotenv_values
 
 from flask import (
-    Blueprint, render_template, current_app
+    Blueprint, render_template
 )
 
 bp = Blueprint('job', __name__)
