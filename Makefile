@@ -1,5 +1,5 @@
-TAGNAME ?= bertsky/ocrd_manager
-TAGNAME_MONITOR ?= bertsky/ocrd_monitor
+TAGNAME ?= markusweigelt/ocrd_manager
+TAGNAME_MONITOR ?= markusweigelt/ocrd_monitor
 SHELL = /bin/bash
 
 build:
@@ -53,7 +53,7 @@ UMASK ?= 0002
 PORT ?= 9022
 NETWORK ?= bridge
 CONTROLLER ?= $(shell dig +short $$HOSTNAME):8022
-ACTIVEMQ ?= $(shell dig +short $$HOSTNAME):61616
+#ACTIVEMQ ?= $(shell dig +short $$HOSTNAME):61616
 run: $(DATA)
 	docker run -d --rm \
 	-p $(PORT):22 \
@@ -75,15 +75,37 @@ run-monitor:
 	-v $(DATA):/data \
 	$(TAGNAME_MONITOR)
 
-$(DATA)/testdata:
+$(DATA)/testdata-production:
 	mkdir -p $@/images
 	for page in {00000009..00000014}; do \
 	  wget -P $@/images https://digital.slub-dresden.de/data/kitodo/LankDres_1760234508/LankDres_1760234508_tif/jpegs/$$page.tif.original.jpg; \
 	done
 
-test: $(DATA)/testdata
-	ssh -Tn -p $(PORT) ocrd@localhost for_production.sh 1 3 testdata deu Fraktur ocr.sh
-	test -d $</ocr/alto
-	test -s $</ocr/alto/00000001.xml
+$(DATA)/testdata-presentation:
+	mkdir -p $@
+	wget -O $@/mets.xml https://digital.slub-dresden.de/data/kitodo/LankDres_1760234508/LankDres_1760234508_mets.xml
 
-.PHONY: build build-monitor run run-monitor help test
+test: test-production test-presentation
+
+# run synchronous (without ActiveMQ)
+test-production: $(DATA)/testdata-production
+ifeq ($(NETWORK),bridge)
+	ssh -Tn -p $(PORT) ocrd@localhost for_production.sh --proc-id 1 --lang deu --script Fraktur $(<F)
+else
+	docker exec -t -u ocrd `docker container ls -qf name=ocrd-manager` for_production.sh --proc-id 1 --lang deu --script Fraktur $(<F)
+endif
+	test -d $</ocr/alto
+	test -s $</ocr/alto/00000009.tif.original.xml
+
+test-presentation: $(DATA)/testdata-presentation
+ifeq ($(NETWORK),bridge)
+	ssh -Tn -p $(PORT) ocrd@localhost for_presentation.sh --pages PHYS_0017..PHYS_0021 --img-grp ORIGINAL $(<F)/mets.xml
+else
+	docker exec -t -u ocrd `docker container ls -qf name=ocrd-manager` for_presentation.sh --pages PHYS_0017..PHYS_0021 --img-grp ORIGINAL $(<F)/mets.xml
+endif
+	diff -u <(docker run --rm -v $(DATA):/data $(TAGNAME) ocrd workspace -d $(<F) find -G FULLTEXT -g PHYS_0017..PHYS_0021) <(for file in FULLTEXT/FULLTEXT_00{17..21}.xml; do echo $$file; done)
+
+clean:
+	$(RM) -r $(DATA)/testdata* $(DATA)/ocr-d/testdata*
+
+.PHONY: build build-monitor run run-monitor help test test-production test-presentation clean

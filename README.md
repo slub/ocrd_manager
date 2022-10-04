@@ -224,3 +224,6 @@ for a round-trip:
 
 This will download sample data and run the default workflow on them.
 
+(If the Manager has been started externally already, make sure to pass the correct value
+ for the `NETWORK` variable – the makefile will then attempt to use `docker exec` instead of
+ `ssh ocrd@localhost` to connect.)
