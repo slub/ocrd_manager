@@ -10,6 +10,64 @@
 set -Eeu
 set -o pipefail
 
+parse_args() {
+  LANGUAGE=
+  SCRIPT=
+  PROCESS_ID=
+  TASK_ID=
+  WORKFLOW=ocr-workflow-default.sh
+  PAGES=
+  IMAGES_GRP=DEFAULT
+  RESULT_GRP=FULLTEXT
+  URL_PREFIX=
+  while (($#)); do
+    case "$1" in
+      --help|-h) cat <<EOF
+SYNOPSIS:
+
+$0 [OPTIONS] METS
+
+where OPTIONS can be any/all of:
+ --workflow FILE    workflow file to use for processing, default:
+                    $WORKFLOW
+ --pages RANGE      selection of physical page range to process
+ --img-grp GRP      fileGrp to read input images from, default:
+                    $IMAGES_GRP
+ --ocr-grp GRP      fileGrp to write output OCR text to, default:
+                    $RESULT_GRP
+ --url-prefix URL   convert result text file refs from local to URL
+                    and prefix them
+ --help             show this message and exit
+
+and METS is the path of the METS file to process. The script will copy
+the METS into a new (temporary) workspace and transfer this to the
+Controller for processing. After resyncing back, it will then extract
+OCR results and copy them to METS (adding file references to the file
+and copying files to the parent directory).
+
+ENVIRONMENT VARIABLES:
+
+ CONTROLLER: host name and port of OCR-D Controller for processing
+EOF
+                 exit;;
+      --workflow) WORKFLOW="$2"; shift;;
+      --img-grp) IMAGES_GRP="$2"; shift;;
+      --ocr-grp) RESULT_GRP="$2"; shift;;
+      --pages) PAGES="$2"; shift;;
+      --url-prefix) URL_PREFIX="$2"; shift;;
+      *) METS_PATH="$1";
+         PROCESS_ID=$(ocrd workspace -m "$METS_PATH" get-id)
+         PROCESS_DIR=$(dirname "$METS_PATH");
+         break;;
+    esac
+    shift
+  done
+  if (($#>1)); then
+    logger -p user.error -t $TASK "invalid extra arguments $*"
+    exit 1
+  fi
+}
+
 source ocrd_lib.sh
 
 init "$@"

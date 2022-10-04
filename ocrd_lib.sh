@@ -10,127 +10,6 @@ logerr() {
   logger -p user.info -t $TASK "terminating with error \$?=$? from ${BASH_COMMAND} on line $(caller)"
 }
 
-parse_args_for_production() {
-  LANGUAGE=
-  SCRIPT=
-  PROCESS_ID=
-  TASK_ID=
-  WORKFLOW=ocr-workflow-default.sh
-  IMAGES_SUBDIR=images
-  RESULT_SUBDIR=ocr/alto
-  while (($#)); do
-    case "$1" in
-      --help|-h) cat <<EOF
-SYNOPSIS:
-
-$0 [OPTIONS] DIRECTORY
-
-where OPTIONS can be any/all of:
- --lang LANGUAGE    overall language of the material to process via OCR
- --script SCRIPT    overall script of the material to process via OCR
- --workflow FILE    workflow file to use for processing, default:
-                    $WORKFLOW
- --img-subdir IMG   name of the subdirectory to read images from, default:
-                    $IMAGES_SUBDIR
- --ocr-subdir OCR   name of the subdirectory to write OCR results to, default:
-                    $RESULT_SUBDIR
- --proc-id ID       process ID to communicate in ActiveMQ callback
- --task-id ID       task ID to communicate in ActiveMQ callback
- --help             show this message and exit
-
-and DIRECTORY is the local path to process. The script will import
-the images from DIRECTORY/IMG into a new (temporary) METS and
-transfer this to the Controller for processing. After resyncing back
-to the Manager, it will then extract OCR results and export them to
-DIRECTORY/OCR.
-
-If ActiveMQ is used, the script will exit directly after initialization,
-and run processing in the background. Completion will then be signalled
-via ActiveMQ network protocol (using the proc and task ID as message).
-
-ENVIRONMENT VARIABLES:
-
- CONTROLLER: host name and port of OCR-D Controller for processing
- ACTIVEMQ: URL of ActiveMQ server for result callback (optional)
- ACTIVEMQ_CLIENT: path to ActiveMQ client library JAR file (optional)
-EOF
-                 exit;;
-      --lang) LANGUAGE="$2"; shift;;
-      --script) SCRIPT="$2"; shift;;
-      --workflow) WORKFLOW="$2"; shift;;
-      --img-subdir) IMAGES_SUBDIR="$2"; shift;;
-      --ocr-subdir) RESULT_SUBDIR="$2"; shift;;
-      --proc-id) PROCESS_ID="$2"; shift;;
-      --task-id) TASK_ID="$2"; shift;;
-      *) PROCESS_DIR="$1";
-         break;;
-    esac
-    shift
-  done
-  if (($#>1)); then
-    logger -p user.error -t $TASK "invalid extra arguments $*"
-    exit 1
-  fi
-}
-
-parse_args_for_presentation() {
-  LANGUAGE=
-  SCRIPT=
-  PROCESS_ID=
-  TASK_ID=
-  WORKFLOW=ocr-workflow-default.sh
-  PAGES=
-  IMAGES_GRP=DEFAULT
-  RESULT_GRP=FULLTEXT
-  URL_PREFIX=
-  while (($#)); do
-    case "$1" in
-      --help|-h) cat <<EOF
-SYNOPSIS:
-
-$0 [OPTIONS] METS
-
-where OPTIONS can be any/all of:
- --workflow FILE    workflow file to use for processing, default:
-                    $WORKFLOW
- --pages RANGE      selection of physical page range to process
- --img-grp GRP      fileGrp to read input images from, default:
-                    $IMAGES_GRP
- --ocr-grp GRP      fileGrp to write output OCR text to, default:
-                    $RESULT_GRP
- --url-prefix URL   convert result text file refs from local to URL
-                    and prefix them
- --help             show this message and exit
-
-and METS is the path of the METS file to process. The script will copy
-the METS into a new (temporary) workspace and transfer this to the
-Controller for processing. After resyncing back, it will then extract
-OCR results and copy them to METS (adding file references to the file
-and copying files to the parent directory).
-
-ENVIRONMENT VARIABLES:
-
- CONTROLLER: host name and port of OCR-D Controller for processing
-EOF
-                 exit;;
-      --workflow) WORKFLOW="$2"; shift;;
-      --img-grp) IMAGES_GRP="$2"; shift;;
-      --ocr-grp) RESULT_GRP="$2"; shift;;
-      --pages) PAGES="$2"; shift;;
-      --url-prefix) URL_PREFIX="$2"; shift;;
-      *) METS_PATH="$1";
-         PROCESS_ID=$(ocrd workspace -m "$METS_PATH" get-id)
-         PROCESS_DIR=$(dirname "$METS_PATH");
-         break;;
-    esac
-    shift
-  done
-  if (($#>1)); then
-    logger -p user.error -t $TASK "invalid extra arguments $*"
-    exit 1
-  fi
-}
-
 # initialize variables, create ord-d work directory and exit if something is missing
 init() {
   trap logerr ERR
@@ -142,15 +21,8 @@ init() {
   logger -p user.info -t $TASK "ocr_init initialize variables and directory structure"
   logger -p user.notice -t $TASK "running with $* CONTROLLER=${CONTROLLER:-} ACTIVEMQ=${ACTIVEMQ:-}"
 
-  case $TASK in
-    *for_production.sh)
-      parse_args_for_production "$@";;
-    *for_presentation.sh)
-      parse_args_for_presentation "$@";;
-    *)
-      logger -p user.error -t $TASK "unknown scenario $TASK"
-      exit 1
-  esac
+  # to be defined by caller
+  parse_args "$@"
 
   if ! test -d "$PROCESS_DIR"; then
     logger -p user.error -t $TASK "invalid input directory '$PROCESS_DIR'"
