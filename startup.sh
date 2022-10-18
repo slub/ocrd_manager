@@ -13,6 +13,13 @@ if [ -n "$CONTROLLER" ]; then
     ssh-keygen -R $CONTROLLER_IP -f /etc/ssh/ssh_known_hosts
   fi
   ssh-keyscan -H -p ${CONTROLLER_PORT:-22} $CONTROLLER_HOST,$CONTROLLER_IP >>/etc/ssh/ssh_known_hosts
+  # tilde syntax for HOME dir in ssh_config does not work for root for some reason
+  cat <<EOF >> /etc/ssh/ssh_config
+IdentityFile /.ssh/id_rsa
+IdentityFile /.ssh/id_dsa
+IdentityFile /.ssh/id_ecdsa
+IdentityFile /.ssh/id_ed25519
+EOF
 fi
 
 # turn off the login banner
