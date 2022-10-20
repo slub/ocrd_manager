@@ -1,0 +1,33 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Build the OCR-D Manager image and deploy to GitHub Container Repository
+      run: |
+        docker build . --tag ghcr.io/markusweigelt/ocrd_manager:latest --build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") --build-arg VCS_REF=$(git rev-parse --short HEAD)
+        docker push ghcr.io/markusweigelt/ocrd_manager:latest
+
+    - name: Build the OCR-D Monitor image and deploy to GitHub Container Repository
+      run: |
+        docker build ./ocrd_monitor --tag ghcr.io/markusweigelt/ocrd_monitor:latest --build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") --build-arg VCS_REF=$(git rev-parse --short HEAD)
+        docker push ghcr.io/markusweigelt/ocrd_monitor:latest
