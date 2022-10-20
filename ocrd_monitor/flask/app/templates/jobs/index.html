@@ -29,7 +29,7 @@
     <tr>
       <td>{{ job.task.id }}</td>
       <td>{{ job.process.id }}</td>
-      <td><a href="{{ url_for('workflow.detail', path=job.workflow.path) }}">{{ job.workflow.name }}</a></td>
+      <td>{% if job.workflow is defined %}<a href="{{ url_for('workflow.detail', path=job.workflow.path) }}">{{ job.workflow.name }}</a>{% endif %}</td>
       <td>{{ job.pid }}</td>
       <td>{{ job.status }}</td>
       <td>{{ job.cpuutil }}</td>

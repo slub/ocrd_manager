@@ -90,7 +90,7 @@ test: test-production test-presentation
 # run synchronous (without ActiveMQ)
 test-production: $(DATA)/testdata-production
 ifeq ($(NETWORK),bridge)
-	ssh -Tn -p $(PORT) ocrd@localhost for_production.sh --proc-id 1 --lang deu --script Fraktur $(<F)
+	ssh -i $(PRIVATE) -Tn -p $(PORT) ocrd@localhost for_production.sh --proc-id 1 --lang deu --script Fraktur $(<F)
 else
 	docker exec -t -u ocrd `docker container ls -qf name=ocrd-manager` for_production.sh --proc-id 1 --lang deu --script Fraktur $(<F)
 endif
@@ -99,13 +99,13 @@ endif
 
 test-presentation: $(DATA)/testdata-presentation
 ifeq ($(NETWORK),bridge)
-	ssh -Tn -p $(PORT) ocrd@localhost for_presentation.sh --pages PHYS_0017..PHYS_0021 --img-grp ORIGINAL $(<F)/mets.xml
+	ssh -i $(PRIVATE) -Tn -p $(PORT) ocrd@localhost for_presentation.sh --pages PHYS_0017..PHYS_0021 --img-grp ORIGINAL $(<F)/mets.xml
 else
 	docker exec -t -u ocrd `docker container ls -qf name=ocrd-manager` for_presentation.sh --pages PHYS_0017..PHYS_0021 --img-grp ORIGINAL $(<F)/mets.xml
 endif
 	diff -u <(docker run --rm -v $(DATA):/data $(TAGNAME) ocrd workspace -d $(<F) find -G FULLTEXT -g PHYS_0017..PHYS_0021) <(for file in FULLTEXT/FULLTEXT_00{17..21}.xml; do echo $$file; done)
 
-clean:
+clean clean-testdata:
 	$(RM) -r $(DATA)/testdata* $(DATA)/ocr-d/testdata*
 
-.PHONY: build build-monitor run run-monitor help test test-production test-presentation clean
+.PHONY: build build-monitor run run-monitor help test test-production test-presentation clean clean-testdata
