@@ -30,11 +30,6 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Build the OCR-D Manager image and deploy to GitHub Container Repository
-      run: |
-        docker build . --tag ghcr.io/markusweigelt/ocrd_manager:latest --build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") --build-arg VCS_REF=$(git rev-parse --short HEAD)
-        docker push ghcr.io/markusweigelt/ocrd_manager:latest
-        
-    - name: Build the OCR-D Manager image from module and deploy to GitHub Container Repository
       uses: docker/build-push-action@v3
       with:
         context: .
@@ -46,7 +41,7 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max  
     
-    - name: Build the OCR-D Monitor image from module and deploy to GitHub Container Repository
+    - name: Build the OCR-D Monitor image and deploy to GitHub Container Repository
       uses: docker/build-push-action@v3
       with:
         context: ./ocrd_monitor
