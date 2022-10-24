@@ -1,5 +1,5 @@
-TAGNAME ?= markusweigelt/ocrd_manager
-TAGNAME_MONITOR ?= markusweigelt/ocrd_monitor
+TAGNAME ?= ghcr.io/slub/ocrd_manager
+TAGNAME_MONITOR ?= ghcr.io/slub/ocrd_monitor
 SHELL = /bin/bash
 
 build:
