@@ -4,7 +4,7 @@ OCR-D Manager is a server that mediates between [Kitodo](https://github.com/kito
 
 Specifically, it gets called by [Kitodo.Production](https://github.com/kitodo/kitodo-production) or [Kitodo.Presentation](https://github.com/kitodo-presentation) to handle OCR for a document, and in turn calls the [OCR-D Controller](https://github.com/bertsky/ocrd_controller) for workflow processing.
 
-For an integration as a **service container**, orchestrated with other containers (Kitodo+Controller), see [this meta-repo](https://github.com/markusweigelt/kitodo_production_ocrd).
+For an integration as a **service container**, orchestrated with other containers (Kitodo+Controller), see [this meta-repo](https://github.com/slub/kitodo_production_ocrd).
 
 OCR-D Manager is responsible for
 - data transfer from Kitodo to Manager to Controller and back,
@@ -33,7 +33,7 @@ It is currently implemented as SSH login server with an installation of [OCR-D c
 
 Build or pull the Docker image:
 
-    make build # or docker pull markusweigelt/ocrd_manager
+    make build # or docker pull ghcr.io/slub/ocrd_manager
 
 ### Starting and mounting
 

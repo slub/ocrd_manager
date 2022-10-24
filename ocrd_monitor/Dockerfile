@@ -5,7 +5,7 @@ ARG BUILD_DATE
 LABEL \
     maintainer="https://slub-dresden.de" \
     org.label-schema.vcs-ref=$VCS_REF \
-    org.label-schema.vcs-url="https://github.com/markusweigelt/ocrd_manager/tree/main/ocrd_monitor" \
+    org.label-schema.vcs-url="https://github.com/slub/ocrd_manager/tree/main/ocrd_monitor" \
     org.label-schema.build-date=$BUILD_DATE
 
 RUN apt-get update \
