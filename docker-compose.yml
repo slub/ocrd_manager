@@ -18,8 +18,8 @@ services:
       - "CONTROLLER=${CONTROLLER_HOST}:${CONTROLLER_PORT_SSH}"
       - "ACTIVEMQ=${MQ_HOST}:${MQ_PORT}"
 
-    expose:
-      - "22"
+    ports:
+      - ${MANAGER_PORT_SSH}:22
 
     # must have been started independently:
     # depends_on:
