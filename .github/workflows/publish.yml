@@ -27,6 +27,11 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     
+    - name: Determine build args
+      run: |
+        date -u +"build_date=%Y-%m-%dT%H:%M:%SZ" >> $GITHUB_ENV
+        echo "vcs_ref=`git rev-parse --short HEAD`" >> $GITHUB_ENV
+
     - name: Build the OCR-D Manager image and deploy to GitHub Container Repository
       uses: docker/build-push-action@v3
       with:
@@ -34,8 +39,8 @@ jobs:
         push: true
         tags: ${{ env.REGISTRY_PATH }}/ocrd_manager:latest
         build-args: |
-          BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          VCS_REF=$(git rev-parse --short HEAD)
+          BUILD_DATE=${{ env.build_date }}
+          VCS_REF=${{ env.vcs_ref }}
         cache-from: type=gha
         cache-to: type=gha,mode=max  
     
@@ -46,7 +51,7 @@ jobs:
         push: true
         tags: ${{ env.REGISTRY_PATH }}/ocrd_monitor:latest
         build-args: |
-          BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          VCS_REF=$(git rev-parse --short HEAD)
+          BUILD_DATE=${{ env.build_date }}
+          VCS_REF=${{ env.vcs_ref }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
