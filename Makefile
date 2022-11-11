@@ -103,7 +103,7 @@ ifeq ($(NETWORK),bridge)
 else
 	docker exec -t -u ocrd `docker container ls -qf name=ocrd-manager` for_presentation.sh --pages PHYS_0017..PHYS_0021 --img-grp ORIGINAL $(<F)/mets.xml
 endif
-	diff -u <(docker run --rm -v $(DATA):/data $(TAGNAME) ocrd workspace -d $(<F) find -G FULLTEXT -g PHYS_0017..PHYS_0021) <(for file in FULLTEXT/FULLTEXT_00{17..21}.xml; do echo $$file; done)
+	diff -u <(docker run --rm -v $(DATA):/data $(TAGNAME) ocrd workspace -d $(<F) find -G FULLTEXT -g PHYS_0017..PHYS_0021) <(for file in FULLTEXT/FULLTEXT_PHYS_00{17..21}.xml; do echo $$file; done)
 
 clean clean-testdata:
 	$(RM) -r $(DATA)/testdata* $(DATA)/ocr-d/testdata*
