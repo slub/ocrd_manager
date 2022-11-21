@@ -240,7 +240,7 @@ itself will not print any. See [above](#logging))
  for the `NETWORK` variable – the makefile will then attempt to use `docker exec` instead of
  `ssh ocrd@localhost` to connect.)
 
-To clena up the results, use:
+To clean up the results, use:
 
     make clean-testdata
 
