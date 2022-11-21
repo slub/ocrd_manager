@@ -1,19 +1,27 @@
 # OCR-D Manager
 
-OCR-D Manager is a server that mediates between [Kitodo](https://github.com/kitodo) and [OCR-D](https://ocr-d.de). It resides on the site of the Kitodo installation (so the actual OCR server can be managed independently) but runs in its own container (so Kitodo can be managed independently).
+OCR-D Manager is a server that mediates between [Kitodo](https://github.com/kitodo)
+and [OCR-D](https://ocr-d.de). It resides on the site of the Kitodo installation
+(so the actual OCR server can be managed independently) but runs in its own container
+(so Kitodo can be managed independently).
 
-Specifically, it gets called by [Kitodo.Production](https://github.com/kitodo/kitodo-production) or [Kitodo.Presentation](https://github.com/kitodo-presentation) to handle OCR for a document, and in turn calls the [OCR-D Controller](https://github.com/slub/ocrd_controller) for workflow processing.
+Specifically, it gets called by [Kitodo.Production](https://github.com/kitodo/kitodo-production)
+or [Kitodo.Presentation](https://github.com/kitodo-presentation) to handle OCR for a document,
+and in turn calls the [OCR-D Controller](https://github.com/slub/ocrd_controller) for workflow processing.
 
-For an integration as a **service container**, orchestrated with other containers (Kitodo+Controller), see [this meta-repo](https://github.com/slub/ocrd_kitodo).
+For an integration as a **service container**, orchestrated with other containers (Kitodo+Controller),
+see [this meta-repo](https://github.com/slub/ocrd_kitodo).
 
 OCR-D Manager is responsible for
 - data transfer from Kitodo to Manager to Controller and back,
 - delegation to Controller,
 - signalling/reporting,
 - result validation,
-- result extraction (putting ALTO files in the process directory where Kitodo.Production expects them, or updating the METS for Kitodo.Presentation).
+- result extraction (putting ALTO files in the process directory where Kitodo.Production expects them,
+  or updating the METS for Kitodo.Presentation).
 
-It is currently implemented as SSH login server with an installation of [OCR-D core](https://github.com/OCR-D/core) and an SSH client to connect to the Controller.
+It is currently implemented as SSH login server with an installation of [OCR-D core](https://github.com/OCR-D/core)
+and an SSH client to connect to the Controller.
 
  * [Usage](#usage)
    * [Building](#building)
@@ -46,7 +54,7 @@ Then run the container – providing a **host-side directory** for the volume �
 
  * `KEYS`: public key **credentials** for log-in to the manager
  * `PRIVATE`: private key **credentials** for log-in to the controller …
- 
+
 … and (optionally) some **environment variables** …
 
  * `UID`: numerical user identifier to be used by programs in the container  
@@ -72,7 +80,7 @@ Then run the container – providing a **host-side directory** for the volume �
 
 ### General management
 
-Then you can **log in** as user `ocrd` from remote (but let's use `manager` in the following – 
+Then you can **log in** as user `ocrd` from remote (but let's use `manager` in the following –
 without loss of generality):
 
     ssh -p 9022 ocrd@manager bash -i
@@ -197,12 +205,14 @@ All logs are accumulated on standard output, which can be inspected via Docker:
 
     docker logs ocrd_manager
 
+Logs for all services can also be viewed on the [Monitor web server](#monitoring).
+
 ### Monitoring
 
 The repo also provides a web server featuring
 - (intermediate) results for all current document workspaces (via [OCR-D Browser](https://github.com/hnesk/browse-ocrd))
-- a log viewer
-- a job viewer
+- a live log viewer
+- a live job viewer
 - :construction: workflow editor
 
 Build or pull the Docker image:
@@ -223,7 +233,14 @@ for a round-trip:
     make test DATA=/mnt/workspaces
 
 This will download sample data and run the default workflow on them.
+(All logging is still accumulated on the Docker output, so the shell
+itself will not print any. See [above](#logging))
 
 (If the Manager has been started externally already, make sure to pass the correct value
  for the `NETWORK` variable – the makefile will then attempt to use `docker exec` instead of
  `ssh ocrd@localhost` to connect.)
+
+To clean up the results, use:
+
+    make clean-testdata
+
