@@ -27,7 +27,7 @@ services:
       - ${MANAGER_KEY}:/id_rsa
       - shared:/run/lock/ocrd.jobs
 
-  dozzle:
+  ocrd-logview:
     image: amir20/dozzle:latest
     volumes:
       # double slash is mandatory to support windows
