@@ -1,0 +1,15 @@
+{% extends 'base.html.j2' %}
+
+{% block headline %}
+  {% block title %}Workspaces{% endblock %}
+{% endblock %}
+{% block content %}
+    <ul>
+        {% for workspace in workspaces %}
+        <li>
+            <a href="{{ url_for('workspaces.open', workspace=workspace)}}">{{ workspace }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+{% endblock %}

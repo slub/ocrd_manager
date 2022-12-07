@@ -1,0 +1,15 @@
+{% extends 'base.html.j2' %}
+
+{% block headline %}
+{% block title %}OCRD Browser{% endblock %}
+{% endblock %}
+{% block content %}
+<style>
+    iframe {
+        width: 100vw;
+        height: 100vh;
+    }
+</style>
+<p>{{ url_for('workspaces.view', workspace=workspace) }}</p>
+<iframe src="{{ url_for('workspaces.view', workspace=workspace) }}" frameborder="0"></iframe>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'base.html.j2' %}
+
+{% block meta %}
+<meta http-equiv="refresh" content="5" />
+{% endblock %}
+
+{% block headline %}
+{% block title %}Jobs{% endblock %}
+{% endblock %}
+
+{% block content %}
+<h2 class="title">Active Jobs</h2>
+<table id="running-jobs" class="table">
+    <thead>
+        <tr>
+            <th>TASK ID</th>
+            <th>PROCESS ID</th>
+            <th>WORKFLOW</th>
+            <th>PID</th>
+            <th>STATUS</th>
+            <th>% CPU</th>
+            <th>MB RSS</th>
+            <th>DURATION</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for job in running_jobs: %}
+        <tr>
+            <td>{{ job.ocrd_job.kitodo_details.task_id }}</td>
+            <td>{{ job.ocrd_job.kitodo_details.process_id }}</td>
+            <td><a href="#">{{ job.ocrd_job.workflow }}</a></td>
+            <td>{{ job.process_status.pid }}</td>
+            <td>{{ job.process_status.state }}</td>
+            <td>{{ job.process_status.percent_cpu }}</td>
+            <td>{{ job.process_status.memory }}</td>
+            <td>{{ job.process_status.cpu_time }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<h2 class="title">Inactive Jobs</h2>
+<table id="completed-jobs" class="table">
+    <thead>
+        <tr>
+            <th>TASK ID</th>
+            <th>PROCESS ID</th>
+            <th>WORKFLOW</th>
+            <th>RETVAL</th>
+            <th>WORKSPACE</th>
+            <th>LOGS</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for job in completed_jobs: %}
+        <tr>
+            <td>{{ job.kitodo_details.task_id }}</td>
+            <td>{{ job.kitodo_details.process_id }}</td>
+            <td>{% if job.workflow is defined %}<a href="{{ url_for('workflows.detail', path=job.workflow) }}">{{ job.workflow }}</a>{% endif %}</td>
+            <td>{{ job.return_code }} {% if job.return_code == 0 %}(SUCCESS){% else %}(FAILURE){% endif %}</td>
+            <td><a href="{{ url_for('workspaces.open', workspace=job.workdir)}}">{{ job.kitodo_details.processdir.name }}</a></td>
+            <td>
+                <a href="{{ url_for('logs.view', path=job.workdir)}}">ocrd.log</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

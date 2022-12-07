@@ -1,4 +1,4 @@
-FROM python:3.7
+FROM python:3.10
 
 ARG VCS_REF
 ARG BUILD_DATE
@@ -26,7 +26,9 @@ EXPOSE 5000
 VOLUME /data
 
 COPY init.sh /init.sh
-COPY flask /usr/local/ocrd-monitor
+COPY ocrdbrowser /usr/local/ocrd-monitor/ocrdbrowser
+COPY ocrdmonitor /usr/local/ocrd-monitor/ocrdmonitor
+COPY requirements.txt /usr/local/ocrd-monitor/requirements.txt
 
 RUN pip install -r /usr/local/ocrd-monitor/requirements.txt
 

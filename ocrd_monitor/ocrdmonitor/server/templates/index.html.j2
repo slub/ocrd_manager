@@ -1,0 +1,13 @@
+{% extends 'base.html.j2' %}
+
+{% block headline %}
+  {% block title %}Home{% endblock %}
+{% endblock %}
+
+{% block content %}
+  <ul>
+    <li><a href="{{ url_for('workspaces.list') }}">Workspaces</a></li>
+    <li><a href="{{ url_for('jobs') }}">Jobs</a></li>
+    <li><a href="#">Logs</a></li>
+  </ul>
+{% endblock %}
