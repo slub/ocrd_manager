@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-import itertools
 from pathlib import Path
 from typing import Protocol, TypeGuard
 
@@ -71,16 +70,10 @@ def create_jobs(
         running_ocrd_jobs = [job for job in jobs if job.is_running]
         completed_ocrd_jobs = [job for job in jobs if job.is_completed]
 
-        # nested_job_status = [
-        #     process_query(job.pid) for job in running_ocrd_jobs if job.pid is not None
-        # ]
-
-        # flattened_job_status = list(itertools.chain.from_iterable(nested_job_status))
-
-        flattened_job_status = [controller.status_for(job) for job in running_ocrd_jobs]
+        job_status = [controller.status_for(job) for job in running_ocrd_jobs]
         running_jobs = [
             RunningJob(job, process_status)
-            for job, process_status in zip(running_ocrd_jobs, flattened_job_status)
+            for job, process_status in zip(running_ocrd_jobs, job_status)
             if process_status is not None
         ]
 
