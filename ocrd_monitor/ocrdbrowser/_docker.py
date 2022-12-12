@@ -60,7 +60,9 @@ class DockerOcrdBrowserFactory:
         self._containers: list[DockerOcrdBrowser] = []
 
     def __call__(self, owner: str, workspace_path: str) -> OcrdBrowser:
-        container = DockerOcrdBrowser(self._host, Port(self._ports), owner, workspace_path)
+        container = DockerOcrdBrowser(
+            self._host, Port(self._ports), owner, workspace_path
+        )
         self._containers.append(container)
         return container
 

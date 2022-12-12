@@ -56,7 +56,9 @@ class RedirectMap:
 
         return self._instance_or_raise(redirect)
 
-    def _instance_or_raise(self, redirect: WorkspaceRedirect | None) -> WorkspaceRedirect:
+    def _instance_or_raise(
+        self, redirect: WorkspaceRedirect | None
+    ) -> WorkspaceRedirect:
         if redirect is None:
             raise KeyError("No redirect found")
 

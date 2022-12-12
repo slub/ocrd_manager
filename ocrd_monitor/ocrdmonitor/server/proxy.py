@@ -90,6 +90,6 @@ async def _tunnel_one_way(
         source_data = await asyncio.wait_for(source.receive_bytes(), timeout)
         await target.send_bytes(source_data)
     except asyncio.exceptions.TimeoutError:
-        # a timeout is rather common if no data is being sent, 
+        # a timeout is rather common if no data is being sent,
         # so we are simply ignoring this exception
         pass
