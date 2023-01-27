@@ -1,15 +1,11 @@
-from functools import partial
 import logging
 from pathlib import Path
-from types import TracebackType
-from typing import Awaitable, Callable
 
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from ocrdmonitor.sshps import process_status
 from ocrdmonitor.server.index import create_index
 from ocrdmonitor.server.jobs import create_jobs
 from ocrdmonitor.server.logs import create_logs

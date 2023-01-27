@@ -1,9 +1,7 @@
-import re
 import subprocess
 from dataclasses import dataclass
 from datetime import timedelta
 from enum import Enum
-from typing import cast
 
 PS_CMD = "ps -g {} -o pid,state,%cpu,rss,cputime --no-headers"
 
@@ -16,7 +14,7 @@ class ProcessState(Enum):
     UNKNOWN = "?"
 
     def __str__(self) -> str:
-        return self.name
+        return str(self.name)
 
 
 @dataclass(frozen=True)

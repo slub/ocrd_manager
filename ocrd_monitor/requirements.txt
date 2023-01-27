@@ -1,3 +1,4 @@
+pydantic>=1.10.4
 pydantic[dotenv]
 fastapi>=0.85.0
 Jinja2>=3.1.2

@@ -29,16 +29,13 @@ class OcrdController:
         def is_ocrd_job(j: OcrdJob | None) -> TypeGuard[OcrdJob]:
             return j is not None
 
-        return list(
-            filter(
-                is_ocrd_job,
-                [
-                    self._try_parse(job_file.read_text())
-                    for job_file in self._job_dir.iterdir()
-                    if job_file.is_file()
-                ],
-            )
-        )
+        job_candidates = [
+            self._try_parse(job_file.read_text())
+            for job_file in self._job_dir.iterdir()
+            if job_file.is_file()
+        ]
+
+        return list(filter(is_ocrd_job, job_candidates))
 
     def _try_parse(self, job_str: str) -> OcrdJob | None:
         try:
@@ -51,9 +48,10 @@ class OcrdController:
             return None
 
         process_statuses = self._process_query(ocrd_job.pid)
-        return next(
-            (status for status in process_statuses if status.pid == ocrd_job.pid), None
+        matching_statuses = (
+            status for status in process_statuses if status.pid == ocrd_job.pid
         )
+        return next(matching_statuses, None)
 
 
 def create_jobs(

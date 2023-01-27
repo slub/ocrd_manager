@@ -9,7 +9,6 @@ import ocrdbrowser
 import ocrdmonitor.server.proxy as proxy
 from ocrdbrowser import OcrdBrowserFactory, OcrdBrowser, workspace
 from ocrdmonitor.server.redirect import RedirectMap
-from ocrdmonitor.server.settings import OcrdBrowserSettings
 
 
 def create_workspaces(
@@ -23,14 +22,19 @@ def create_workspaces(
 
     @router.get("/", name="workspaces.list")
     def list_workspaces(request: Request) -> Response:
+        spaces = [
+            Path(space).relative_to(workspace_dir)
+            for space in workspace.list_all(workspace_dir)
+        ]
+
         return templates.TemplateResponse(
             "list_workspaces.html.j2",
-            {"request": request, "workspaces": workspace.list_all(workspace_dir)},
+            {"request": request, "workspaces": spaces},
         )
 
     @router.get("/open/{workspace:path}", name="workspaces.open")
     def open_workspace(request: Request, workspace: str) -> Response:
-        workspace_path = Path(workspace)
+        workspace_path = workspace_dir / workspace
 
         session_id = request.cookies.setdefault("session_id", str(uuid.uuid4()))
         response = templates.TemplateResponse(
