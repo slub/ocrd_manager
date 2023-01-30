@@ -22,7 +22,7 @@ class OcrdControllerSettings(BaseModel):
     keyfile: Path = Path.home() / ".ssh" / "id_rsa"
 
     def process_query(self) -> ProcessQuery:
-        return partial(process_status, config=self)
+        return partial(process_status, self)
 
 
 class OcrdBrowserSettings(BaseModel):
