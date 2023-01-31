@@ -55,11 +55,11 @@
         <tr>
             <td>{{ job.kitodo_details.task_id }}</td>
             <td>{{ job.kitodo_details.process_id }}</td>
-            <td>{% if job.workflow is defined %}<a href="{{ url_for('workflows.detail', path=job.workflow) }}">{{ job.workflow }}</a>{% endif %}</td>
+            <td>{% if job.workflow is defined %}<a href="{{ url_for('workflows.detail', path=job.workflow_file) }}">{{ job.workflow }}</a>{% endif %}</td>
             <td>{{ job.return_code }} {% if job.return_code == 0 %}(SUCCESS){% else %}(FAILURE){% endif %}</td>
             <td><a href="{{ url_for('workspaces.open', workspace=job.workdir)}}">{{ job.kitodo_details.processdir.name }}</a></td>
             <td>
-                <a href="{{ url_for('logs.view', path=job.workdir)}}">ocrd.log</a>
+                <a href="{{ url_for('logs.view', path=job.workdir / 'ocrd.log')}}">ocrd.log</a>
             </td>
         </tr>
         {% endfor %}
