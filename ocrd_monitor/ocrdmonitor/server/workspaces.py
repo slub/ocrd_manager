@@ -3,6 +3,7 @@ import uuid
 
 from fastapi import APIRouter, Cookie, Request, Response, WebSocket
 from fastapi.templating import Jinja2Templates
+from requests.exceptions import ConnectionError
 from websockets.typing import Subprotocol
 
 import ocrdbrowser
@@ -44,7 +45,7 @@ def create_workspaces(
         response.set_cookie("session_id", session_id)
 
         browser = _launch_browser(session_id, workspace_path)
-        redirects.add(session_id, workspace_path, browser)
+        redirects.add(session_id, Path(workspace), browser)
 
         return response
 
@@ -53,11 +54,17 @@ def create_workspaces(
     #       which points to the last component with a trailing slash.
     @router.get("/view/{workspace:path}/", name="workspaces.view")
     def workspace_reverse_proxy(
-        workspace: str, session_id: str = Cookie(default=None)
+        request: Request, workspace: str, session_id: str = Cookie(default=None)
     ) -> Response:
         workspace_path = Path(workspace)
         redirect = redirects.get(session_id, workspace_path)
-        return proxy.forward(redirect, str(workspace_path))
+        try:
+            return proxy.forward(redirect, str(workspace_path))
+        except ConnectionError:
+            return templates.TemplateResponse(
+                "view_workspace_failed.html.j2",
+                {"request": request, "workspace": workspace},
+            )
 
     @router.websocket("/view/{workspace:path}/socket", name="workspaces.view.socket")
     async def workspace_socket_proxy(
