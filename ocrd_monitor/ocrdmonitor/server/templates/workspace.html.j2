@@ -10,5 +10,28 @@
         width: 100%;
     }
 </style>
-<iframe src="{{ url_for('workspaces.view', workspace=workspace) }}" frameborder="0"></iframe>
+<script>
+/* 
+NOTE: 
+    This is a workaround to detect when the connection to the Broadway Server is lost on the client side.
+    broadway.js will call the alert function when the connection is lost,
+    therefore we replace it with a custom function to show an error
+*/
+    document.addEventListener("DOMContentLoaded", () => {
+        const main = document.querySelector("#main-content");
+        const browser = document.querySelector("#browser-viewport");
+
+        function replaceIframeWithError(message) {
+            const error = document.createElement("p");
+            error.innerText = "The connection to the ocrd browser was lost";
+            error.classList.add("notification", "is-danger");
+
+            main.removeChild(browser);
+            main.appendChild(error);
+        }
+
+        browser.contentWindow.alert = replaceIframeWithError
+    })
+</script>
+<iframe id="browser-viewport" src="{{ url_for('workspaces.view', workspace=workspace) }}" frameborder="0"></iframe>
 {% endblock %}
