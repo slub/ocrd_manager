@@ -43,7 +43,9 @@ def create_app(settings: Settings) -> FastAPI:
             settings.ocrd_browser.workspace_dir,
         )
     )
-    app.include_router(create_logs(templates))
+    app.include_router(create_logs(
+        templates,
+        settings.ocrd_browser.workspace_dir))
     app.include_router(create_workflows(templates))
 
     return app
