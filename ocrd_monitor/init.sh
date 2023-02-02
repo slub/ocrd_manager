@@ -24,8 +24,8 @@ fi
 # TODO: REMOVE ONCE MAPPING FROM GLOBAL ENV VARS TO MONITOR VARS IS DONE
 export OCRD_BROWSER__MODE=native
 
-# matches WORKDIR from ocrd_lib.sh ? 
-export OCRD_BROWSER__WORKSPACE_DIR=/ocr-d/data
+# matches base path of WORKDIR in ocrd_manager
+export OCRD_BROWSER__WORKSPACE_DIR=/data
 export OCRD_BROWSER__PUBLIC_PORT=8085
 export OCRD_BROWSER__PORT_RANGE="[9000,9100]"
 export OCRD_CONTROLLER__JOB_DIR=/run/lock/ocrd.jobs
