@@ -24,6 +24,8 @@ class OcrdControllerSettings(BaseModel):
     def process_query(self) -> ProcessQuery:
         return partial(process_status, self)
 
+class OcrdLogViewSettings(BaseModel):
+    port: int
 
 class OcrdBrowserSettings(BaseModel):
     workspace_dir: Path
@@ -57,6 +59,7 @@ class OcrdBrowserSettings(BaseModel):
 class Settings(BaseSettings):
     ocrd_browser: OcrdBrowserSettings
     ocrd_controller: OcrdControllerSettings
+    ocrd_logview: OcrdLogViewSettings
 
     class Config:
         env_file: str = ".env"
