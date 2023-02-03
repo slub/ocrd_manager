@@ -1,12 +1,20 @@
+from __future__ import annotations
+
+import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Protocol, TypeGuard
+from typing import Protocol
 
 from fastapi import APIRouter, Request, Response
 from fastapi.templating import Jinja2Templates
 
 from ocrdmonitor.ocrdjob import OcrdJob
 from ocrdmonitor.processstatus import ProcessStatus
+
+if sys.version_info >= (3, 10):
+    from typing import TypeGuard
+else:
+    from typing_extensions import TypeGuard
 
 
 @dataclass

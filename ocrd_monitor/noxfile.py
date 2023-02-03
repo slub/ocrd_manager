@@ -1,7 +1,7 @@
 import nox
 
 
-@nox.session()
+@nox.session(python=("3.9", "3.10", "3.11"))
 def mypy(session: nox.Session) -> None:
     session.install("-r", "requirements.txt")
     session.install("-r", "requirements.dev.txt")
@@ -12,7 +12,7 @@ def mypy(session: nox.Session) -> None:
     session.run("mypy", "--strict", "ocrdbrowser", "ocrdmonitor")
 
 
-@nox.session
+@nox.session(python=("3.9", "3.10", "3.11"))
 def pytest(session: nox.Session) -> None:
     session.install("-r", "requirements.txt")
     session.install("-r", "requirements.dev.txt")

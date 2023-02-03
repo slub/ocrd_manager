@@ -1,11 +1,15 @@
+from __future__ import annotations
+
 import asyncio
 from types import TracebackType
 from typing import Protocol, Sequence, Type, cast
-from requests import request
+
 from fastapi import Response
-from websockets.typing import Subprotocol
+from requests import request
 from websockets import client
 from websockets.legacy.client import WebSocketClientProtocol
+from websockets.typing import Subprotocol
+
 from .redirect import WorkspaceRedirect
 
 

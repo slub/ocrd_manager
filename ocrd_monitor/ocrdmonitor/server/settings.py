@@ -1,15 +1,17 @@
+from __future__ import annotations
+
 import atexit
 from functools import partial
 from pathlib import Path
 from typing import Literal
-
-from pydantic import BaseModel, BaseSettings, validator
 
 from ocrdbrowser import (
     DockerOcrdBrowserFactory,
     OcrdBrowserFactory,
     SubProcessOcrdBrowserFactory,
 )
+from pydantic import BaseModel, BaseSettings, validator
+
 from ocrdmonitor.server.jobs import ProcessQuery
 from ocrdmonitor.sshps import process_status
 

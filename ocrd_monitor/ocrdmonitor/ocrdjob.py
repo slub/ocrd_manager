@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 from typing import Any, NamedTuple, Type
-
 
 _KEYMAP: dict[str, tuple[Type[int] | Type[str] | Type[Path], str]] = {
     "PID": (int, "pid"),

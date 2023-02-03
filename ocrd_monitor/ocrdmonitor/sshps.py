@@ -1,7 +1,10 @@
-from pathlib import Path
+from __future__ import annotations
+
 import subprocess
+from pathlib import Path
 from typing import Protocol
-from ocrdmonitor.processstatus import ProcessStatus, PS_CMD
+
+from ocrdmonitor.processstatus import PS_CMD, ProcessStatus
 
 
 class SSHConfig(Protocol):

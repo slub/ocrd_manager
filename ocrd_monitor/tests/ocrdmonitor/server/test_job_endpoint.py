@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import replace
 from datetime import timedelta
 from pathlib import Path
@@ -10,6 +12,7 @@ from ocrdmonitor.ocrdjob import OcrdJob
 from ocrdmonitor.processstatus import ProcessState, ProcessStatus
 from ocrdmonitor.server.jobs import ProcessQuery
 from ocrdmonitor.server.settings import OcrdControllerSettings
+
 from tests.ocrdmonitor.server import scraping
 from tests.ocrdmonitor.server.fixtures import JOB_DIR
 from tests.ocrdmonitor.test_jobs import JOB_TEMPLATE, jobfile_content_for

@@ -1,11 +1,7 @@
-import sys
-from os import path
-from typing import Optional, Set
+from __future__ import annotations
 
-if sys.version_info >= (3, 8):
-    from typing import Protocol, TypeAlias
-else:
-    from typing_extensions import Protocol, TypeAlias
+from os import path
+from typing import Protocol
 
 
 class OcrdBrowser(Protocol):
@@ -30,14 +26,14 @@ class OcrdBrowserFactory(Protocol):
         ...
 
 
-BrowserProcesses: TypeAlias = Set[OcrdBrowser]
+BrowserProcesses = set[OcrdBrowser]
 
 
 def launch(
     workspace_path: str,
     owner: str,
     browser_factory: OcrdBrowserFactory,
-    running_browsers: Optional[BrowserProcesses] = None,
+    running_browsers: BrowserProcesses | None = None,
 ) -> OcrdBrowser:
     running_browsers = running_browsers or set()
     owned_processes = filter_owned(owner, running_browsers)

@@ -1,14 +1,16 @@
-from pathlib import Path
-import uuid
+from __future__ import annotations
 
+import uuid
+from pathlib import Path
+
+import ocrdbrowser
 from fastapi import APIRouter, Cookie, Request, Response, WebSocket
 from fastapi.templating import Jinja2Templates
+from ocrdbrowser import OcrdBrowser, OcrdBrowserFactory, workspace
 from requests.exceptions import ConnectionError
 from websockets.typing import Subprotocol
 
-import ocrdbrowser
 import ocrdmonitor.server.proxy as proxy
-from ocrdbrowser import OcrdBrowserFactory, OcrdBrowser, workspace
 from ocrdmonitor.server.redirect import RedirectMap
 
 

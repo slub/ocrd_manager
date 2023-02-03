@@ -1,5 +1,36 @@
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Protocol
+from typing import Callable, Protocol
+
+
+def removeprefix(string: str, prefix: str) -> str:
+    def __removeprefix(prefix: str) -> str:
+        if string.startswith(prefix):
+            len_prefix = len(prefix)
+            return string[len_prefix:]
+
+        return string
+
+    _removeprefix: Callable[[str], str] = getattr(
+        string, "removeprefix", __removeprefix
+    )
+    return _removeprefix(prefix)
+
+
+def removesuffix(string: str, suffix: str) -> str:
+    def __removesuffix(suffix: str) -> str:
+        if string.endswith(suffix):
+            len_suffix = len(suffix)
+            return string[-len_suffix:]
+
+        return string
+
+    _removesuffix: Callable[[str], str] = getattr(
+        string, "removesuffix", __removesuffix
+    )
+
+    return _removesuffix(suffix)
 
 
 class WorkspaceServer(Protocol):
@@ -17,9 +48,10 @@ class WorkspaceRedirect:
         return self._workspace
 
     def redirect_url(self, url: str) -> str:
-        url = url.removeprefix(str(self._workspace)).removeprefix("/")
-        address = self._server.address().removesuffix("/")
-        return (address + "/" + url).removesuffix("/")
+        url = removeprefix(url, str(self._workspace))
+        url = removeprefix(url, "/")
+        address = removesuffix(self._server.address(), "/")
+        return removesuffix(address + "/" + url, "/")
 
     def matches(self, path: str) -> bool:
         return path.startswith(str(self.workspace))
