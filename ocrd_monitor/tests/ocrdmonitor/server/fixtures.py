@@ -1,11 +1,12 @@
-import pytest
 from pathlib import Path
-from fastapi.testclient import TestClient
 
+import pytest
+from fastapi.testclient import TestClient
 from ocrdmonitor.server.app import create_app
 from ocrdmonitor.server.settings import (
     OcrdBrowserSettings,
     OcrdControllerSettings,
+    OcrdLogViewSettings,
     Settings,
 )
 
@@ -24,6 +25,7 @@ def create_settings() -> Settings:
             host="",
             user="",
         ),
+        ocrd_logview=OcrdLogViewSettings(port=8022),
     )
 
 
