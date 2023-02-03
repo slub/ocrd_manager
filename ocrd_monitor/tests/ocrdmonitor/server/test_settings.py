@@ -2,14 +2,14 @@ from pathlib import Path
 from typing import Any, Generator, Type
 
 import pytest
-from pydantic import BaseModel
-
-from ocrdbrowser import SubProcessOcrdBrowserFactory, DockerOcrdBrowserFactory
+from ocrdbrowser import DockerOcrdBrowserFactory, SubProcessOcrdBrowserFactory
 from ocrdmonitor.server.settings import (
     OcrdBrowserSettings,
     OcrdControllerSettings,
+    OcrdLogViewSettings,
     Settings,
 )
+from pydantic import BaseModel
 
 CURRENT_DIR = Path(__file__).parent
 ENV_FILE = CURRENT_DIR / ".test.env"
@@ -25,6 +25,7 @@ ENV_TEMPLATE = {
     "controller_user": "OCRD_CONTROLLER__USER={}",
     "controller_port": "OCRD_CONTROLLER__PORT={}",
     "controller_keyfile": "OCRD_CONTROLLER__KEYFILE={}",
+    "logview_port": "OCRD_LOGVIEW__PORT={}",
 }
 
 
@@ -38,6 +39,7 @@ class DefaultTestEnv(BaseModel):
     controller_user: str = "controller_user"
     controller_port: str = "22"
     controller_keyfile: str = ".ssh/id_rsa"
+    logview_port: int = 8022
 
 
 def write_env_file(env_dict: dict[str, str]) -> Path:
@@ -78,6 +80,7 @@ def test__can_parse_env_file() -> None:
             port=int(env.controller_port),
             keyfile=Path(env.controller_keyfile),
         ),
+        ocrd_logview=OcrdLogViewSettings(port=env.logview_port),
     )
 
 
