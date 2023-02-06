@@ -74,6 +74,15 @@ def stop_all(owned_processes: BrowserProcesses) -> None:
         process.stop()
 
 
+def stop_owned_in_workspace(
+    owner: str, workspace: str, browsers: set[OcrdBrowser]
+) -> set[OcrdBrowser]:
+    owned = filter_owned(owner, browsers)
+    in_workspace = in_same_workspace(workspace, owned)
+    stop_all(in_workspace)
+    return in_workspace
+
+
 def start_process(
     process_factory: OcrdBrowserFactory, workspace_path: str, owner: str
 ) -> OcrdBrowser:

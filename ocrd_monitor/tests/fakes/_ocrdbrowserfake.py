@@ -1,18 +1,19 @@
 from ocrdbrowser import OcrdBrowser
-from ._broadwayfake import BroadwayFake
+from ._backgroundprocess import BackgroundProcess
+from ._broadwayfake import broadway_fake
 
 
 class OcrdBrowserFake:
     def __init__(self, owner: str = "", workspace: str = "") -> None:
         self._owner: str = owner
         self._workspace: str = workspace
-        self._browser = BroadwayFake(workspace)
+        self._browser = broadway_fake(workspace)
         self._running = False
 
     def set_owner_and_workspace(self, owner: str, workspace: str) -> None:
         self._owner = owner
         self._workspace = workspace
-        self._browser = BroadwayFake(workspace)
+        self._browser = broadway_fake(workspace)
 
     def address(self) -> str:
         return "http://localhost:7000"
@@ -32,7 +33,7 @@ class OcrdBrowserFake:
         self._browser.shutdown()
 
     @property
-    def broadway_server(self) -> BroadwayFake:
+    def broadway_server(self) -> BackgroundProcess:
         return self._browser
 
     @property

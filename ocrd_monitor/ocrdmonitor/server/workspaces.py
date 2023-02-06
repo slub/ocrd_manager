@@ -5,6 +5,7 @@ from fastapi import APIRouter, Cookie, Request, Response, WebSocket
 from fastapi.templating import Jinja2Templates
 from requests.exceptions import ConnectionError
 from websockets.typing import Subprotocol
+from websockets.exceptions import ConnectionClosedError
 
 import ocrdbrowser
 import ocrdmonitor.server.proxy as proxy
@@ -77,8 +78,11 @@ def create_workspaces(
         async with proxy.WebSocketAdapter(
             url, [Subprotocol("broadway")]
         ) as broadway_socket:
-            while True:
-                await proxy.tunnel(broadway_socket, websocket)
+            try:
+                while True:
+                    await proxy.tunnel(broadway_socket, websocket)
+            except ConnectionClosedError:
+                _stop_browsers_in_workspace(workspace, session_id)
 
     def _launch_browser(session_id: str, workspace: Path) -> OcrdBrowser:
         browser = ocrdbrowser.launch(
@@ -90,5 +94,13 @@ def create_workspaces(
 
         running_browsers.add(browser)
         return browser
+
+    def _stop_browsers_in_workspace(workspace: Path, session_id: str) -> None:
+        full_workspace = str(workspace_dir / workspace)
+        stopped = ocrdbrowser.stop_owned_in_workspace(
+            session_id, full_workspace, running_browsers
+        )
+        redirects.remove(session_id, Path(workspace))
+        running_browsers.difference_update(stopped)
 
     return router

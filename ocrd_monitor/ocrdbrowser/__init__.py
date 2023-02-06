@@ -7,6 +7,7 @@ from ._browser import (
     in_same_workspace,
     launch,
     stop_all,
+    stop_owned_in_workspace,
 )
 from ._docker import DockerOcrdBrowserFactory
 from ._port import NoPortsAvailableError
@@ -23,5 +24,6 @@ __all__ = [
     "in_other_workspaces",
     "in_same_workspace",
     "stop_all",
+    "stop_owned_in_workspace",
     "workspace",
 ]
