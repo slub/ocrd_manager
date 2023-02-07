@@ -18,7 +18,7 @@ html_template = """
 """
 
 
-def _run_app(workspace: str, socket_log: mp.Queue) -> None:
+def _run_app(workspace: str) -> None:
     app = FastAPI()
 
     @app.get("/")
@@ -27,10 +27,11 @@ def _run_app(workspace: str, socket_log: mp.Queue) -> None:
 
     @app.websocket("/socket")
     async def socket(websocket: WebSocket) -> None:
-        await websocket.accept("broadway")
+        await websocket.accept()
         try:
             while True:
-                socket_log.put(str(await websocket.receive_bytes()))
+                echo = await websocket.receive_bytes()
+                await websocket.send_bytes(echo)
         except WebSocketDisconnect:
             pass
 
@@ -39,7 +40,6 @@ def _run_app(workspace: str, socket_log: mp.Queue) -> None:
 
 def broadway_fake(workspace: str) -> BackgroundProcess:
     socket_log: mp.Queue[str] = mp.Queue()
-    complete_log: list[str] = []
-    process = BackgroundProcess(_run_app, workspace, socket_log)
+    process = BackgroundProcess(_run_app, workspace)
 
     return process
