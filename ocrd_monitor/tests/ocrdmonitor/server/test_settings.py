@@ -18,7 +18,6 @@ ENV_FILE = CURRENT_DIR / ".test.env"
 ENV_TEMPLATE = {
     "browser_workspace_dir": "OCRD_BROWSER__WORKSPACE_DIR={}",
     "browser_mode": "OCRD_BROWSER__MODE={}",
-    "browser_public_port": "OCRD_BROWSER__PUBLIC_PORT={}",
     "browser_port_range": "OCRD_BROWSER__PORT_RANGE={}",
     "controller_job_dir": "OCRD_CONTROLLER__JOB_DIR={}",
     "controller_host": "OCRD_CONTROLLER__HOST={}",
@@ -32,7 +31,6 @@ ENV_TEMPLATE = {
 class DefaultTestEnv(BaseModel):
     browser_workspace_dir: str = "path/to/workdir"
     browser_mode: str = "native"
-    browser_public_port: str = "8085"
     browser_port_range: str = "[9000, 9100]"
     controller_job_dir: str = "path/to/jobdir"
     controller_host: str = "controller.ocrdhost.com"
@@ -70,7 +68,6 @@ def test__can_parse_env_file() -> None:
         ocrd_browser=OcrdBrowserSettings(
             mode=env.browser_mode,
             workspace_dir=Path(env.browser_workspace_dir),
-            public_port=int(env.browser_public_port),
             port_range=(9000, 9100),
         ),
         ocrd_controller=OcrdControllerSettings(

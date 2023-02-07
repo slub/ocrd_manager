@@ -1,17 +1,18 @@
 from __future__ import annotations
 
+import os
 import subprocess as sp
 from shutil import which
-import os
 from typing import Optional
 
 from ._browser import OcrdBrowser
 from ._port import Port
 
+BROADWAY_BASE_PORT = 8080
+
 
 class SubProcessOcrdBrowser:
-    def __init__(self, port: str, localport: Port, owner: str, workspace: str) -> None:
-        self._port = port
+    def __init__(self, localport: Port, owner: str, workspace: str) -> None:
         self._localport = localport
         self._owner = owner
         self._workspace = workspace
@@ -23,7 +24,7 @@ class SubProcessOcrdBrowser:
         # (we use 8085 as fixed start of the internal port range,
         #  and map to the runtime corresponding external port)
         localport = self._localport.get()
-        return "http://localhost:" + str(int(self._port) + localport - 8085)
+        return "http://localhost:" + str(localport)
 
     def workspace(self) -> str:
         return self._workspace
@@ -40,7 +41,7 @@ class SubProcessOcrdBrowser:
         # (disconnecting concurrent connections), hence we must start a new daemon
         # for each new browser session
         # broadwayd starts counting virtual X displays from port 8080 as :0
-        displayport = str(localport - 8080)
+        displayport = str(localport - BROADWAY_BASE_PORT)
         environment = dict(os.environ)
         environment["GDK_BACKEND"] = "broadway"
         environment["BROADWAY_DISPLAY"] = ":" + displayport
@@ -66,11 +67,8 @@ class SubProcessOcrdBrowser:
 
 
 class SubProcessOcrdBrowserFactory:
-    def __init__(self, port: str, available_ports: set[int]) -> None:
-        self._port = port
+    def __init__(self, available_ports: set[int]) -> None:
         self._available_ports = available_ports
 
     def __call__(self, owner: str, workspace_path: str) -> OcrdBrowser:
-        return SubProcessOcrdBrowser(
-            self._port, Port(self._available_ports), owner, workspace_path
-        )
+        return SubProcessOcrdBrowser(Port(self._available_ports), owner, workspace_path)

@@ -26,19 +26,20 @@ class OcrdControllerSettings(BaseModel):
     def process_query(self) -> ProcessQuery:
         return partial(process_status, self)
 
+
 class OcrdLogViewSettings(BaseModel):
     port: int
+
 
 class OcrdBrowserSettings(BaseModel):
     workspace_dir: Path
     mode: Literal["native", "docker"] = "native"
-    public_port: int = 8080
     port_range: tuple[int, int]
 
     def factory(self) -> OcrdBrowserFactory:
         port_range_set = set(range(*self.port_range))
         if self.mode == "native":
-            return SubProcessOcrdBrowserFactory(str(self.public_port), port_range_set)
+            return SubProcessOcrdBrowserFactory(port_range_set)
         else:
             factory = DockerOcrdBrowserFactory("http://localhost", port_range_set)
             atexit.register(factory.stop_all)
