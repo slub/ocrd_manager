@@ -1,1 +1,1 @@
-from .fixtures import app
+from .fixtures import app, launch_monitor
