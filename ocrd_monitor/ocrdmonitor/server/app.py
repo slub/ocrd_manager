@@ -6,13 +6,14 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from ocrdmonitor.ocrdcontroller import OcrdController
 from ocrdmonitor.server.index import create_index
 from ocrdmonitor.server.jobs import create_jobs
 from ocrdmonitor.server.logs import create_logs
+from ocrdmonitor.server.logview import create_logview
 from ocrdmonitor.server.settings import Settings
 from ocrdmonitor.server.workflows import create_workflows
 from ocrdmonitor.server.workspaces import create_workspaces
-from ocrdmonitor.server.logview import create_logview
 
 PKG_DIR = Path(__file__).parent
 STATIC_DIR = PKG_DIR / "static"
@@ -33,8 +34,10 @@ def create_app(settings: Settings) -> FastAPI:
     app.include_router(
         create_jobs(
             templates,
-            settings.ocrd_controller.process_query(),
-            settings.ocrd_controller.job_dir,
+            OcrdController(
+                settings.ocrd_controller.process_query(),
+                settings.ocrd_controller.job_dir,
+            ),
         )
     )
     app.include_router(
@@ -44,12 +47,8 @@ def create_app(settings: Settings) -> FastAPI:
             settings.ocrd_browser.workspace_dir,
         )
     )
-    app.include_router(create_logs(
-        templates,
-        settings.ocrd_browser.workspace_dir))
+    app.include_router(create_logs(templates, settings.ocrd_browser.workspace_dir))
     app.include_router(create_workflows(templates))
-    app.include_router(create_logview(
-        templates,
-        settings.ocrd_logview.port))
+    app.include_router(create_logview(templates, settings.ocrd_logview.port))
 
     return app
