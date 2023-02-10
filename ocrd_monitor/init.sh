@@ -17,16 +17,8 @@ if [ -n "$CONTROLLER" ]; then
   ssh-keyscan -H -p ${CONTROLLER_PORT:-22} $CONTROLLER_HOST,$CONTROLLER_IP >>/etc/ssh/ssh_known_hosts
 fi
 
-# cd "${1:-/data}"
-# flask --app /usr/local/ocrd-monitor/app run --host='0.0.0.0' --reload
-
-# THESE ARE PLACEHOLDER VALUES
-# TODO: REMOVE ONCE MAPPING FROM GLOBAL ENV VARS TO MONITOR VARS IS DONE
 export OCRD_BROWSER__MODE=native
-
-# matches base path of WORKDIR in ocrd_manager
 export OCRD_BROWSER__WORKSPACE_DIR=/data
-export OCRD_BROWSER__PUBLIC_PORT=8085
 export OCRD_BROWSER__PORT_RANGE="[9000,9100]"
 export OCRD_LOGVIEW__PORT=8088
 export OCRD_CONTROLLER__JOB_DIR=/run/lock/ocrd.jobs

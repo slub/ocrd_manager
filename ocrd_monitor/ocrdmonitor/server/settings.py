@@ -65,5 +65,4 @@ class Settings(BaseSettings):
     ocrd_logview: OcrdLogViewSettings
 
     class Config:
-        env_file: str = ".env"
         env_nested_delimiter = "__"
