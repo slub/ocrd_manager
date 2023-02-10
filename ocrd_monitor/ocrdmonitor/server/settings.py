@@ -12,7 +12,7 @@ from ocrdbrowser import (
 )
 from pydantic import BaseModel, BaseSettings, validator
 
-from ocrdmonitor.server.jobs import ProcessQuery
+from ocrdmonitor.ocrdcontroller import ProcessQuery
 from ocrdmonitor.sshps import process_status
 
 

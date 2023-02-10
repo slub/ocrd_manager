@@ -1,5 +1,3 @@
-import multiprocessing as mp
-
 import uvicorn
 from fastapi import FastAPI, Response, WebSocket
 from fastapi.responses import HTMLResponse
@@ -39,7 +37,6 @@ def _run_app(workspace: str) -> None:
 
 
 def broadway_fake(workspace: str) -> BackgroundProcess:
-    socket_log: mp.Queue[str] = mp.Queue()
     process = BackgroundProcess(_run_app, workspace)
 
     return process
