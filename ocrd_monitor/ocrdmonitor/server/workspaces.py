@@ -10,8 +10,6 @@ from fastapi.templating import Jinja2Templates
 from ocrdbrowser import ChannelClosed, OcrdBrowser, OcrdBrowserFactory, workspace
 from ocrdmonitor.server.redirect import RedirectMap
 from requests.exceptions import ConnectionError
-from websockets.exceptions import ConnectionClosedError
-from websockets.typing import Subprotocol
 
 
 def create_workspaces(
@@ -46,7 +44,7 @@ def create_workspaces(
         )
         response.set_cookie("session_id", session_id)
 
-        browser = _launch_browser(session_id, workspace_path)
+        browser = launch_browser(session_id, workspace_path)
         redirects.add(session_id, Path(workspace), browser)
 
         return response
@@ -74,14 +72,19 @@ def create_workspaces(
     ) -> None:
         redirect = redirects.get(session_id, workspace)
         await websocket.accept(subprotocol="broadway")
-        async with redirect.browser.open_channel() as channel:
+        await communicate_with_browser_until_closed(websocket, redirect.browser)
+
+    async def communicate_with_browser_until_closed(
+        websocket: WebSocket, browser: OcrdBrowser
+    ) -> None:
+        async with browser.open_channel() as channel:
             try:
                 while True:
                     await proxy.tunnel(channel, websocket)
             except ChannelClosed:
-                redirect.browser.stop()
+                browser.stop()
 
-    def _launch_browser(session_id: str, workspace: Path) -> OcrdBrowser:
+    def launch_browser(session_id: str, workspace: Path) -> OcrdBrowser:
         browser = ocrdbrowser.launch(
             str(workspace),
             session_id,
@@ -91,13 +94,5 @@ def create_workspaces(
 
         running_browsers.add(browser)
         return browser
-
-    def _stop_browsers_in_workspace(workspace: Path, session_id: str) -> None:
-        full_workspace = str(workspace_dir / workspace)
-        stopped = ocrdbrowser.stop_owned_in_workspace(
-            session_id, full_workspace, running_browsers
-        )
-        redirects.remove(session_id, Path(workspace))
-        running_browsers.difference_update(stopped)
 
     return router
