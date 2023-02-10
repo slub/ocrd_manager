@@ -1,5 +1,7 @@
 from . import _workspace as workspace
 from ._browser import (
+    Channel,
+    ChannelClosed,
     OcrdBrowser,
     OcrdBrowserFactory,
     filter_owned,
@@ -14,6 +16,8 @@ from ._port import NoPortsAvailableError
 from ._subprocess import SubProcessOcrdBrowserFactory
 
 __all__ = [
+    "Channel",
+    "ChannelClosed",
     "DockerOcrdBrowserFactory",
     "NoPortsAvailableError",
     "OcrdBrowser",

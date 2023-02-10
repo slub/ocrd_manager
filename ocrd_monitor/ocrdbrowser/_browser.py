@@ -1,7 +1,19 @@
 from __future__ import annotations
 
 from os import path
-from typing import Protocol
+from typing import AsyncContextManager, Protocol
+
+
+class ChannelClosed(RuntimeError):
+    pass
+
+
+class Channel(Protocol):
+    async def receive_bytes(self) -> bytes:
+        ...
+
+    async def send_bytes(self, data: bytes) -> None:
+        ...
 
 
 class OcrdBrowser(Protocol):
@@ -18,6 +30,9 @@ class OcrdBrowser(Protocol):
         ...
 
     def stop(self) -> None:
+        ...
+
+    def open_channel(self) -> AsyncContextManager[Channel]:
         ...
 
 

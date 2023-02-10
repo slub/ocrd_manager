@@ -3,10 +3,11 @@ from __future__ import annotations
 import os
 import subprocess as sp
 from shutil import which
-from typing import Optional
+from typing import AsyncContextManager, Optional
 
-from ._browser import OcrdBrowser
+from ._browser import Channel, OcrdBrowser
 from ._port import Port
+from ._websocketchannel import WebSocketChannel
 
 BROADWAY_BASE_PORT = 8080
 
@@ -64,6 +65,9 @@ class SubProcessOcrdBrowser:
         if self._process:
             self._process.terminate()
             self._localport.release()
+
+    def open_channel(self) -> AsyncContextManager[Channel]:
+        return WebSocketChannel(self.address() + "/socket")
 
 
 class SubProcessOcrdBrowserFactory:

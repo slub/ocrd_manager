@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Callable, Protocol
+from typing import Callable
+
+from ocrdbrowser import OcrdBrowser
 
 
 def removeprefix(string: str, prefix: str) -> str:
@@ -33,15 +35,14 @@ def removesuffix(string: str, suffix: str) -> str:
     return _removesuffix(suffix)
 
 
-class WorkspaceServer(Protocol):
-    def address(self) -> str:
-        ...
-
-
-class WorkspaceRedirect:
-    def __init__(self, workspace: Path, server: WorkspaceServer) -> None:
+class BrowserRedirect:
+    def __init__(self, workspace: Path, browser: OcrdBrowser) -> None:
         self._workspace = workspace
-        self._server = server
+        self._browser = browser
+
+    @property
+    def browser(self) -> OcrdBrowser:
+        return self._browser
 
     @property
     def workspace(self) -> Path:
@@ -50,7 +51,7 @@ class WorkspaceRedirect:
     def redirect_url(self, url: str) -> str:
         url = removeprefix(url, str(self._workspace))
         url = removeprefix(url, "/")
-        address = removesuffix(self._server.address(), "/")
+        address = removesuffix(self._browser.address(), "/")
         return removesuffix(address + "/" + url, "/")
 
     def matches(self, path: str) -> bool:
@@ -59,16 +60,16 @@ class WorkspaceRedirect:
 
 class RedirectMap:
     def __init__(self) -> None:
-        self._redirects: dict[str, set[WorkspaceRedirect]] = {}
+        self._redirects: dict[str, set[BrowserRedirect]] = {}
 
     def add(
-        self, session_id: str, workspace: Path, server: WorkspaceServer
-    ) -> WorkspaceRedirect:
+        self, session_id: str, workspace: Path, server: OcrdBrowser
+    ) -> BrowserRedirect:
         try:
             redirect = self.get(session_id, workspace)
             return redirect
         except KeyError:
-            redirect = WorkspaceRedirect(workspace, server)
+            redirect = BrowserRedirect(workspace, server)
             self._redirects.setdefault(session_id, set()).add(redirect)
             return redirect
 
@@ -76,7 +77,7 @@ class RedirectMap:
         redirect = self.get(session_id, workspace)
         self._redirects[session_id].remove(redirect)
 
-    def get(self, session_id: str, workspace: Path) -> WorkspaceRedirect:
+    def get(self, session_id: str, workspace: Path) -> BrowserRedirect:
         redirect = next(
             (
                 redirect
@@ -88,9 +89,7 @@ class RedirectMap:
 
         return self._instance_or_raise(redirect)
 
-    def _instance_or_raise(
-        self, redirect: WorkspaceRedirect | None
-    ) -> WorkspaceRedirect:
+    def _instance_or_raise(self, redirect: BrowserRedirect | None) -> BrowserRedirect:
         if redirect is None:
             raise KeyError("No redirect found")
 

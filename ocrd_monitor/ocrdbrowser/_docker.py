@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import os.path as path
 import subprocess as sp
-from typing import Any
+from typing import Any, AsyncContextManager
 
-from ._browser import OcrdBrowser
+from ._browser import Channel, OcrdBrowser
 from ._port import Port
+from ._websocketchannel import WebSocketChannel
 
 _docker_run = "docker run --rm -d --name {} -v {}:/data -p {}:8085 ocrd-browser:latest"
 _docker_stop = "docker stop {}"
@@ -47,6 +48,9 @@ class DockerOcrdBrowser:
         cmd.check_returncode()
         self._port.release()
         self.id = None
+
+    def open_channel(self) -> AsyncContextManager[Channel]:
+        return WebSocketChannel(self.address() + "/socket")
 
     def _container_name(self) -> str:
         workspace = path.basename(self.workspace())
