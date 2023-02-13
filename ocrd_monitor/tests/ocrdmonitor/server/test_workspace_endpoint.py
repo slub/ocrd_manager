@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from typing import Iterator
+
 import pytest
 from fastapi.testclient import TestClient
 from ocrdbrowser import ChannelClosed, OcrdBrowserFactory
 from ocrdmonitor.server.settings import OcrdBrowserSettings
-
-from tests.ocrdbrowser.browserdoubles import BrowserSpy, BrowserSpyFactory, ChannelDummy
+from tests.fakes import OcrdBrowserFake, OcrdBrowserFakeFactory
+from tests.ocrdbrowser.browserdoubles import BrowserSpy, BrowserSpyFactory
 from tests.ocrdmonitor.server import scraping
 from tests.ocrdmonitor.server.fixtures import WORKSPACE_DIR
 
@@ -19,6 +21,18 @@ def browser_spy(monkeypatch: pytest.MonkeyPatch) -> BrowserSpy:
 
     monkeypatch.setattr(OcrdBrowserSettings, "factory", factory)
     return browser_spy
+
+
+@pytest.fixture
+def use_browser_fakes(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+    fake_factory = OcrdBrowserFakeFactory()
+
+    def factory(_: OcrdBrowserSettings) -> OcrdBrowserFactory:
+        return fake_factory
+
+    monkeypatch.setattr(OcrdBrowserSettings, "factory", factory)
+    with fake_factory:
+        yield
 
 
 def test__workspaces__shows_the_workspace_names_starting_from_workspace_root(
@@ -58,3 +72,28 @@ def test__opened_workspace__when_socket_disconnects_on_broadway_side_while_viewi
         pass
 
     assert browser_spy.running is False
+
+
+@pytest.mark.usefixtures("use_browser_fakes")
+def test__opened_workspace_browser_is_ready__when_pinging__returns_ok(
+    app: TestClient,
+) -> None:
+    _ = app.get("/workspaces/open/a_workspace")
+
+    result = app.get("/workspaces/ping/a_workspace")
+
+    assert result.status_code == 200
+
+
+def test__opened_workspace_browser_not_ready__when_pinging__returns_bad_gateway(
+    browser_spy: BrowserSpy,
+    app: TestClient,
+) -> None:
+    """
+    We're using a browser spy here, because it's not a real server and therefore will not be reachable
+    """
+    _ = app.get("/workspaces/open/a_workspace")
+
+    result = app.get("/workspaces/ping/a_workspace")
+
+    assert result.status_code == 502

@@ -49,6 +49,18 @@ def create_workspaces(
 
         return response
 
+    @router.get("/ping/{workspace:path}", name="workspaces.ping")
+    def ping_workspace(
+        request: Request, workspace: str, session_id: str = Cookie(default=None)
+    ) -> Response:
+        workspace_path = Path(workspace)
+        redirect = redirects.get(session_id, workspace_path)
+        try:
+            proxy.forward(redirect, str(workspace_path))
+            return Response(status_code=200)
+        except ConnectionError:
+            return Response(status_code=502)
+
     # NOTE: It is important that the route path here ends with a slash, otherwise
     #       the reverse routing will not work as broadway.js uses window.location
     #       which points to the last component with a trailing slash.

@@ -1,4 +1,9 @@
+from types import TracebackType
+from typing import Type
+
 from ocrdbrowser import OcrdBrowser
+from tests.ocrdbrowser.browserdoubles import ChannelDummy
+
 from ._backgroundprocess import BackgroundProcess
 from ._broadwayfake import broadway_fake
 
@@ -32,6 +37,9 @@ class OcrdBrowserFake:
         self._running = False
         self._browser.shutdown()
 
+    def open_channel(self):
+        return ChannelDummy()
+
     @property
     def broadway_server(self) -> BackgroundProcess:
         return self._browser
@@ -46,5 +54,23 @@ class OcrdBrowserFake:
 
 
 class OcrdBrowserFakeFactory:
+    def __init__(self, *browsers: OcrdBrowserFake) -> None:
+        self._browsers = set(browsers)
+        self._browser_iter = iter(self._browsers)
+
+    def __enter__(self) -> "OcrdBrowserFakeFactory":
+        return self
+
+    def __exit__(
+        self,
+        exc_type: Type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        for browser in self._browsers:
+            browser.stop()
+
     def __call__(self, owner: str, workspace_path: str) -> OcrdBrowser:
-        return OcrdBrowserFake(owner, workspace_path)
+        browser = next(self._browser_iter, OcrdBrowserFake(owner, workspace_path))
+        self._browsers.add(browser)
+        return browser

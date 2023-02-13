@@ -20,7 +20,7 @@ class BrowserSpy:
         self,
         owner: str = "",
         workspace_path: str = "",
-        address: str = "",
+        address: str = "http://unreachable.example.com",
         running: bool = False,
         channel: Channel | None = None,
     ) -> None:
