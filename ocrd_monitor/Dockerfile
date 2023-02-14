@@ -1,4 +1,4 @@
-FROM python:3.7
+FROM python:3.10
 
 ARG VCS_REF
 ARG BUILD_DATE
@@ -13,8 +13,12 @@ RUN apt-get update \
     libcairo2-dev libgtk-3-bin libgtk-3-dev libglib2.0-dev \
     libgtksourceview-3.0-dev libgirepository1.0-dev gir1.2-webkit2-4.0 \
     python3-dev pkg-config cmake dnsutils \
-    && pip3 install -U setuptools wheel \
-    && pip3 install browse-ocrd psutil python-dotenv
+    && pip3 install -U setuptools wheel
+#    && pip3 install browse-ocrd \
+# workaround for hnesk/browse-ocrd#56:
+RUN apt-get install -y --no-install-recommends git make
+RUN git clone https://github.com/hnesk/browse-ocrd
+RUN make -C browse-ocrd deps-ubuntu deps install
 
 # MONITOR_PORT_GTK
 EXPOSE 8085
@@ -26,7 +30,9 @@ EXPOSE 5000
 VOLUME /data
 
 COPY init.sh /init.sh
-COPY flask /usr/local/ocrd-monitor
+COPY ocrdbrowser /usr/local/ocrd-monitor/ocrdbrowser
+COPY ocrdmonitor /usr/local/ocrd-monitor/ocrdmonitor
+COPY requirements.txt /usr/local/ocrd-monitor/requirements.txt
 
 RUN pip install -r /usr/local/ocrd-monitor/requirements.txt
 

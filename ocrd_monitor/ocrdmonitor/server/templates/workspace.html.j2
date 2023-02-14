@@ -1,0 +1,58 @@
+{% extends 'base.html.j2' %}
+
+{% block headline %}
+{% block title %}OCRD Browser{% endblock %}
+{% endblock %}
+{% block content %}
+<style>
+    iframe {
+        height: 100vh;
+        width: 100%;
+    }
+</style>
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        const workspaceUrl = "{{ url_for('workspaces.view', workspace=workspace) }}"
+        const pingUrl = "{{ url_for('workspaces.ping', workspace=workspace)}}"
+        const main = document.querySelector("#main-content");
+        const browserProgress = document.querySelector("#browser-viewport-load");
+
+
+        function replaceProgressWithIframe() {
+            const browser = document.createElement("iframe");
+            browser.setAttribute("id", "browser-viewport");
+            browser.setAttribute("src", workspaceUrl);
+
+            main.removeChild(browserProgress);
+            main.appendChild(browser);
+
+            /* NOTE: 
+                 This is a workaround to detect when the connection to the Broadway Server is lost on the client side.
+                 broadway.js will call the alert function when the connection is lost,
+                 therefore we replace it with a custom function to show an error
+            */
+            function replaceIframeWithError(message) {
+                const error = document.createElement("p");
+                error.innerText = "The connection to the ocrd browser was lost";
+                error.classList.add("notification", "is-danger");
+
+                main.removeChild(browser);
+                main.appendChild(error);
+            }
+
+            browser.contentWindow.alert = replaceIframeWithError
+        }
+
+        const interval = setInterval(async () => {
+            let result = await fetch(pingUrl);
+            if (!result.ok) return;
+            replaceProgressWithIframe();
+            clearInterval(interval);
+        }, 500);
+    })
+</script>
+{# <iframe id="browser-viewport" src="{{ url_for('workspaces.view', workspace=workspace) }}" frameborder="0"></iframe>
+#}
+
+<progress id="browser-viewport-load" class="progress is-primary" max="100"></progress>
+{% endblock %}

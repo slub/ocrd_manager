@@ -17,5 +17,15 @@ if [ -n "$CONTROLLER" ]; then
   ssh-keyscan -H -p ${CONTROLLER_PORT:-22} $CONTROLLER_HOST,$CONTROLLER_IP >>/etc/ssh/ssh_known_hosts
 fi
 
-cd "${1:-/data}"
-flask --app /usr/local/ocrd-monitor/app run --host='0.0.0.0' --reload
+export OCRD_BROWSER__MODE=native
+export OCRD_BROWSER__WORKSPACE_DIR=/data
+export OCRD_BROWSER__PORT_RANGE="[9000,9100]"
+export OCRD_LOGVIEW__PORT=$MONITOR_LOG_PORT
+export OCRD_CONTROLLER__JOB_DIR=/run/lock/ocrd.jobs
+export OCRD_CONTROLLER__HOST=$CONTROLLER_HOST
+export OCRD_CONTROLLER__PORT=$CONTROLLER_PORT
+export OCRD_CONTROLLER__USER=ocrd
+export OCRD_CONTROLLER__KEYFILE=~/.ssh/id_rsa
+
+cd /usr/local/ocrd-monitor
+uvicorn --host 0.0.0.0 --port 5000 "ocrdmonitor.main:app"
