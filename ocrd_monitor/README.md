@@ -1,43 +1,34 @@
 # OCRD-Monitor
 
 The OCRD-Monitor application is used to monitor the progress and results of OCR-D jobs.
-In order to run the application you need to have an OCR-D Controller as well as the Dozzle container for viewing logs set up.
-To launch the monitor, first create a script containing the following code:
+It is intended to be used together with the setup found in the [ocrd_kitodo repository](https://github.com/slub/ocrd_kitodo).
+You can find detailed instructions on how to deploy the entire Kitodo-OCR-D stack there.
 
-```bash
-export OCRD_BROWSER__MODE=<native or docker>
-export OCRD_BROWSER__WORKSPACE_DIR=<dir-containing-ocrd-workspaces>
-export OCRD_BROWSER__PORT_RANGE="[9000,9100]"
-export OCRD_CONTROLLER__JOB_DIR=<dir-containing-ocrd-job-files>
-export OCRD_CONTROLLER__HOST=<url-to-ocrd-controller>
-export OCRD_CONTROLLER__PORT=<port-of-ocrd-controller>
-export OCRD_CONTROLLER__USER=<name-of-user-on-ocrd-controller>
-export OCRD_CONTROLLER__KEYFILE=<path-to-private-ssh-key>
-export OCRD_LOGVIEW__PORT=<port-of-dozzle>
+In order to work properly, the following environment variables must be set:
 
-cd ocrd_monitor
-uvicorn "ocrdmonitor.main:app" --reload
-```
-
-Make sure to install the requirements from `requirements.txt`:
-
-```bash
-pip install -r requirements.txt
-```
-
-Finally launch the application using the script you created.
-The OCRD-Monitor will be available at `http://localhost:8000`
-
+| Variable            | Description                                                                      |
+| ------------------- | -------------------------------------------------------------------------------- |
+| CONTROLLER_HOST     | Hostname of the OCR-D Controller                                                 |
+| CONTROLLER_PORT_SSH | Port on the OCR-D Controller host that allows a SSH connection                   |
+| MANAGER_DATA        | Path to the OCR-D workspaces on the host                                         |
+| MANAGER_KEY         | Path to a private key that can be used to authenticate with the OCR-D Controller |
+| MONITOR_PORT_WEB    | The port at which the OCR-D Monitor will be available on the host                |
+| MONITOR_PORT_LOG    | The port at which the Dozzle logs will be available on the host                  |
 
 ## Testing
 
-1. Install runtime and dev dependencies 
+The tests are intended to be run outside of a container, as some of them will set up containers themselves.
+Therefore you need to have a Python version >= 3.9 installed on your system.
+
+1. Install runtime and dev dependencies
+
 ```bash
     pip install -r requirements.txt
     pip install -r requirements.dev.txt
 ```
 
 2. Run nox or pytest
+
 ```bash
     nox
 ```
@@ -46,11 +37,9 @@ The OCRD-Monitor will be available at `http://localhost:8000`
     pytest tests
 ```
 
-
 ## General overview
 
 ![](docs/img/monitor-overview.png)
-
 
 ## Overview of workspaces endpoint functionality
 

@@ -13,17 +13,14 @@ services:
     hostname: ${MONITOR_HOST}
 
     environment:
-      APP_BW_PORT: ${MONITOR_PORT_GTK}
-      APP_LOG_PORT: ${MONITOR_PORT_LOG}
+      MONITOR_PORT_LOG: ${MONITOR_PORT_LOG}
       CONTROLLER: "${CONTROLLER_HOST}:${CONTROLLER_PORT_SSH}"
-
 
     ports:
       - ${MONITOR_PORT_WEB}:5000
-      - ${MONITOR_PORT_GTK}-8600:8085-8185
 
     volumes:
-      - ${MONITOR_DATA}:/data
+      - ${MANAGER_DATA}:/data
       - ${MANAGER_KEY}:/id_rsa
       - shared:/run/lock/ocrd.jobs
 
