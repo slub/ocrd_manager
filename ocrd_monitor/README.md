@@ -1,6 +1,6 @@
-# OCRD-Monitor
+# OCR-D Monitor
 
-The OCRD-Monitor application is used to monitor the progress and results of OCR-D jobs.
+The OCR-D Monitor web application allows monitoring the progress and results of OCR-D jobs.
 It is intended to be used together with the setup found in the [ocrd_kitodo repository](https://github.com/slub/ocrd_kitodo).
 You can find detailed instructions on how to deploy the entire Kitodo-OCR-D stack there.
 
