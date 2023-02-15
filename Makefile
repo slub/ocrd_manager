@@ -81,9 +81,10 @@ $(DATA)/testdata-production:
 	  wget -P $@/images https://digital.slub-dresden.de/data/kitodo/LankDres_1760234508/LankDres_1760234508_tif/jpegs/$$page.tif.original.jpg; \
 	done
 
+$(DATA)/testdata-presentation: PREFIX = https://digital.slub-dresden.de/data/kitodo/LankDres_1760234508
 $(DATA)/testdata-presentation:
 	mkdir -p $@
-	wget -O $@/mets.xml https://digital.slub-dresden.de/data/kitodo/LankDres_1760234508/LankDres_1760234508_mets.xml
+	wget -O $@/mets.xml $(PREFIX)/LankDres_1760234508_mets.xml
 
 test: test-production test-presentation
 
@@ -97,13 +98,16 @@ endif
 	test -d $</ocr/alto
 	test -s $</ocr/alto/00000009.tif.original.xml
 
+test-presentation: PREFIX = https://digital.slub-dresden.de/data/kitodo/LankDres_1760234508
+test-presentation: SCRIPT = for_presentation.sh --pages PHYS_0017..PHYS_0021 --img-grp ORIGINAL --url-prefix $(PREFIX)
 test-presentation: $(DATA)/testdata-presentation
+test-presentation:
 ifeq ($(NETWORK),bridge)
-	ssh -i $(PRIVATE) -Tn -p $(PORT) ocrd@localhost for_presentation.sh --pages PHYS_0017..PHYS_0021 --img-grp ORIGINAL $(<F)/mets.xml
+	ssh -i $(PRIVATE) -Tn -p $(PORT) ocrd@localhost $(SCRIPT) $(<F)/mets.xml
 else
-	docker exec -t -u ocrd `docker container ls -qf name=ocrd-manager` for_presentation.sh --pages PHYS_0017..PHYS_0021 --img-grp ORIGINAL $(<F)/mets.xml
+	docker exec -t -u ocrd `docker container ls -qf name=ocrd-manager` $(SCRIPT) $(<F)/mets.xml
 endif
-	diff -u <(docker run --rm -v $(DATA):/data $(TAGNAME) ocrd workspace -d $(<F) find -G FULLTEXT -g PHYS_0017..PHYS_0021) <(for file in FULLTEXT/FULLTEXT_PHYS_00{17..21}.xml; do echo $$file; done)
+	diff -u <(docker run --rm -v $(DATA):/data $(TAGNAME) ocrd workspace -d $(<F) find -G FULLTEXT -g PHYS_0017..PHYS_0021) <(for file in FULLTEXT/FULLTEXT_PHYS_00{17..21}.xml; do echo $(PREFIX)/$$file; done)
 
 clean clean-testdata:
 	$(RM) -r $(DATA)/testdata* $(DATA)/ocr-d/testdata*
