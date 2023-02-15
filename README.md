@@ -97,12 +97,13 @@ The data management will depend on which Kitodo context you want to integrate in
 
 #### From image to ALTO files
 
-For **Kitodo.Production**, there is a preconfigured script `for_production.sh` which takes the following arguments:
+For **Kitodo.Production**, there is a preconfigured script `process_images.sh` (or `for_production.sh`)
+which takes the following arguments:
 
 ```sh
 SYNOPSIS:
 
-for_production.sh [OPTIONS] DIRECTORY
+process_images.sh [OPTIONS] DIRECTORY
 
 where OPTIONS can be any/all of:
  --lang LANGUAGE    overall language of the material to process via OCR
@@ -144,17 +145,18 @@ It can be replaced with the (path) name of any workflow script mounted under `/d
 
 For example (assuming `testdata` is a directory with image files mounted under `/data`):
 
-    ssh -T -p 9022 ocrd@manager for_production.sh --proc-id 1 --task-id 3 --lang deu --script Fraktur --workflow myocr.sh testdata
+    ssh -T -p 9022 ocrd@manager process_images.sh --proc-id 1 --task-id 3 --lang deu --script Fraktur --workflow myocr.sh testdata
 
 
 #### From METS to METS file
 
-For **Kitodo.Presentation**, there is a preconfigured script `for_presentation.sh` which takes the following arguments:
+For **Kitodo.Presentation**, there is a preconfigured script `process_mets.sh` (or `for_presentation.sh`)
+which takes the following arguments:
 
 ```sh
 SYNOPSIS:
 
-for_presentation.sh [OPTIONS] METS
+process_mets.sh [OPTIONS] METS
 
 where OPTIONS can be any/all of:
  --workflow FILE    workflow file to use for processing, default:
@@ -183,7 +185,7 @@ The same goes here for the `workflow parameter`.
 
 For example (assuming `testdata` is a directory with image files mounted under `/data`):
 
-    ssh -T -p 9022 ocrd@manager for_presentation.sh --lang deu --script Fraktur --workflow myocr.sh testdata/mets.xml
+    ssh -T -p 9022 ocrd@manager process_mets.sh --lang deu --script Fraktur --workflow myocr.sh testdata/mets.xml
 
 
 ### Data transfer
