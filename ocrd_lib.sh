@@ -196,18 +196,25 @@ post_process_to_mets() {
                   list-page | tail -1)
   ocrgrp=$(ocrd workspace -d "$WORKDIR" \
                 find -m "//(application/alto[+]xml|text/xml)" -g ${PAGES:-$lastpage} -k fileGrp | tail -1)
+  # fixme: if workflow did not contain ALTO already, convert here via page-to-alto --no-check-border --no-check-words --dummy-word --dummy-textline
+  # copy workflow provenance
+  mm-update -m "$METS_PATH" add-agent -m "$WORKDIR/mets.xml"
   # extract text result
   mkdir -p "$PROCESS_DIR/$RESULT_GRP"
   while read page path file; do
     # remove any existing files for this page
-    ocrd workspace -m "$METS_PATH" remove -f $(ocrd workspace -m "$METS_PATH" find -G $RESULT_GRP -g $page -k ID)
+    #ocrd workspace -m "$METS_PATH" remove -f $(ocrd workspace -m "$METS_PATH" find -G $RESULT_GRP -g $page -k ID)
+    mm-update -m "$METS_PATH" remove-files -G $RESULT_GRP -g $page
     # copy and reference new file for this page
     cp -v "$WORKDIR/$path" "$PROCESS_DIR/$RESULT_GRP/"
     fname="$(basename "$path")"
-    ocrd workspace -m "$METS_PATH" add -C -G $RESULT_GRP -i $file -m application/alto+xml -g $page "$RESULT_GRP/$fname"
+    #ocrd workspace -m "$METS_PATH" add -C -G $RESULT_GRP -i $file -m application/alto+xml -g $page "$RESULT_GRP/$fname"
+    # ensure we have LOCTYPE=URL (when adding URL_PREFIX) or LOCTYPE=OTHER (otherwise)
+    mm-update -m "$METS_PATH" add-file -G $RESULT_GRP -m application/alto+xml -g $page ${URL_PREFIX:+-u} ${URL_PREFIX} "$PROCESS_DIR/$RESULT_GRP/$fname"
   done < <(ocrd workspace -d "$WORKDIR" \
-                find -G $ocrgrp -m "//(application/alto[+]xml|text/xml)" -g ${PAGES:-//.*} \
+                find -G $ocrgrp -m "//(application/alto[+]xml|text/xml)" -g "${PAGES:-//.*}" \
                 -k pageId -k local_filename -k ID)
+  # perhaps if URL_PREFIX:  mm-update -m "$METS_PATH" validate -u $URL_PREFIX
 }
 
 close_task() {
