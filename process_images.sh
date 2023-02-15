@@ -1,7 +1,7 @@
 #!/bin/bash
 # OCR-D task to be run as OCR script step by Kitodo.Production
 # To be called (after copying images to directory) via Manager, e.g.:
-#     ssh -Tn -p 9022 ocrd@ocrd-manager for_production.sh \
+#     ssh -Tn -p 9022 ocrd@ocrd-manager process_images.sh \
 #                                       --lang deu --script Fraktur \
 #                                       --img-subdir images --ocr-subdir ocr/alto \
 #                                       --task-id 501543 --proc-id 3 \

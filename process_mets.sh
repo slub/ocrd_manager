@@ -1,7 +1,7 @@
 #!/bin/bash
 # OCR-D task to be run as OCR script step by Kitodo.Presentation
 # To be called (after copying METS file) via Manager, e.g.:
-#     ssh -Tn -p 9022 ocrd@ocrd-manager for_presentation.sh \
+#     ssh -Tn -p 9022 ocrd@ocrd-manager process_mets.sh \
 #                                       --img-grp ORIGINAL --ocr-grp FULLTEXT \
 #                                       --pages PHYS_0010..PHYS_0999 --workflow myocr.sh \
 #                                       /home/goobi/work/daten/501543/mets.xml
