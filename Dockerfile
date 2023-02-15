@@ -32,6 +32,8 @@ RUN apt-get update && \
     openssh-client \
     xmlstarlet && \
     apt-get clean
+# workaround for OCR-D/core#982
+RUN apt-get install -y libmagic-dev
 
 # configure writing to ocrd.log for profiling
 COPY ocrd_logging.conf /etc
@@ -44,6 +46,12 @@ ENV ACTIVEMQ_CLIENT_LOG4J2 /opt/kitodo-activemq-client/log4j2.properties
 ADD https://github.com/markusweigelt/kitodo-activemq-client/releases/download/${KITODO_MQ_CLIENT_VERSION}/kitodo-activemq-client-${KITODO_MQ_CLIENT_VERSION}.jar /opt/kitodo-activemq-client
 ENV ACTIVEMQ_CLIENT /opt/kitodo-activemq-client/kitodo-activemq-client-${KITODO_MQ_CLIENT_VERSION}.jar
 RUN chmod go+r $ACTIVEMQ_CLIENT
+
+# workaround for OCR-D/core#983
+RUN pip install ocrd
+# install mets-mods2tei and page-to-alto
+RUN pip install mets-mods2tei
+RUN pip install ocrd-page-to-alto
 
 # run OpenSSH server
 RUN ssh-keygen -A
