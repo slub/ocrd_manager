@@ -1,11 +1,11 @@
 TAGNAME ?= ghcr.io/slub/ocrd_manager
-TAGNAME_MONITOR ?= ghcr.io/slub/ocrd_monitor
 SHELL = /bin/bash
 
 build:
-	docker build -t $(TAGNAME) .
-build-monitor:
-	docker build --tag $(TAGNAME_MONITOR) ocrd_monitor
+	docker build -t $(TAGNAME) \
+	--build-arg VCS_REF=`git rev-parse --short HEAD` \
+	--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+	.
 
 define HELP
 cat <<"EOF"
@@ -52,7 +52,8 @@ GID ?= $(shell id -g)
 UMASK ?= 0002
 PORT ?= 9022
 NETWORK ?= bridge
-CONTROLLER ?= $(shell dig +short $$HOSTNAME):8022
+CONTROLLER_HOST ?= $(shell dig +short $$HOSTNAME)
+CONTROLLER_PORT_SSH ?= 8022
 #ACTIVEMQ ?= $(shell dig +short $$HOSTNAME):61616
 run: $(DATA)
 	docker run -d --rm \
@@ -64,16 +65,9 @@ run: $(DATA)
 	--mount type=bind,source=$(KEYS),target=/authorized_keys \
 	--mount type=bind,source=$(PRIVATE),target=/id_rsa \
 	-e UID=$(UID) -e GID=$(GID) -e UMASK=$(UMASK) \
-	-e CONTROLLER=$(CONTROLLER) -e ACTIVEMQ=$(ACTIVEMQ) \
+	-e CONTROLLER=$(CONTROLLER_HOST):$(CONTROLLER_PORT_SSH) \
+	-e ACTIVEMQ=$(ACTIVEMQ) \
 	$(TAGNAME)
-
-run-monitor:
-	docker run -d --rm \
-	-p 8085:8085 -p 8080:8080 \
-	--name ocrd_monitor \
-	--network=$(NETWORK) \
-	-v $(DATA):/data \
-	$(TAGNAME_MONITOR)
 
 $(DATA)/testdata-production:
 	mkdir -p $@/images
@@ -113,4 +107,4 @@ endif
 clean clean-testdata:
 	$(RM) -r $(DATA)/testdata* $(DATA)/ocr-d/testdata*
 
-.PHONY: build build-monitor run run-monitor help test test-production test-presentation clean clean-testdata
+.PHONY: build run help test test-production test-presentation clean clean-testdata

@@ -9,7 +9,7 @@ Specifically, it gets called by [Kitodo.Production](https://github.com/kitodo/ki
 or [Kitodo.Presentation](https://github.com/kitodo-presentation) to handle OCR for a document,
 and in turn calls the [OCR-D Controller](https://github.com/slub/ocrd_controller) for workflow processing.
 
-For an integration as a **service container**, orchestrated with other containers (Kitodo+Controller),
+For an integration as a **service container**, orchestrated with other containers (Kitodo+Controller+Monitor),
 see [this meta-repo](https://github.com/slub/ocrd_kitodo).
 
 OCR-D Manager is responsible for
@@ -32,7 +32,6 @@ and an SSH client to connect to the Controller.
      * [From METS to METS file](#from-mets-to-mets-file)
    * [Data transfer](#data-transfer)
    * [Logging](#logging)
-   * [Monitoring](#monitoring)
  * [Testing](#testing)
 
 ## Usage
@@ -207,25 +206,7 @@ All logs are accumulated on standard output, which can be inspected via Docker:
 
     docker logs ocrd_manager
 
-Logs for all services can also be viewed on the [Monitor web server](#monitoring).
-
-### Monitoring
-
-The repo also provides a web server featuring
-- (intermediate) results for all current document workspaces (via [OCR-D Browser](https://github.com/hnesk/browse-ocrd))
-- a live log viewer
-- a live job viewer
-- :construction: workflow editor
-
-Build or pull the Docker image:
-
-    make build-monitor # or docker pull ghcr.io/slub/ocrd_monitor
-
-Then run the container – providing the same variables as above:
-
-    make run-monitor DATA=/mnt/workspaces
-
-You can then open `http://localhost:8080` in your browser.
+Logs for all services can also be viewed on the [Monitor web server](https://slub.github.io/ocrd_kitodo/usage/ocrd-monitor).
 
 ## Testing
 
