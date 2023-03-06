@@ -65,6 +65,9 @@ RUN echo AllowUsers ocrd >> /etc/ssh/sshd_config
 RUN echo "cd /data" >> /etc/profile
 RUN /usr/sbin/sshd -t # check the validity of the configuration file and sanity of the keys
 COPY *.sh /usr/bin/
+RUN cd /usr/bin; \
+    ln -fs process_mets.sh for_presentation.sh; \
+    ln -fs process_images.sh for_production.sh
 CMD ["/usr/bin/startup.sh"]
 EXPOSE 22
 
