@@ -120,7 +120,7 @@ pre_process_to_workdir() {
   #  or the same share twice, which means zero-cost copying).
   if test -f "$WORKDIR/mets.xml"; then
     # already a workspace - repeated run
-    rsync -T /tmp -av "$PROCESS_DIR/$IMAGES_SUBDIR/" "$WORKDIR"
+    rsync -T /tmp -av "$PROCESS_DIR/${IMAGES_SUBDIR%/}" "$WORKDIR"
   else
     cp -vr --reflink=auto "$PROCESS_DIR/$IMAGES_SUBDIR" "$WORKDIR"
   fi
