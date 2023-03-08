@@ -32,9 +32,6 @@ RUN apt-get update && \
     openssh-client \
     xmlstarlet && \
     apt-get clean
-# workaround for OCR-D/core#982
-RUN apt-get install -y libmagic-dev
-
 # configure writing to ocrd.log for profiling
 COPY ocrd_logging.conf /etc
 

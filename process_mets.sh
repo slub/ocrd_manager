@@ -92,6 +92,6 @@ init "$@"
 
   close_task
 
-) |& tee -a $WORKDIR/ocrd.log | logger -p user.info -t $TASK &>/dev/null & # without output redirect, ssh will not close the connection upon exit, cf. #9
+) |& tee -a $WORKDIR/ocrd.log 2>&1 | logger -p user.info -t $TASK &>/dev/null & # without output redirect, ssh will not close the connection upon exit, cf. #9
 
 close
