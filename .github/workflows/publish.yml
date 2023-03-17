@@ -41,7 +41,7 @@ jobs:
         echo "vcs_ref=`git rev-parse --short HEAD`" >> $GITHUB_ENV
 
     - name: Build the OCR-D Manager image and deploy to GitHub Container Repository
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v4
       with:
         context: .
         push: true
