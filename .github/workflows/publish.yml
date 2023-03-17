@@ -2,11 +2,14 @@ name: Publish OCR-D Manager
 
 on:
   push:
-    branches: [ "main" ]
+    branches: 
+      - main
+      - stable
   workflow_dispatch: # run manually
 
 env:
   REGISTRY_PATH: ghcr.io/slub
+  IMAGE_TAG: latest
 
 jobs:
 
@@ -15,6 +18,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Set environment variables for the stable version
+      if: endsWith(github.ref, '/stable')
+      run: echo "IMAGE_TAG=stable" >> $GITHUB_ENV
+
     - uses: actions/checkout@v3
 
     - # Activate cache export feature to reduce build time of images
@@ -38,7 +45,7 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ env.REGISTRY_PATH }}/ocrd_manager:latest
+        tags: ${{ env.REGISTRY_PATH }}/ocrd_manager:${{ env.IMAGE_TAG }}
         build-args: |
           BUILD_DATE=${{ env.build_date }}
           VCS_REF=${{ env.vcs_ref }}
