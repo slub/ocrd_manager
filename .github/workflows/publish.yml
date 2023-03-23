@@ -1,28 +1,28 @@
 name: Publish OCR-D Manager
 
 on:
-  push:
-    branches: 
-      - main
-      - stable
-  workflow_dispatch: # run manually
-
-env:
-  REGISTRY_PATH: ghcr.io/slub
-  IMAGE_TAG: latest
+  workflow_dispatch:
+    inputs:
+      checkout-ref:
+        description: The branch, tag or SHA to checkout. Otherwise, uses the default branch.
+      image-tag:
+        description: Tag name of Docker image
+        default: 'latest'
 
 jobs:
-
-  build:
-
+  build-deploy:
     runs-on: ubuntu-latest
 
-    steps:
-    - name: Set environment variables for the stable version
-      if: endsWith(github.ref, '/stable')
-      run: echo "IMAGE_TAG=stable" >> $GITHUB_ENV
-
-    - uses: actions/checkout@v3
+    steps: 
+    - name: Checkout without input reference (default)
+      uses: actions/checkout@v3
+      if: github.event.inputs.checkout-ref == ''
+    
+    - name: Checkout input reference ${{ github.event.inputs.checkout-ref }}
+      uses: actions/checkout@v3
+      if: github.event.inputs.checkout-ref != ''
+      with:
+        ref: ${{ github.event.inputs.checkout-ref }}
 
     - # Activate cache export feature to reduce build time of images
       name: Set up Docker Buildx
@@ -40,12 +40,12 @@ jobs:
         date -u +"build_date=%Y-%m-%dT%H:%M:%SZ" >> $GITHUB_ENV
         echo "vcs_ref=`git rev-parse --short HEAD`" >> $GITHUB_ENV
 
-    - name: Build the OCR-D Manager image and deploy to GitHub Container Repository
+    - name: Build the OCR-D Manager image (ghcr.io/slub/ocrd_manager:${{ github.event.inputs.image-tag }})  and deploy to GitHub Container Repository
       uses: docker/build-push-action@v4
       with:
         context: .
         push: true
-        tags: ${{ env.REGISTRY_PATH }}/ocrd_manager:${{ env.IMAGE_TAG }}
+        tags: ghcr.io/slub/ocrd_manager:${{ github.event.inputs.image-tag }}
         build-args: |
           BUILD_DATE=${{ env.build_date }}
           VCS_REF=${{ env.vcs_ref }}
