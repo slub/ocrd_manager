@@ -46,7 +46,7 @@ jobs:
     - name: Determine vcs_ref lable of current image (${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }})
       run: |
        docker pull ${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }}   
-       echo current_vcs_ref=`docker inspect ${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }} | jq '.[0].Config.Labels | ."org.label-schema.vcs-ref"'` >> $GITHUB_ENV
+       echo current_vcs_ref=`docker inspect ${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }} | jq -r '.[0].Config.Labels | ."org.label-schema.vcs-ref"'` >> $GITHUB_ENV
 
     - name: Check variables
       run: |
