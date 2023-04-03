@@ -40,19 +40,12 @@ jobs:
         date -u +"build_date=%Y-%m-%dT%H:%M:%SZ" >> $GITHUB_ENV
         echo "vcs_ref=`git rev-parse --short HEAD`" >> $GITHUB_ENV
 
-    - name: Determine latest version
-      id: latest_php_version
-      uses: flownative/action-docker-get-label@v1
+    - name: Docker meta
+      id: meta
+      uses: docker/metadata-action@v4
       with:
-        image: ghcr.io/slub/ocrd_manager:latest
-        label: org.label-schema.vcs-ref
-        registry_username: github
-        registry_password: ${{ secrets.GITHUB_TOKEN }}
-        registry_endpoint: https://docker.pkg.github.com/v2/
+        images: slub/ocrd_manager
        
-    
-    - name: Determine latest version
-      run: echo "Latest ref version" ${{ steps.latest_php_version.outputs.value }}
         
 #    - name: Build the OCR-D Manager image (ghcr.io/slub/ocrd_manager:${{ github.event.inputs.image-tag }})  and deploy to GitHub Container Repository
 #      uses: docker/build-push-action@v4
