@@ -9,6 +9,9 @@ on:
         description: Tag name of Docker image
         default: 'latest'
 
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository }}
+
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
@@ -40,14 +43,20 @@ jobs:
         date -u +"build_date=%Y-%m-%dT%H:%M:%SZ" >> $GITHUB_ENV
         echo "vcs_ref=`git rev-parse --short HEAD`" >> $GITHUB_ENV
 
-    - name: Build the OCR-D Manager image (ghcr.io/slub/ocrd_manager:${{ github.event.inputs.image-tag }})  and deploy to GitHub Container Repository
+    - name: Determine vcs_ref lable of current image (${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }})
+      run: |
+       docker pull ${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }}   
+       echo current_vcs_ref=`docker inspect ${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }} | jq '.[0].Config.Labels | ."org.label-schema.vcs-ref"'` >> $GITHUB_ENV
+
+    - name: Build the OCR-D Manager image (${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }})  and deploy to GitHub Container Repository
+      if: env.vcs_ref == env.current_vcs_ref
       uses: docker/build-push-action@v4
       with:
-        context: .
-        push: true
-        tags: ghcr.io/slub/ocrd_manager:${{ github.event.inputs.image-tag }}
-        build-args: |
-          BUILD_DATE=${{ env.build_date }}
-          VCS_REF=${{ env.vcs_ref }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+         context: .
+         push: true
+         tags: ${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }}
+         build-args: |
+           BUILD_DATE=${{ env.build_date }}
+           VCS_REF=${{ env.vcs_ref }}
+         cache-from: type=gha
+         cache-to: type=gha,mode=max
