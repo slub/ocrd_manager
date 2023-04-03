@@ -40,11 +40,10 @@ jobs:
         date -u +"build_date=%Y-%m-%dT%H:%M:%SZ" >> $GITHUB_ENV
         echo "vcs_ref=`git rev-parse --short HEAD`" >> $GITHUB_ENV
 
-    - name: Docker meta
-      id: meta
-      uses: docker/metadata-action@v4
-      with:
-        images: slub/ocrd_manager
+       
+    - name: Config Labels
+      run: |
+       docker inspect ghcr.io/slub/ocrd_manager:${{ github.event.inputs.image-tag }} | jq .[0].Config.Labels   
        
         
 #    - name: Build the OCR-D Manager image (ghcr.io/slub/ocrd_manager:${{ github.event.inputs.image-tag }})  and deploy to GitHub Container Repository
