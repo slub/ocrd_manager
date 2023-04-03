@@ -50,8 +50,8 @@ jobs:
 
     - name: Check variables
       run: |
-        echo env.vcs_ref
-        echo env.current_vcs_ref
+        echo ${{env.vcs_ref}}
+        echo ${{env.current_vcs_ref}}
 
     - name: Build the OCR-D Manager image (${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }})  and deploy to GitHub Container Repository
       if: ${{env.vcs_ref}} != ${{env.current_vcs_ref}}
