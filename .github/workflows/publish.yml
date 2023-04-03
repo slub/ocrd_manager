@@ -43,6 +43,7 @@ jobs:
        
     - name: Config Labels
       run: |
+       docker pull ghcr.io/slub/ocrd_manager:${{ github.event.inputs.image-tag }}
        docker inspect ghcr.io/slub/ocrd_manager:${{ github.event.inputs.image-tag }} | jq .[0].Config.Labels   
        
         
