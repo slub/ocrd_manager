@@ -52,12 +52,19 @@ jobs:
           org.opencontainers.image.title=OCR-D Manager
           org.opencontainers.image.version=${{ github.event.inputs.image-tag }}
           org.opencontainers.image.revision=${{ env.vcs_ref }}
+          org.opencontainers.image.created=${{ env.build_date }
         tags: ${{ github.event.inputs.image-tag }}
           
-    - name: Determine vcs_ref lable of current image (${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }})
-      run: |
-       docker pull ${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }}   
-       echo current_vcs_ref=`docker inspect ${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }} | jq -r '.[0].Config.Labels | ."org.label-schema.vcs-ref"'` >> $GITHUB_ENV
+    #- name: Determine vcs_ref lable of current image (${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }})
+    #  run: |
+    #   docker pull ${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }}   
+    #   echo current_vcs_ref=`docker inspect ${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }} | jq -r '.[0].Config.Labels | ."org.label-schema.vcs-ref"'` >> $GITHUB_ENV
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: 'test-latest'
+        path: 'test-latest'
 
     - name: Build the OCR-D Manager image (${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }})  and deploy to GitHub Container Repository
       #if: ${{env.vcs_ref != env.current_vcs_ref}}
