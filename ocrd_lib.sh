@@ -56,6 +56,7 @@ init() {
   mkdir -p /run/lock/ocrd.jobs/
   {
     echo PID=$PID
+    echo TIME_CREATED=$(date --rfc-3339=seconds)
     echo PROCESS_ID=$PROCESS_ID
     echo TASK_ID=$TASK_ID
     echo PROCESS_DIR=$PROCESS_DIR
@@ -68,7 +69,8 @@ init() {
 }
 
 logret() {
-    sed -i 1s/.*/RETVAL=$?/ /run/lock/ocrd.jobs/$REMOTEDIR
+    sed -i "1s/.*/RETVAL=$?/" /run/lock/ocrd.jobs/$REMOTEDIR
+    sed -i "2a TIME_TERMINATED=$(date --rfc-3339=seconds)" /run/lock/ocrd.jobs/$REMOTEDIR
 }
 
 init_task() {
