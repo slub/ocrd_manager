@@ -81,7 +81,7 @@ jobs:
          #cache-from: type=gha
          #cache-to: type=gha,mode=max
          
-    - uses: actions/cache/restore@v3
+    - uses: actions/cache/save@v3
       if: steps.cache.outputs.cache-hit != 'true'
       with:
         path: ~/.env.workflow
