@@ -33,7 +33,7 @@ jobs:
         echo "vcs_ref=`git rev-parse --short HEAD`" >> $GITHUB_ENV
         echo "${{ env.vcs_ref }}" > /tmp/${{ github.event.inputs.image-tag }}-vcs-ref # temporary file to fill cache
 
-    - name: Check of 
+    - name: Check if cache key (${{ github.event.inputs.image-tag }}-${{ env.vcs_ref }}) exist
       uses: actions/cache/restore@v3
       id: cache
       with:
