@@ -63,7 +63,7 @@ jobs:
     - uses: actions/cache/restore@v3
       id: cache
       with:
-        path: ./.env
+        path: ~/.env
         key: ${{ github.event.inputs.image-tag }}-${{ env.vcs_ref }}
         lookup-only: true
       
@@ -84,5 +84,5 @@ jobs:
     - uses: actions/cache/save@v3
       if: steps.cache.outputs.cache-hit != 'true'
       with:
-        path: ./.env
+        path: ~/.env
         key: ${{ github.event.inputs.image-tag }}-${{ env.vcs_ref }}
