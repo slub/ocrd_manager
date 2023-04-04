@@ -52,7 +52,7 @@ jobs:
           org.opencontainers.image.title=OCR-D Manager
           org.opencontainers.image.version=${{ github.event.inputs.image-tag }}
           org.opencontainers.image.revision=${{ env.vcs_ref }}
-          org.opencontainers.image.created=${{ env.build_date }
+          org.opencontainers.image.created=${{ env.build_date }}
         tags: ${{ github.event.inputs.image-tag }}
           
     #- name: Determine vcs_ref lable of current image (${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }})
