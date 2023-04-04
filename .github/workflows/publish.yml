@@ -60,11 +60,21 @@ jobs:
     #   docker pull ${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }}   
     #   echo current_vcs_ref=`docker inspect ${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }} | jq -r '.[0].Config.Labels | ."org.label-schema.vcs-ref"'` >> $GITHUB_ENV
 
+    - name: Download math result for job 2
+      uses: actions/download-artifact@v3
+      with:
+        name: test-latest
+    - name: Print the final result
+      shell: bash
+      run: |
+        value=`cat test-latest.txt`
+        echo The result is $value
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: 'test-latest'
-        path: 'test-latest'
+        name: test-latest
+        path: test-latest.txt
 
     - name: Build the OCR-D Manager image (${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }})  and deploy to GitHub Container Repository
       #if: ${{env.vcs_ref != env.current_vcs_ref}}
