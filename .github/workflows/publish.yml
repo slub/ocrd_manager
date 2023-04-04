@@ -81,7 +81,8 @@ jobs:
          cache-from: type=gha
          cache-to: type=gha,mode=max
          
-    - uses: actions/cache/save@v3
+    - name: Save cache key "${{ github.event.inputs.image-tag }}-${{ env.vcs_ref }}" (input image-tag - vcs_ref)
+      uses: actions/cache/save@v3
       if: steps.cache.outputs.cache-hit != 'true'
       with:
         path: /tmp/${{ github.event.inputs.image-tag }}-vcs-ref
