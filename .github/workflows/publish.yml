@@ -44,10 +44,11 @@ jobs:
         echo "vcs_ref=`git rev-parse --short HEAD`" >> $GITHUB_ENV
 
     - name: Generate image metadata
-      id: image-metadata
+      id: meta
       uses: docker/metadata-action@v4
       with:
         images: |
+          ${{ github.repository }}:${{ github.event.inputs.image-tag }}
           ${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }}
         labels: |
           org.opencontainers.image.title=OCR-D Manager
@@ -59,13 +60,13 @@ jobs:
        echo current_vcs_ref=`docker inspect ${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }} | jq -r '.[0].Config.Labels | ."org.label-schema.vcs-ref"'` >> $GITHUB_ENV
 
     - name: Build the OCR-D Manager image (${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }})  and deploy to GitHub Container Repository
-      if: ${{env.vcs_ref != env.current_vcs_ref}}
+      #if: ${{env.vcs_ref != env.current_vcs_ref}}
       uses: docker/build-push-action@v4
       with:
          context: .
          push: true
-         labels: ${{ steps.image-metadata.outputs.labels }}
-         tags: ${{ steps.image-metadata.outputs.tags }}
+         tags: ${{ steps.meta.outputs.tags }}
+         labels: ${{ steps.meta.outputs.labels }}
          build-args: |
            BUILD_DATE=${{ env.build_date }}
            VCS_REF=${{ env.vcs_ref }}
