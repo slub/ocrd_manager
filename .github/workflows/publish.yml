@@ -27,23 +27,35 @@ jobs:
       with:
         ref: ${{ github.event.inputs.checkout-ref }}
 
+    - name: Determine build args
+      run: |
+        date -u +"build_date=%Y-%m-%dT%H:%M:%SZ" >> $GITHUB_ENV
+        echo "vcs_ref=`git rev-parse --short HEAD`" >> $GITHUB_ENV
+        echo "${{ env.vcs_ref }}" > /tmp/${{ github.event.inputs.image-tag }}-vcs-ref # temporary file to fill cache
+
+    - name: Check of 
+      uses: actions/cache/restore@v3
+      id: cache
+      with:
+        path: /tmp/${{ github.event.inputs.image-tag }}-vcs-ref
+        key: ${{ github.event.inputs.image-tag }}-${{ env.vcs_ref }}
+        lookup-only: true
+
     - # Activate cache export feature to reduce build time of images
       name: Set up Docker Buildx
+      if: steps.cache.outputs.cache-hit != 'true'
       uses: docker/setup-buildx-action@v2
 
     - name: Login to GitHub Container Registry
+      if: steps.cache.outputs.cache-hit != 'true'
       uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Determine build args
-      run: |
-        date -u +"build_date=%Y-%m-%dT%H:%M:%SZ" >> $GITHUB_ENV
-        echo "vcs_ref=`git rev-parse --short HEAD`" >> $GITHUB_ENV
-
     - name: Generate image metadata
+      if: steps.cache.outputs.cache-hit != 'true'
       id: meta
       uses: docker/metadata-action@v4
       with:
@@ -55,34 +67,22 @@ jobs:
           org.opencontainers.image.created=${{ env.build_date }}
         tags: ${{ github.event.inputs.image-tag }}
           
-    #- name: Determine vcs_ref lable of current image (${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }})
-    #  run: |
-    #   docker pull ${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }}   
-    #   echo current_vcs_ref=`docker inspect ${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }} | jq -r '.[0].Config.Labels | ."org.label-schema.vcs-ref"'` >> $GITHUB_ENV
-
-    - uses: actions/cache/restore@v3
-      id: cache
+    - name: Build the OCR-D Manager image (${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }})  and deploy to GitHub Container Repository
+      if: steps.cache.outputs.cache-hit != 'true'
+      uses: docker/build-push-action@v4
       with:
-        path: .gitignore
-        key: ${{ github.event.inputs.image-tag }}-${{ env.vcs_ref }}
-        lookup-only: true
-      
-#    - name: Build the OCR-D Manager image (${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }})  and deploy to GitHub Container Repository
-#      #if: ${{env.vcs_ref != env.current_vcs_ref}}
-#      uses: docker/build-push-action@v4
-#      with:
-#         context: .
-#         push: true
-#         tags: ${{ steps.meta.outputs.tags }}
- #        labels: ${{ steps.meta.outputs.labels }}
-#         build-args: |
-#           BUILD_DATE=${{ env.build_date }}
-           #VCS_REF=${{ env.vcs_ref }}
-         #cache-from: type=gha
-         #cache-to: type=gha,mode=max
+         context: .
+         push: true
+         tags: ${{ steps.meta.outputs.tags }}
+         labels: ${{ steps.meta.outputs.labels }}
+         build-args: |
+            BUILD_DATE=${{ env.build_date }}
+            VCS_REF=${{ env.vcs_ref }}
+         cache-from: type=gha
+         cache-to: type=gha,mode=max
          
     - uses: actions/cache/save@v3
       if: steps.cache.outputs.cache-hit != 'true'
       with:
-        path: .gitignore
+        path: /tmp/${{ github.event.inputs.image-tag }}-vcs-ref
         key: ${{ github.event.inputs.image-tag }}-${{ env.vcs_ref }}
