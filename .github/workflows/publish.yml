@@ -33,7 +33,7 @@ jobs:
         echo "vcs_ref=`git rev-parse --short HEAD`" >> $GITHUB_ENV
         echo "${{ env.vcs_ref }}" > /tmp/${{ github.event.inputs.image-tag }}-vcs-ref # temporary file to fill cache
 
-    - name: Check if cache key (${{ github.event.inputs.image-tag }}-${{ env.vcs_ref }}) exist
+    - name: Check if cache key "${{ github.event.inputs.image-tag }}-${{ env.vcs_ref }}" (input image-tag - vcs_ref) exist
       uses: actions/cache/restore@v3
       id: cache
       with:
@@ -67,7 +67,7 @@ jobs:
           org.opencontainers.image.created=${{ env.build_date }}
         tags: ${{ github.event.inputs.image-tag }}
           
-    - name: Build the OCR-D Manager image (${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }})  and deploy to GitHub Container Repository
+    - name: Build the OCR-D Manager image "${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }}" and deploy to GitHub Container Repository
       if: steps.cache.outputs.cache-hit != 'true'
       uses: docker/build-push-action@v4
       with:
