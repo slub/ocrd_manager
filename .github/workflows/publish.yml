@@ -47,13 +47,12 @@ jobs:
       id: meta
       uses: docker/metadata-action@v4
       with:
-        images: |
-          ${{ github.repository }}
-          ${{ env.IMAGE_NAME }}
+        images: ${{ env.IMAGE_NAME }}
         labels: |
           org.opencontainers.image.title=OCR-D Manager
           org.opencontainers.image.version=${{ github.event.inputs.image-tag }}
           org.opencontainers.image.revision=${{ env.vcs_ref }}
+        tags: ${{ github.event.inputs.image-tag }}
           
     - name: Determine vcs_ref lable of current image (${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }})
       run: |
