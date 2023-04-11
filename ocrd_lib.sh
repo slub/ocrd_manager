@@ -69,7 +69,7 @@ init() {
 }
 
 logret() {
-    sed -i "1s/.*/RETVAL=$?/" /run/lock/ocrd.jobs/$REMOTEDIR
+    sed -i "1s/PID=.*/RETVAL=$?/" /run/lock/ocrd.jobs/$REMOTEDIR
     sed -i "2a TIME_TERMINATED=$(date --rfc-3339=seconds)" /run/lock/ocrd.jobs/$REMOTEDIR
 }
 
@@ -85,15 +85,15 @@ ocrd_format_workflow() {
 
 # ocrd import from workdir
 ocrd_import_workdir() {
+  echo "echo \$\$ > $REMOTEDIR/ocrd.pid"
   echo "if test -f '$REMOTEDIR/mets.xml'; then OV=--overwrite; else OV=; ocrd-import -i '$REMOTEDIR'; fi"
   echo "cd '$REMOTEDIR'"
-  echo 'echo $$ > ocrd.pid'
 }
 
 ocrd_enter_workdir() {
+  echo "echo \$\$ > $REMOTEDIR/ocrd.pid"
   echo "if test -f '$REMOTEDIR/mets.xml'; then OV=--overwrite; else OV=; fi"
   echo "cd '$REMOTEDIR'"
-  echo 'echo $$ > ocrd.pid'
 }
 
 ocrd_process_workflow() {
