@@ -70,6 +70,7 @@ EXPOSE 22
 
 WORKDIR /data
 VOLUME /data
+VOLUME /workflows
 
 # simulate a virtual env for the makefile,
 # coinciding with the Python system prefix

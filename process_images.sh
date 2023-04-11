@@ -16,7 +16,7 @@ parse_args() {
   SCRIPT=
   PROCESS_ID=
   TASK_ID=
-  WORKFLOW=ocr-workflow-default.sh
+  WORKFLOW=/workflows/ocr-workflow-default.sh
   IMAGES_SUBDIR=images
   RESULT_SUBDIR=ocr/alto
   while (($#)); do

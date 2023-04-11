@@ -36,6 +36,14 @@ init() {
     exit 2
   fi
 
+  WORKDIR=ocr-d/"$PROCESS_DIR" # use subdirectory of same volume so --reflink CoW still possible
+  if ! mkdir -p "$WORKDIR"; then
+    logger -p user.error -t $TASK "insufficient permissions on /data volume"
+    exit 5
+  fi
+  # try to be unique here (to avoid clashes)
+  REMOTEDIR="KitodoJob_${PID}_$(basename $PROCESS_DIR)"
+
   WORKFLOW=$(command -v "$WORKFLOW" || realpath "$WORKFLOW")
   if ! test -f "$WORKFLOW"; then
     logger -p user.error -t $TASK "invalid workflow '$WORKFLOW'"
@@ -43,6 +51,10 @@ init() {
   fi
   logger -p user.notice -t $TASK "using workflow '$WORKFLOW':"
   ocrd_format_workflow | logger -p user.notice -t $TASK
+  if test "${WORKFLOW#/workflows/}" = "$WORKFLOW"; then
+      cp -p "$WORKFLOW" "$WORKDIR/workflow.sh"
+      WORKFLOW="$WORKDIR/workflow.sh"
+  fi
 
   if test -z "$CONTROLLER" -o "$CONTROLLER" = "${CONTROLLER#*:}"; then
     logger -p user.error -t $TASK "envvar CONTROLLER='$CONTROLLER' must contain host:port"
@@ -50,14 +62,6 @@ init() {
   fi
   CONTROLLERHOST=${CONTROLLER%:*}
   CONTROLLERPORT=${CONTROLLER#*:}
-
-  WORKDIR=ocr-d/"$PROCESS_DIR" # will use other mount-point than /data soon
-  if ! mkdir -p "$WORKDIR"; then
-    logger -p user.error -t $TASK "insufficient permissions on /data volume"
-    exit 5
-  fi
-  # try to be unique here (to avoid clashes)
-  REMOTEDIR="KitodoJob_${PID}_$(basename $PROCESS_DIR)"
 
   # create stats for monitor
   mkdir -p /run/lock/ocrd.jobs/

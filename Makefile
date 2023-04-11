@@ -23,6 +23,8 @@ Variables:
 	  currently: "$(PRIVATE)"
 	- DATA		host directory to mount into `/data`
 	  currently: "$(DATA)"
+	- WORKFLOWS	host directory to mount into `/workflows`
+	  currently: "$(WORKFLOWS)"
 	- UID		user id to use in logins
 	  currently: $(UID)
 	- GID		group id to use in logins
@@ -47,6 +49,7 @@ help: ; @eval "$$HELP"
 KEYS ?= $(firstword $(wildcard $(HOME)/.ssh/authorized_keys* $(HOME)/.ssh/id_*.pub))
 PRIVATE ?= $(firstword $(filter-out %.pub,$(wildcard $(HOME)/.ssh/id_*)))
 DATA ?= $(CURDIR)
+WORKFLOWS ?= $(CURDIR)/workflows
 UID ?= $(shell id -u)
 GID ?= $(shell id -g)
 UMASK ?= 0002
@@ -62,6 +65,7 @@ run: $(DATA)
 	--name ocrd_manager \
 	--network=$(NETWORK) \
 	-v $(DATA):/data \
+	-v $(WORKFLOWS):/workflows \
 	--mount type=bind,source=$(KEYS),target=/authorized_keys \
 	--mount type=bind,source=$(PRIVATE),target=/id_rsa \
 	-e UID=$(UID) -e GID=$(GID) -e UMASK=$(UMASK) \

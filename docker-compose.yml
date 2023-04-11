@@ -33,6 +33,7 @@ services:
         source: ${MANAGER_KEY} # Manager private key (for access to Controller)
         target: /id_rsa
       - ${MANAGER_DATA}:/data # metadata directory
+      - ${MANAGER_WORKFLOWS}:/workflows
       - shared:/run/lock/ocrd.jobs
 
     tty: true # docker run -t
