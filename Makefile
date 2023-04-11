@@ -88,7 +88,7 @@ test-production: $(DATA)/testdata-production
 ifeq ($(NETWORK),bridge)
 	ssh -i $(PRIVATE) -Tn -p $(PORT) ocrd@localhost $(SCRIPT) $(<F)
 else
-	docker exec -t -u ocrd `docker container ls -qf name=ocrd-manager` $(SCRIPT) $(<F)
+	docker exec -it -u ocrd `docker container ls -qf name=ocrd-manager` $(SCRIPT) $(<F)
 endif
 	test -d $</ocr/alto
 	test -s $</ocr/alto/00000009.tif.original.xml
@@ -100,7 +100,7 @@ test-presentation:
 ifeq ($(NETWORK),bridge)
 	ssh -i $(PRIVATE) -Tn -p $(PORT) ocrd@localhost $(SCRIPT) $(<F)/mets.xml
 else
-	docker exec -t -u ocrd `docker container ls -qf name=ocrd-manager` $(SCRIPT) $(<F)/mets.xml
+	docker exec -it -u ocrd `docker container ls -qf name=ocrd-manager` $(SCRIPT) $(<F)/mets.xml
 endif
 	diff -u <(docker run --rm -v $(DATA):/data $(TAGNAME) ocrd workspace -d $(<F) find -G FULLTEXT -g PHYS_0017..PHYS_0021) <(for file in FULLTEXT/FULLTEXT_PHYS_00{17..21}.xml; do echo $(PREFIX)/$$file; done)
 
