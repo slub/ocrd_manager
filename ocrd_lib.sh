@@ -10,10 +10,17 @@ logerr() {
   logger -p user.info -t $TASK "terminating with error \$?=$? from ${BASH_COMMAND} on line $(caller)"
 }
 
+stopbg() {
+  logger -p user.crit -t $TASK "passing SIGKILL to child $!"
+  # pass signal on to children
+  kill -KILL $!
+}
+
 # initialize variables, create ord-d work directory and exit if something is missing
 init() {
   trap logerr ERR
-
+  trap stopbg INT TERM KILL
+  
   PID=$$
 
   cd /data
