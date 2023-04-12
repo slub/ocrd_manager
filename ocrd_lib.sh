@@ -52,6 +52,9 @@ init() {
   logger -p user.notice -t $TASK "using workflow '$WORKFLOW':"
   ocrd_format_workflow | logger -p user.notice -t $TASK
   if test "${WORKFLOW#/workflows/}" = "$WORKFLOW"; then
+      # full path does not start with /workflows/
+      # this is not a standard workflow - so make a copy
+      # in the workspace and use that path instead
       cp -p "$WORKFLOW" "$WORKDIR/workflow.sh"
       WORKFLOW="$WORKDIR/workflow.sh"
   fi
