@@ -10,10 +10,17 @@ logerr() {
   logger -p user.info -t $TASK "terminating with error \$?=$? from ${BASH_COMMAND} on line $(caller)"
 }
 
+stopbg() {
+  logger -p user.crit -t $TASK "passing SIGKILL to child $!"
+  # pass signal on to children
+  kill -KILL $!
+}
+
 # initialize variables, create ord-d work directory and exit if something is missing
 init() {
   trap logerr ERR
-
+  trap stopbg INT TERM KILL
+  
   PID=$$
 
   cd /data
@@ -29,6 +36,14 @@ init() {
     exit 2
   fi
 
+  WORKDIR=ocr-d/"$PROCESS_DIR" # use subdirectory of same volume so --reflink CoW still possible
+  if ! mkdir -p "$WORKDIR"; then
+    logger -p user.error -t $TASK "insufficient permissions on /data volume"
+    exit 5
+  fi
+  # try to be unique here (to avoid clashes)
+  REMOTEDIR="KitodoJob_${PID}_$(basename $PROCESS_DIR)"
+
   WORKFLOW=$(command -v "$WORKFLOW" || realpath "$WORKFLOW")
   if ! test -f "$WORKFLOW"; then
     logger -p user.error -t $TASK "invalid workflow '$WORKFLOW'"
@@ -36,6 +51,13 @@ init() {
   fi
   logger -p user.notice -t $TASK "using workflow '$WORKFLOW':"
   ocrd_format_workflow | logger -p user.notice -t $TASK
+  if test "${WORKFLOW#/workflows/}" = "$WORKFLOW"; then
+      # full path does not start with /workflows/
+      # this is not a standard workflow - so make a copy
+      # in the workspace and use that path instead
+      cp -p "$WORKFLOW" "$WORKDIR/workflow.sh"
+      WORKFLOW="$WORKDIR/workflow.sh"
+  fi
 
   if test -z "$CONTROLLER" -o "$CONTROLLER" = "${CONTROLLER#*:}"; then
     logger -p user.error -t $TASK "envvar CONTROLLER='$CONTROLLER' must contain host:port"
@@ -44,18 +66,11 @@ init() {
   CONTROLLERHOST=${CONTROLLER%:*}
   CONTROLLERPORT=${CONTROLLER#*:}
 
-  WORKDIR=ocr-d/"$PROCESS_DIR" # will use other mount-point than /data soon
-  if ! mkdir -p "$WORKDIR"; then
-    logger -p user.error -t $TASK "insufficient permissions on /data volume"
-    exit 5
-  fi
-  # try to be unique here (to avoid clashes)
-  REMOTEDIR="KitodoJob_${PID}_$(basename $PROCESS_DIR)"
-
   # create stats for monitor
   mkdir -p /run/lock/ocrd.jobs/
   {
     echo PID=$PID
+    echo TIME_CREATED=$(date --rfc-3339=seconds)
     echo PROCESS_ID=$PROCESS_ID
     echo TASK_ID=$TASK_ID
     echo PROCESS_DIR=$PROCESS_DIR
@@ -68,7 +83,8 @@ init() {
 }
 
 logret() {
-    sed -i 1s/.*/RETVAL=$?/ /run/lock/ocrd.jobs/$REMOTEDIR
+    sed -i "1s/PID=.*/RETVAL=$?/" /run/lock/ocrd.jobs/$REMOTEDIR
+    sed -i "2a TIME_TERMINATED=$(date --rfc-3339=seconds)" /run/lock/ocrd.jobs/$REMOTEDIR
 }
 
 init_task() {
@@ -83,15 +99,15 @@ ocrd_format_workflow() {
 
 # ocrd import from workdir
 ocrd_import_workdir() {
+  echo "echo \$\$ > $REMOTEDIR/ocrd.pid"
   echo "if test -f '$REMOTEDIR/mets.xml'; then OV=--overwrite; else OV=; ocrd-import -i '$REMOTEDIR'; fi"
   echo "cd '$REMOTEDIR'"
-  echo 'echo $$ > ocrd.pid'
 }
 
 ocrd_enter_workdir() {
+  echo "echo \$\$ > $REMOTEDIR/ocrd.pid"
   echo "if test -f '$REMOTEDIR/mets.xml'; then OV=--overwrite; else OV=; fi"
   echo "cd '$REMOTEDIR'"
-  echo 'echo $$ > ocrd.pid'
 }
 
 ocrd_process_workflow() {

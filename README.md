@@ -44,10 +44,12 @@ Build or pull the Docker image:
 
 ### Starting and mounting
 
-Then run the container – providing a **host-side directory** for the volume …
+Then run the container – providing a **host-side directory** for the volumes …
 
  * `DATA`: directory for data processing (including images or existing workspaces),  
    defaults to current working directory
+ * `WORKFLOWS`: directory for scripts (preconfigured workflows),  
+   defaults to `./workflows` in current working directory
 
 … but also files …
 
@@ -73,7 +75,7 @@ Then run the container – providing a **host-side directory** for the volume �
 
 … thus, for **example**:
 
-    make run DATA=/mnt/workspaces MODELS=~/.local/share KEYS=~/.ssh/id_rsa.pub PORT=9022 PRIVATE=~/.ssh/id_rsa
+    make run DATA=/mnt/workspaces WORKFLOWS=/mnt/workflows KEYS=~/.ssh/id_rsa.pub PORT=9022 PRIVATE=~/.ssh/id_rsa
 
 (You can also run the service via `docker-compose` manually – just `cp .env.example .env` and edit to your needs.)
 
@@ -140,7 +142,7 @@ which contains a trivial workflow:
 - preprocessing, layout analysis and text recognition with a single Tesseract processor call
 - format conversion of the result from PAGE-XML to ALTO-XML
 
-It can be replaced with the (path) name of any workflow script mounted under `/data`.
+It can be replaced with the (path) name of any workflow script mounted under `/workflows` or `/data`.
 
 For example (assuming `testdata` is a directory with image files mounted under `/data`):
 
@@ -180,7 +182,7 @@ ENVIRONMENT VARIABLES:
  CONTROLLER: host name and port of OCR-D Controller for processing
 ```
 
-The same goes here for the `workflow parameter`.
+For the `workflow` parameter, the same goes here as [above](#from-image-to-alto-files).
 
 For example (assuming `testdata` is a directory with image files mounted under `/data`):
 

@@ -23,6 +23,8 @@ Variables:
 	  currently: "$(PRIVATE)"
 	- DATA		host directory to mount into `/data`
 	  currently: "$(DATA)"
+	- WORKFLOWS	host directory to mount into `/workflows`
+	  currently: "$(WORKFLOWS)"
 	- UID		user id to use in logins
 	  currently: $(UID)
 	- GID		group id to use in logins
@@ -47,6 +49,7 @@ help: ; @eval "$$HELP"
 KEYS ?= $(firstword $(wildcard $(HOME)/.ssh/authorized_keys* $(HOME)/.ssh/id_*.pub))
 PRIVATE ?= $(firstword $(filter-out %.pub,$(wildcard $(HOME)/.ssh/id_*)))
 DATA ?= $(CURDIR)
+WORKFLOWS ?= $(CURDIR)/workflows
 UID ?= $(shell id -u)
 GID ?= $(shell id -g)
 UMASK ?= 0002
@@ -62,6 +65,7 @@ run: $(DATA)
 	--name ocrd_manager \
 	--network=$(NETWORK) \
 	-v $(DATA):/data \
+	-v $(WORKFLOWS):/workflows \
 	--mount type=bind,source=$(KEYS),target=/authorized_keys \
 	--mount type=bind,source=$(PRIVATE),target=/id_rsa \
 	-e UID=$(UID) -e GID=$(GID) -e UMASK=$(UMASK) \
@@ -88,7 +92,8 @@ test-production: $(DATA)/testdata-production
 ifeq ($(NETWORK),bridge)
 	ssh -i $(PRIVATE) -Tn -p $(PORT) ocrd@localhost $(SCRIPT) $(<F)
 else
-	docker exec -t -u ocrd `docker container ls -qf name=ocrd-manager` $(SCRIPT) $(<F)
+	if test -t 0 -a -t 1; then TTY=-i; fi; \
+	docker exec $$TTY -t -u ocrd `docker container ls -n1 -qf name=ocrd-manager` $(SCRIPT) $(<F)
 endif
 	test -d $</ocr/alto
 	test -s $</ocr/alto/00000009.tif.original.xml
@@ -100,7 +105,8 @@ test-presentation:
 ifeq ($(NETWORK),bridge)
 	ssh -i $(PRIVATE) -Tn -p $(PORT) ocrd@localhost $(SCRIPT) $(<F)/mets.xml
 else
-	docker exec -t -u ocrd `docker container ls -qf name=ocrd-manager` $(SCRIPT) $(<F)/mets.xml
+	if test -t 0 -a -t 1; then TTY=-i; fi; \
+	docker exec $$TTY -t -u ocrd `docker container ls -n1 -qf name=ocrd-manager` $(SCRIPT) $(<F)/mets.xml
 endif
 	diff -u <(docker run --rm -v $(DATA):/data $(TAGNAME) ocrd workspace -d $(<F) find -G FULLTEXT -g PHYS_0017..PHYS_0021) <(for file in FULLTEXT/FULLTEXT_PHYS_00{17..21}.xml; do echo $(PREFIX)/$$file; done)
 
