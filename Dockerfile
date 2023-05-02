@@ -3,14 +3,22 @@
 # ocrd/core # ubuntu:18.04
 FROM ocrd/core:latest
 
-MAINTAINER markus.weigelt@slub-dresden.de
 ARG VCS_REF
 ARG BUILD_DATE
 LABEL \
     maintainer="https://slub-dresden.de" \
+    org.label-schema.vendor="Saxon State and University Library Dresden" \
+    org.label-schema.name="OCR-D Manager" \
     org.label-schema.vcs-ref=$VCS_REF \
     org.label-schema.vcs-url="https://github.com/slub/ocrd_manager" \
     org.label-schema.build-date=$BUILD_DATE
+    org.opencontainers.image.vendor="Saxon State and University Library Dresden" \
+    org.opencontainers.image.title="OCR-D Manager" \
+    org.opencontainers.image.description="Frontend for OCR-D Controller"
+    org.opencontainers.image.source="https://github.com/slub/ocrd_manager"
+    org.opencontainers.image.documentation="https://github.com/slub/ocrd_manager/blob/${VCS_REF}/README.md"
+    org.opencontainers.image.revision=$VCS_REF
+    org.opencontainers.image.created=$BUILD_DATE
 
 ARG KITODO_MQ_CLIENT_VERSION=0.2
 
