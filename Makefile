@@ -88,31 +88,31 @@ test: test-production test-presentation
 
 # run synchronous (without ActiveMQ)
 test-production: SCRIPT = process_images.sh --proc-id 1 --lang deu --script Fraktur
-test-production: MANAGER_PS != docker container ls -n1 -qf name=ocrd-manager
+test-production: CONTAINER != docker container ls -n1 -qf name=ocrd-manager
 test-production: $(DATA)/testdata-production
 ifeq ($(NETWORK),bridge)
 	$(info using ocrd@localhost:$(PORT))
 	ssh -i $(PRIVATE) -Tn -p $(PORT) ocrd@localhost $(SCRIPT) $(<F)
 else
-	$(if $(MANAGER_PS),$(info using $(MANAGER_PS)),$(error must run ocrd-manager before $@))
+	$(if $(CONTAINER),$(info using $(CONTAINER)),$(error must run ocrd-manager before $@))
 	if test -t 0 -a -t 1; then TTY=-i; fi; \
-	docker exec $$TTY -t -u ocrd $(MANAGER_PS) $(SCRIPT) $(<F)
+	docker exec $$TTY -t -u ocrd $(CONTAINER) $(SCRIPT) $(<F)
 endif
 	test -d $</ocr/alto
 	test -s $</ocr/alto/00000009.tif.original.xml
 
 test-presentation: PREFIX = https://digital.slub-dresden.de/data/kitodo/LankDres_1760234508
 test-presentation: SCRIPT = process_mets.sh --pages PHYS_0017..PHYS_0021 --img-grp ORIGINAL --url-prefix $(PREFIX)
-test-presentation: MANAGER_PS != docker container ls -n1 -qf name=ocrd-manager
+test-presentation: CONTAINER != docker container ls -n1 -qf name=ocrd-manager
 test-presentation: $(DATA)/testdata-presentation
 test-presentation:
 ifeq ($(NETWORK),bridge)
 	$(info using ocrd@localhost:$(PORT))
 	ssh -i $(PRIVATE) -Tn -p $(PORT) ocrd@localhost $(SCRIPT) $(<F)/mets.xml
 else
-	$(if $(MANAGER_PS),$(info using $(MANAGER_PS)),$(error must run ocrd-manager before $@))
+	$(if $(CONTAINER),$(info using $(CONTAINER)),$(error must run ocrd-manager before $@))
 	if test -t 0 -a -t 1; then TTY=-i; fi; \
-	docker exec $$TTY -t -u ocrd $(MANAGER_PS) $(SCRIPT) $(<F)/mets.xml
+	docker exec $$TTY -t -u ocrd $(CONTAINER) $(SCRIPT) $(<F)/mets.xml
 endif
 	diff -u <(docker run --rm -v $(DATA):/data $(TAGNAME) ocrd workspace -d $(<F) find -G FULLTEXT -g PHYS_0017..PHYS_0021) <(for file in FULLTEXT/FULLTEXT_PHYS_00{17..21}.xml; do echo $(PREFIX)/$$file; done)
 
