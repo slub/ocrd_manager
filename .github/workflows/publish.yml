@@ -53,19 +53,6 @@ jobs:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Generate image metadata
-      if: steps.cache.outputs.cache-hit != 'true'
-      id: meta
-      uses: docker/metadata-action@v4
-      with:
-        images: ${{ env.IMAGE_NAME }}
-        labels: |
-          org.opencontainers.image.title=OCR-D Manager
-          org.opencontainers.image.version=${{ github.event.inputs.image-tag }}
-          org.opencontainers.image.revision=${{ env.vcs_ref }}
-          org.opencontainers.image.created=${{ env.build_date }}
-        tags: ${{ github.event.inputs.image-tag }}
           
     - name: Build the OCR-D Manager image "${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }}" and deploy to GitHub Container Repository
       if: steps.cache.outputs.cache-hit != 'true'
@@ -73,8 +60,7 @@ jobs:
       with:
          context: .
          push: true
-         tags: ${{ steps.meta.outputs.tags }}
-         labels: ${{ steps.meta.outputs.labels }}
+         tags: ${{ env.IMAGE_NAME }}:${{ github.event.inputs.image-tag }}
          build-args: |
             BUILD_DATE=${{ env.build_date }}
             VCS_REF=${{ env.vcs_ref }}
