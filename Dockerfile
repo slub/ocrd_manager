@@ -11,7 +11,7 @@ LABEL \
     org.label-schema.name="OCR-D Manager" \
     org.label-schema.vcs-ref=$VCS_REF \
     org.label-schema.vcs-url="https://github.com/slub/ocrd_manager" \
-    org.label-schema.build-date=$BUILD_DATE
+    org.label-schema.build-date=$BUILD_DATE \
     org.opencontainers.image.vendor="Saxon State and University Library Dresden" \
     org.opencontainers.image.title="OCR-D Manager" \
     org.opencontainers.image.description="Frontend for OCR-D Controller"
