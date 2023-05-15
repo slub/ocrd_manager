@@ -14,10 +14,10 @@ LABEL \
     org.label-schema.build-date=$BUILD_DATE \
     org.opencontainers.image.vendor="Saxon State and University Library Dresden" \
     org.opencontainers.image.title="OCR-D Manager" \
-    org.opencontainers.image.description="Frontend for OCR-D Controller"
-    org.opencontainers.image.source="https://github.com/slub/ocrd_manager"
-    org.opencontainers.image.documentation="https://github.com/slub/ocrd_manager/blob/${VCS_REF}/README.md"
-    org.opencontainers.image.revision=$VCS_REF
+    org.opencontainers.image.description="Frontend for OCR-D Controller" \
+    org.opencontainers.image.source="https://github.com/slub/ocrd_manager" \
+    org.opencontainers.image.documentation="https://github.com/slub/ocrd_manager/blob/${VCS_REF}/README.md" \
+    org.opencontainers.image.revision=$VCS_REF \
     org.opencontainers.image.created=$BUILD_DATE
 
 ARG KITODO_MQ_CLIENT_VERSION=0.2
