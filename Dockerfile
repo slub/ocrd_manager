@@ -20,7 +20,7 @@ LABEL \
     org.opencontainers.image.revision=$VCS_REF \
     org.opencontainers.image.created=$BUILD_DATE
 
-ARG KITODO_MQ_CLIENT_VERSION=0.2
+ARG KITODO_MQ_CLIENT_VERSION=0.3
 
 ENV HOME=/
 
@@ -48,7 +48,7 @@ COPY kitodo-activemq-client-log4j2.properties /opt/kitodo-activemq-client/log4j2
 ENV ACTIVEMQ_CLIENT_LOG4J2 /opt/kitodo-activemq-client/log4j2.properties
 
 # add ActiveMQ client library
-ADD https://github.com/markusweigelt/kitodo-activemq-client/releases/download/${KITODO_MQ_CLIENT_VERSION}/kitodo-activemq-client-${KITODO_MQ_CLIENT_VERSION}.jar /opt/kitodo-activemq-client
+ADD https://github.com/slub/kitodo-production-activemq/releases/download/${KITODO_MQ_CLIENT_VERSION}/kitodo-activemq-client-${KITODO_MQ_CLIENT_VERSION}.jar /opt/kitodo-activemq-client
 ENV ACTIVEMQ_CLIENT /opt/kitodo-activemq-client/kitodo-activemq-client-${KITODO_MQ_CLIENT_VERSION}.jar
 RUN chmod go+r $ACTIVEMQ_CLIENT
 

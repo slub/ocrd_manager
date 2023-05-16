@@ -88,6 +88,8 @@ init "$@"
 
   pre_sync_workdir
 
+  kitodo_production_task_action_process
+
   ocrd_exec ocrd_import_workdir ocrd_validate_workflow ocrd_process_workflow
 
   post_sync_workdir
@@ -96,7 +98,7 @@ init "$@"
 
   post_process_to_procdir
 
-  close_task
+  kitodo_production_task_action_close
 
 ) |& tee -a $WORKDIR/ocrd.log 2>&1 | logger -p user.info -t $TASK &>/dev/null & # without output redirect, ssh will not close the connection upon exit, cf. #9
 
