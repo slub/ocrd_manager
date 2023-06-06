@@ -257,8 +257,12 @@ kitodo_production_task_action() {
       ;;
   esac
 
-  if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT" -a -n "$TASK_ID" -a -n "$ACTION"; then
-    java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "TaskActionQueue" $TASK_ID "$MESSAGE" "$ACTION"
+  if test -n "$ACTIVEMQ" -a "$ACTIVEMQ" != ":" -a -n "$TASK_ID"; then
+    if test "$ACTIVEMQ_CLIENT_QUEUE" == "TaskActionQueue" ; then
+      java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "$ACTIVEMQ_CLIENT_QUEUE" $TASK_ID "$MESSAGE" "$ACTION"
+    elif test "$ACTION" == "CLOSE"
+      java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "$ACTIVEMQ_CLIENT_QUEUE" $TASK_ID "$MESSAGE"
+    fi
   fi
   logret # communicate retval 0
 }
@@ -293,7 +297,7 @@ kitodo_production_task_action_close() {
 
 # exit in async or sync mode
 close() {
-  if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT" -a -n "$TASK_ID" -a -n "$PROCESS_ID"; then
+  if test -n "$ACTIVEMQ" -a "$ACTIVEMQ" != ":" -a -n "$TASK_ID"; then
     logger -p user.info -t $TASK "ocr_exit in async mode - immediate termination of the script"
     # prevent any RETVAL from being written yet
     trap - EXIT

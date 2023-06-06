@@ -52,6 +52,9 @@ ADD https://github.com/slub/kitodo-production-activemq/releases/download/${KITOD
 ENV ACTIVEMQ_CLIENT /opt/kitodo-activemq-client/kitodo-activemq-client-${KITODO_MQ_CLIENT_VERSION}.jar
 RUN chmod go+r $ACTIVEMQ_CLIENT
 
+# configure ActiveMQ client queue
+ENV ACTIVEMQ_CLIENT_QUEUE FinalizeTaskQueue
+
 # workaround for OCR-D/core#983
 RUN pip install ocrd
 # install mets-mods2tei and page-to-alto

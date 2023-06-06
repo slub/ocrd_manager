@@ -53,6 +53,7 @@ ENVIRONMENT VARIABLES:
 
  CONTROLLER: host name and port of OCR-D Controller for processing
  ACTIVEMQ: URL of ActiveMQ server for result callback (optional)
+ ACTIVEMQ_QUEUE: Queue to handle result callback. Choose between default "FinalizeTaskQueue" or "TaskActionQueue" (optional)
  ACTIVEMQ_CLIENT: path to ActiveMQ client library JAR file (optional)
 EOF
                  exit;;
