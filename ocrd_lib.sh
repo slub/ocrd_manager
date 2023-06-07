@@ -8,6 +8,8 @@ TASK=$(basename $0)
 
 logerr() {
   logger -p user.info -t $TASK "terminating with error \$?=$? from ${BASH_COMMAND} on line $(caller)"
+  
+  kitodo_production_task_action_error_open
 }
 
 stopbg() {
