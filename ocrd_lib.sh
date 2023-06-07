@@ -259,7 +259,7 @@ kitodo_production_task_action() {
       ;;
   esac
 
-  if test -n "$ACTIVEMQ" -a "$ACTIVEMQ" != ":" -a -n "$TASK_ID"; then
+  if test -n "$ACTIVEMQ" -a "$ACTIVEMQ" != ":" -a -n "$TASK_ID" -a -n "$ACTION"; then
     if test "$ACTIVEMQ_CLIENT_QUEUE" == "TaskActionQueue"; then
       java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "$ACTIVEMQ_CLIENT_QUEUE" $TASK_ID "$MESSAGE" "$ACTION"
     elif test "$ACTION" == "CLOSE"; then
