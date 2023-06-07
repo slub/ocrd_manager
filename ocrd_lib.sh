@@ -255,7 +255,7 @@ kitodo_production_task_action() {
       ACTION="CLOSE"
       ;;
     *)
-      echo -n "Unknown action"
+      logger -p user.error -t $TASK "Unknown task action type"
       ;;
   esac
 
