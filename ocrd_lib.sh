@@ -8,6 +8,8 @@ TASK=$(basename $0)
 
 logerr() {
   logger -p user.info -t $TASK "terminating with error \$?=$? from ${BASH_COMMAND} on line $(caller)"
+  
+  kitodo_production_task_action_error_open
 }
 
 stopbg() {
@@ -233,16 +235,71 @@ post_process_to_mets() {
   # perhaps if URL_PREFIX:  mm-update -m "$METS_PATH" validate -u $URL_PREFIX
 }
 
-close_task() {
-  if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT" -a -n "$TASK_ID" -a -n "$PROCESS_ID"; then
-    java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "KitodoProduction.FinalizeStep.Queue" $TASK_ID $PROCESS_ID
+kitodo_production_task_action() {
+  ACTION=""
+  MESSAGE="${2}"
+  case ${1} in
+    1)
+      ACTION="COMMENT"
+      ;;
+    2)
+      ACTION="ERROR_OPEN"
+      ;;
+    3)
+      ACTION="ERROR_CLOSE"
+      ;;
+    4)
+      ACTION="PROCESS"
+      ;;
+    5)
+      ACTION="CLOSE"
+      ;;
+    *)
+      logger -p user.error -t $TASK "Unknown task action type"
+      ;;
+  esac
+
+  if test -n "$ACTIVEMQ" -a "$ACTIVEMQ" != ":" -a -n "$TASK_ID" -a -n "$ACTION"; then
+    if test "$ACTIVEMQ_CLIENT_QUEUE" == "TaskActionQueue"; then
+      java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "$ACTIVEMQ_CLIENT_QUEUE" $TASK_ID "$MESSAGE" "$ACTION"
+    elif test "$ACTION" == "CLOSE"; then
+      java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "$ACTIVEMQ_CLIENT_QUEUE" $TASK_ID "$MESSAGE"
+    fi
   fi
   logret # communicate retval 0
 }
 
+kitodo_production_task_action_comment() {
+  if test -n "${1}"; then
+    kitodo_production_task_action 1 "${1}"
+  else  
+    logger -p user.info -t $TASK "Could not send task info cause no message was specified"
+  fi
+}
+
+kitodo_production_task_action_error_open() {
+  MESSAGE="${1:-Error occured during the OCR processing}"
+  kitodo_production_task_action 2 "$MESSAGE"
+}
+
+kitodo_production_task_action_error_close() {
+  MESSAGE="${1:-OCR processing error has been fixed}"
+  kitodo_production_task_action 3 "$MESSAGE"
+}
+
+kitodo_production_task_action_process() {
+  MESSAGE="${1:-OCR processing started}"
+  kitodo_production_task_action 4 "$MESSAGE"
+}
+
+kitodo_production_task_action_close() {
+  MESSAGE="${1:-OCR processing completed}"
+  kitodo_production_task_action 5 "$MESSAGE"
+}
+
 # exit in async or sync mode
 close() {
-  if test -n "$ACTIVEMQ" -a -n "$ACTIVEMQ_CLIENT" -a -n "$TASK_ID" -a -n "$PROCESS_ID"; then
+  if test -n "$ACTIVEMQ" -a "$ACTIVEMQ" != ":" -a -n "$TASK_ID"; then
     logger -p user.info -t $TASK "ocr_exit in async mode - immediate termination of the script"
     # prevent any RETVAL from being written yet
     trap - EXIT
