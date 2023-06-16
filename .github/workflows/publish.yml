@@ -31,7 +31,7 @@ jobs:
       run: |
         date -u +"build_date=%Y-%m-%dT%H:%M:%SZ" >> $GITHUB_ENV
         echo "vcs_ref=`git rev-parse --short HEAD`" >> $GITHUB_ENV
-        echo "${{ env.vcs_ref }}" > /tmp/${{ github.event.inputs.image-tag }}-vcs-ref # temporary file to fill cache
+        echo "$vcs_ref" > /tmp/${{ github.event.inputs.image-tag }}-vcs-ref # temporary file to fill cache
 
     - name: Get cache key "${{ github.event.inputs.image-tag }}-${{ env.vcs_ref }}" (input image-tag - vcs_ref)
       uses: actions/cache/restore@v3
