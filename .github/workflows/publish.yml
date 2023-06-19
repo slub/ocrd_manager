@@ -26,19 +26,21 @@ jobs:
       if: github.event.inputs.checkout-ref != ''
       with:
         ref: ${{ github.event.inputs.checkout-ref }}
-
-    - name: Determine build args
+        
+    - name: Determine environment variables
       run: |
         date -u +"build_date=%Y-%m-%dT%H:%M:%SZ" >> $GITHUB_ENV
-        echo "vcs_ref=`git rev-parse --short HEAD`" >> $GITHUB_ENV
-        echo "$vcs_ref" > /tmp/${{ github.event.inputs.image-tag }}-vcs-ref # temporary file to fill cache
+        LOCAL_VSC_REF=`git rev-parse --short HEAD`
+        echo "vcs_ref=$LOCAL_VSC_REF" >> $GITHUB_ENV
+        echo "cache_key=${{ github.event.inputs.image-tag }}-$LOCAL_VSC_REF" >> $GITHUB_ENV # (input image-tag - vcs_ref)
+        echo "$LOCAL_VSC_REF" > /tmp/${{ github.event.inputs.image-tag }}-vcs-ref # temporary file to fill cache
 
-    - name: Get cache key "${{ github.event.inputs.image-tag }}-${{ env.vcs_ref }}" (input image-tag - vcs_ref)
+    - name: Get cache key "${{ env.cache_key }}"
       uses: actions/cache/restore@v3
       id: cache
       with:
         path: /tmp/${{ github.event.inputs.image-tag }}-vcs-ref
-        key: ${{ github.event.inputs.image-tag }}-${{ env.vcs_ref }}
+        key: ${{ env.cache_key }}
         lookup-only: true
 
     - # Activate cache export feature to reduce build time of images
@@ -67,9 +69,9 @@ jobs:
          cache-from: type=gha
          cache-to: type=gha,mode=max
          
-    - name: Save cache key "${{ github.event.inputs.image-tag }}-${{ env.vcs_ref }}" (input image-tag - vcs_ref)
+    - name: Save cache key "${{ env.cache_key }}"
       uses: actions/cache/save@v3
       if: steps.cache.outputs.cache-hit != 'true'
       with:
         path: /tmp/${{ github.event.inputs.image-tag }}-vcs-ref
-        key: ${{ github.event.inputs.image-tag }}-${{ env.vcs_ref }}
+        key: ${{ env.cache_key }}
