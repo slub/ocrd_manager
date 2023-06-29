@@ -17,6 +17,7 @@ parse_args() {
   PROCESS_ID=
   TASK_ID=
   WORKFLOW=/workflows/ocr-workflow-default.sh
+  VALIDATE=1
   IMAGES_SUBDIR=images
   RESULT_SUBDIR=ocr/alto
   while (($#)); do
@@ -31,6 +32,7 @@ where OPTIONS can be any/all of:
  --script SCRIPT    overall script of the material to process via OCR
  --workflow FILE    workflow file to use for processing, default:
                     $WORKFLOW
+ --no-validate      skip comprehensive validation of workflow results
  --img-subdir IMG   name of the subdirectory to read images from, default:
                     $IMAGES_SUBDIR
  --ocr-subdir OCR   name of the subdirectory to write OCR results to, default:
@@ -60,6 +62,7 @@ EOF
       --lang) LANGUAGE="$2"; shift;;
       --script) SCRIPT="$2"; shift;;
       --workflow) WORKFLOW="$2"; shift;;
+      --no-validate) VALIDATE=0;;
       --img-subdir) IMAGES_SUBDIR="$2"; shift;;
       --ocr-subdir) RESULT_SUBDIR="$2"; shift;;
       --proc-id) PROCESS_ID="$2"; shift;;
@@ -95,7 +98,7 @@ init "$@"
 
   post_sync_workdir
 
-  post_validate_workdir
+  if ((VALIDATE)); then post_validate_workdir; fi
 
   post_process_to_procdir
 
