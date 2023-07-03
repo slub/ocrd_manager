@@ -111,6 +111,7 @@ where OPTIONS can be any/all of:
  --script SCRIPT    overall script of the material to process via OCR
  --workflow FILE    workflow file to use for processing, default:
                     ocr-workflow-default.sh
+ --no-validate      skip comprehensive validation of workflow results
  --img-subdir IMG   name of the subdirectory to read images from, default:
                     images
  --ocr-subdir OCR   name of the subdirectory to write OCR results to, default:
@@ -162,6 +163,7 @@ process_mets.sh [OPTIONS] METS
 where OPTIONS can be any/all of:
  --workflow FILE    workflow file to use for processing, default:
                     ocr-workflow-default.sh
+ --no-validate      skip comprehensive validation of workflow results
  --pages RANGE      selection of physical page range to process
  --img-grp GRP      fileGrp to read input images from, default:
                     DEFAULT

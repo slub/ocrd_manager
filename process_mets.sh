@@ -16,6 +16,7 @@ parse_args() {
   PROCESS_ID=
   TASK_ID=
   WORKFLOW=/workflows/ocr-workflow-default.sh
+  VALIDATE=1
   PAGES=
   IMAGES_GRP=DEFAULT
   RESULT_GRP=FULLTEXT
@@ -30,6 +31,7 @@ $0 [OPTIONS] METS
 where OPTIONS can be any/all of:
  --workflow FILE    workflow file to use for processing, default:
                     $WORKFLOW
+ --no-validate      skip comprehensive validation of workflow results
  --pages RANGE      selection of physical page range to process
  --img-grp GRP      fileGrp to read input images from, default:
                     $IMAGES_GRP
@@ -51,6 +53,7 @@ ENVIRONMENT VARIABLES:
 EOF
                  exit;;
       --workflow) WORKFLOW="$2"; shift;;
+      --no-validate) VALIDATE=0;;
       --img-grp) IMAGES_GRP="$2"; shift;;
       --ocr-grp) RESULT_GRP="$2"; shift;;
       --pages) PAGES="$2"; shift;;
@@ -88,7 +91,7 @@ init "$@"
 
   post_sync_workdir
 
-  post_validate_workdir
+  if ((VALIDATE)); then post_validate_workdir; fi
 
   post_process_to_mets
 
