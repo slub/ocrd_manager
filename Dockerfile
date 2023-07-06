@@ -60,6 +60,9 @@ RUN pip install ocrd
 # install mets-mods2tei and page-to-alto
 RUN pip install mets-mods2tei
 RUN pip install ocrd-page-to-alto
+# install mongosh
+RUN wget https://downloads.mongodb.com/compass/mongodb-mongosh_1.10.1_amd64.deb
+RUN dpkg -i mongodb-mongosh_1.10.1_amd64.deb
 
 # run OpenSSH server
 RUN ssh-keygen -A
