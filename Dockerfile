@@ -55,14 +55,17 @@ RUN chmod go+r $ACTIVEMQ_CLIENT
 # configure ActiveMQ client queue
 ENV ACTIVEMQ_CLIENT_QUEUE FinalizeTaskQueue
 
-# workaround for OCR-D/core#983
-RUN pip install ocrd
-# install mets-mods2tei and page-to-alto
+# install mets-mods2tei (for METS updates outside of OCR-D workspace)
 RUN pip install mets-mods2tei
+# install page-to-alto (for ALTO conversion outside of OCR-D workflow)
 RUN pip install ocrd-page-to-alto
-# install mongosh
+# install mongosh (for job information)
 RUN wget https://downloads.mongodb.com/compass/mongodb-mongosh_1.10.1_amd64.deb
 RUN dpkg -i mongodb-mongosh_1.10.1_amd64.deb
+# install socat and sampo (for minimal REST API to CLI entrypoints)
+RUN apt-get install socat
+RUN wget https://github.com/bertsky/sampo/raw/external-script-cgiopts/docker/sampo/sampo.sh && chmod +x sampo.sh
+COPY sampo.conf sampo.sh /usr/bin/
 
 # run OpenSSH server
 RUN ssh-keygen -A
