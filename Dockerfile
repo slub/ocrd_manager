@@ -64,8 +64,10 @@ RUN wget https://downloads.mongodb.com/compass/mongodb-mongosh_1.10.1_amd64.deb
 RUN dpkg -i mongodb-mongosh_1.10.1_amd64.deb
 # install socat and sampo (for minimal REST API to CLI entrypoints)
 RUN apt-get install socat
-RUN wget https://github.com/bertsky/sampo/raw/external-script-cgiopts/docker/sampo/sampo.sh && chmod +x sampo.sh
-COPY sampo.conf sampo.sh /usr/bin/
+RUN wget -O /usr/bin/sampo.sh https://github.com/bertsky/sampo/raw/external-script-cgiopts/docker/sampo/sampo.sh
+#COPY sampo.sh /usr/bin/
+COPY sampo.conf /usr/bin/
+RUN chmod +x /usr/bin/sampo.sh
 
 # run OpenSSH server
 RUN ssh-keygen -A
