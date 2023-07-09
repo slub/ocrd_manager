@@ -241,21 +241,25 @@ post_process_to_mets() {
 kitodo_production_task_action() {
   ACTION=""
   MESSAGE="${2}"
+  JOBCOMPLETE=0
   case ${1} in
     1)
       ACTION="COMMENT"
       ;;
     2)
       ACTION="ERROR_OPEN"
+      JOBCOMPLETE=1
       ;;
     3)
       ACTION="ERROR_CLOSE"
+      JOBCOMPLETE=1
       ;;
     4)
       ACTION="PROCESS"
       ;;
     5)
       ACTION="CLOSE"
+      JOBCOMPLETE=1
       ;;
     *)
       logger -p user.error -t $TASK "Unknown task action type"
@@ -268,8 +272,10 @@ kitodo_production_task_action() {
     elif test "$ACTION" == "CLOSE"; then
       java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "$ACTIVEMQ_CLIENT_QUEUE" $TASK_ID "$MESSAGE"
     fi
+    if ((JOBCOMPLETE)); then
+        logret # communicate retval 0
+    fi
   fi
-  logret # communicate retval 0
 }
 
 kitodo_production_task_action_comment() {
