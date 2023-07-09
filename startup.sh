@@ -57,7 +57,7 @@ service rsyslog start
 service ssh start
 
 # start REST webservice
-socat -ly TCP-LISTEN:4004,reuseaddr,fork,pf=ip4 exec:sampo.sh &
+socat -d -ly TCP-LISTEN:4004,reuseaddr,fork,pf=ip4 exec:sampo.sh &
 
 sleep 2
 # connect syslog to container stdout

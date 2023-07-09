@@ -78,7 +78,7 @@ init() {
            remotedir: \"$REMOTEDIR\",
            workflow_file: \"$WORKFLOW\",
            controller_address: \"$CONTROLLER\"
-      } )" $DB_CONNECTION | logger -p user.notice -t $TASK
+      } )" $DB_CONNECTION | logger -p user.debug -t $TASK
 
 }
 
@@ -89,7 +89,7 @@ logret() {
              return_code: $?
         }, \$unset: {
            pid: \"\"
-        }})" $DB_CONNECTION | logger -p user.notice -t $TASK
+        }})" $DB_CONNECTION | logger -p user.debug -t $TASK
 }
 
 init_task() {
