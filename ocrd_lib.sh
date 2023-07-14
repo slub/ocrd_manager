@@ -188,7 +188,7 @@ post_sync_workdir () {
 }
 
 post_validate_workdir() {
-  ocrd workspace -d "$WORKDIR" validate -s mets_unique_identifier -s mets_file_group_names -s pixel_density
+  ocrd workspace -d "$WORKDIR" validate -s mets_unique_identifier -s mets_file_group_names -s pixel_density -s mets_fileid_page_pcgtsid
 }
 
 post_process_to_procdir() {
