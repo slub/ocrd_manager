@@ -22,6 +22,10 @@ LABEL \
 
 ARG KITODO_MQ_CLIENT_VERSION=0.3
 
+# Changelog https://www.mongodb.com/docs/mongodb-shell/changelog/
+# Supported MongoDB Version https://www.mongodb.com/docs/mongodb-shell/connect/#supported-mongodb-versions
+ARG MONGODB_SHELL_VERSION=1.10.1
+
 ENV HOME=/
 
 # make apt system functional
@@ -60,8 +64,8 @@ RUN pip install mets-mods2tei
 # install page-to-alto (for ALTO conversion outside of OCR-D workflow)
 RUN pip install ocrd-page-to-alto
 # install mongosh (for job information)
-RUN wget https://downloads.mongodb.com/compass/mongodb-mongosh_1.10.1_amd64.deb
-RUN dpkg -i mongodb-mongosh_1.10.1_amd64.deb
+RUN wget https://downloads.mongodb.com/compass/mongodb-mongosh_${MONGODB_SHELL_VERSION}_amd64.deb
+RUN dpkg -i mongodb-mongosh_${MONGODB_SHELL_VERSION}_amd64.deb
 # install socat and sampo (for minimal REST API to CLI entrypoints)
 RUN apt-get install socat
 RUN wget -O /usr/bin/sampo.sh https://github.com/bertsky/sampo/raw/external-script-cgiopts/docker/sampo/sampo.sh
