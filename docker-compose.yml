@@ -16,7 +16,7 @@ services:
       GID: ${MANAGER_ENV_GID}
       UMASK: ${MANAGER_ENV_UMASK}
       CONTROLLER: "${CONTROLLER_HOST}:${CONTROLLER_PORT_SSH}"
-      DB_CONNECTION: "mongodb://${DB_ROOT_USER:-root}:${DB_ROOT_PASSWORD:-root_password}@ocrd-database:27017"
+      DB_CONNECTION: "mongodb://${MONITOR_DB_ROOT_USER:-root}:${MONITOR_DB_ROOT_PASSWORD:-root_password}@ocrd-database:27017"
       ACTIVEMQ: "${MQ_HOST}:${MQ_PORT}"
       ACTIVEMQ_CLIENT_QUEUE: "${MQ_CLIENT_QUEUE}"
 
