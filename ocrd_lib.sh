@@ -8,7 +8,6 @@ TASK=$(basename $0)
 
 logerr() {
   logger -p user.info -t $TASK "terminating with error \$?=$? from ${BASH_COMMAND} on line $(caller)"
-  
   kitodo_production_task_action_error_open
 }
 
@@ -22,7 +21,7 @@ stopbg() {
 init() {
   trap logerr ERR
   trap stopbg INT TERM KILL
-  
+
   PID=$$
 
   cd /data
@@ -68,25 +67,29 @@ init() {
   CONTROLLERHOST=${CONTROLLER%:*}
   CONTROLLERPORT=${CONTROLLER#*:}
 
-  # create stats for monitor
-  mkdir -p /run/lock/ocrd.jobs/
-  {
-    echo PID=$PID
-    echo TIME_CREATED=$(date --rfc-3339=seconds)
-    echo PROCESS_ID=$PROCESS_ID
-    echo TASK_ID=$TASK_ID
-    echo PROCESS_DIR=$PROCESS_DIR
-    echo WORKDIR=$WORKDIR
-    echo REMOTEDIR=$REMOTEDIR
-    echo WORKFLOW=$WORKFLOW
-    echo CONTROLLER=$CONTROLLER
-  } > /run/lock/ocrd.jobs/$REMOTEDIR
+  # create job stats for monitor
+  HOME=/tmp mongosh --quiet --norc --eval "use ocrd" --eval "db.OcrdJob.insertOne( {
+           pid: $PID,
+           time_created: ISODate(\"$(date --rfc-3339=seconds)\"),
+           process_id: \"$PROCESS_ID\",
+           task_id: \"$TASK_ID\",
+           process_dir: \"$PROCESS_DIR\",
+           workdir: \"$WORKDIR\",
+           remotedir: \"$REMOTEDIR\",
+           workflow_file: \"$WORKFLOW\",
+           controller_address: \"$CONTROLLER\"
+      } )" $DB_CONNECTION | logger -p user.debug -t $TASK
 
 }
 
 logret() {
-    sed -i "1s/PID=.*/RETVAL=$?/" /run/lock/ocrd.jobs/$REMOTEDIR
-    sed -i "2a TIME_TERMINATED=$(date --rfc-3339=seconds)" /run/lock/ocrd.jobs/$REMOTEDIR
+    HOME=/tmp mongosh --quiet --norc --eval "use ocrd" --eval "db.OcrdJob.findOneAndUpdate( {
+             pid: $PID }, { \$set: {
+             time_terminated: ISODate(\"$(date --rfc-3339=seconds)\"),
+             return_code: $?
+        }, \$unset: {
+           pid: \"\"
+        }})" $DB_CONNECTION | logger -p user.debug -t $TASK
 }
 
 init_task() {
@@ -238,21 +241,25 @@ post_process_to_mets() {
 kitodo_production_task_action() {
   ACTION=""
   MESSAGE="${2}"
+  JOBCOMPLETE=0
   case ${1} in
     1)
       ACTION="COMMENT"
       ;;
     2)
       ACTION="ERROR_OPEN"
+      JOBCOMPLETE=1
       ;;
     3)
       ACTION="ERROR_CLOSE"
+      JOBCOMPLETE=1
       ;;
     4)
       ACTION="PROCESS"
       ;;
     5)
       ACTION="CLOSE"
+      JOBCOMPLETE=1
       ;;
     *)
       logger -p user.error -t $TASK "Unknown task action type"
@@ -265,14 +272,16 @@ kitodo_production_task_action() {
     elif test "$ACTION" == "CLOSE"; then
       java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "$ACTIVEMQ_CLIENT_QUEUE" $TASK_ID "$MESSAGE"
     fi
+    if ((JOBCOMPLETE)); then
+        logret # communicate retval 0
+    fi
   fi
-  logret # communicate retval 0
 }
 
 kitodo_production_task_action_comment() {
   if test -n "${1}"; then
     kitodo_production_task_action 1 "${1}"
-  else  
+  else
     logger -p user.info -t $TASK "Could not send task info cause no message was specified"
   fi
 }
@@ -309,6 +318,5 @@ close() {
     # become synchronous again
     logger -p user.info -t $TASK "ocr_exit in sync mode - wait until the processing is completed"
     wait $!
-    #rm -f /run/lock/ocrd.jobs/$REMOTEDIR
   fi
 }

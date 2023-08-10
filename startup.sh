@@ -35,7 +35,6 @@ echo "umask $UMASK" >>/.ssh/rc
 
 # removes read/write/execute permissions from group and others, but preserves whatever permissions the owner had
 chmod go-rwx /.ssh/*
-chmod go+rwx /run/lock/ocrd.jobs
 
 # set owner and group
 chown -R $UID:$GID /.ssh
@@ -46,17 +45,20 @@ echo ocrd:x:$UID:$GID:SSH user:/:/bin/bash >>/etc/passwd
 # save password informations
 echo ocrd:*:19020:0:99999:7::: >>/etc/shadow
 
+# Replace imklog to prevent starting problems of rsyslog
+/bin/sed -i '/imklog/s/^/#/' /etc/rsyslog.conf
+# rsyslog upd reception on port 514
+/bin/sed -i '/imudp/s/^#//' /etc/rsyslog.conf
+# start syslog
+service rsyslog start
+
 # start ssh as daemon and send output to standard error
 #/usr/sbin/sshd -D -e
 service ssh start
 
-# Replace imklog to prevent starting problems of rsyslog
-/bin/sed -i '/imklog/s/^/#/' /etc/rsyslog.conf
-
-# rsyslog upd reception on port 514
-/bin/sed -i '/imudp/s/^#//' /etc/rsyslog.conf
-
-service rsyslog start
+# start REST webservice
+socat -d -ly TCP-LISTEN:4004,reuseaddr,fork,pf=ip4 exec:sampo.sh &
 
 sleep 2
+# connect syslog to container stdout
 tail -f /var/log/syslog

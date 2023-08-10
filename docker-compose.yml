@@ -12,15 +12,17 @@ services:
     hostname: ${MANAGER_HOST}
 
     environment:
-      - UID=${MANAGER_ENV_UID}
-      - GID=${MANAGER_ENV_GID}
-      - UMASK=${MANAGER_ENV_UMASK}
-      - "CONTROLLER=${CONTROLLER_HOST}:${CONTROLLER_PORT_SSH}"
-      - "ACTIVEMQ=${MQ_HOST}:${MQ_PORT}"
-      - ACTIVEMQ_CLIENT_QUEUE=${MQ_CLIENT_QUEUE}
+      UID: ${MANAGER_ENV_UID}
+      GID: ${MANAGER_ENV_GID}
+      UMASK: ${MANAGER_ENV_UMASK}
+      CONTROLLER: "${CONTROLLER_HOST}:${CONTROLLER_PORT_SSH}"
+      DB_CONNECTION: "mongodb://${DB_ROOT_USER:-root}:${DB_ROOT_PASSWORD:-root_password}@ocrd-database:27017"
+      ACTIVEMQ: "${MQ_HOST}:${MQ_PORT}"
+      ACTIVEMQ_CLIENT_QUEUE: "${MQ_CLIENT_QUEUE}"
 
     ports:
       - ${MANAGER_PORT_SSH}:22
+      - ${MANAGER_PORT_WEB}:4004
 
     # must have been started independently:
     # depends_on:
