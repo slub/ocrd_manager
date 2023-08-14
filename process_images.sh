@@ -37,8 +37,8 @@ where OPTIONS can be any/all of:
                     $IMAGES_SUBDIR
  --ocr-subdir OCR   name of the subdirectory to write OCR results to, default:
                     $RESULT_SUBDIR
- --proc-id ID       process ID to communicate in ActiveMQ callback
- --task-id ID       task ID to communicate in ActiveMQ callback
+ --proc-id ID       process ID to communicate in webhook
+ --task-id ID       task ID to communicate in webhook
  --help             show this message and exit
 
 and DIRECTORY is the local path to process. The script will import
@@ -47,16 +47,10 @@ transfer this to the Controller for processing. After resyncing back
 to the Manager, it will then extract OCR results and export them to
 DIRECTORY/OCR.
 
-If ActiveMQ is used, the script will exit directly after initialization,
-and run processing in the background. Completion will then be signalled
-via ActiveMQ network protocol (using the proc and task ID as message).
-
 ENVIRONMENT VARIABLES:
 
  CONTROLLER: host name and port of OCR-D Controller for processing
- ACTIVEMQ: URL of ActiveMQ server for result callback (optional)
- ACTIVEMQ_QUEUE: Protocol type handling result callbacks. Choose between "FinalizeTaskQueue" (default) or "TaskActionQueue" (optional)
- ACTIVEMQ_CLIENT: path to ActiveMQ client library JAR file (optional)
+
 EOF
                  exit;;
       --lang) LANGUAGE="$2"; shift;;
@@ -92,7 +86,7 @@ init "$@"
 
   pre_sync_workdir
 
-  kitodo_production_task_action_process
+  webhook_send_started
 
   ocrd_exec ocrd_import_workdir ocrd_validate_workflow ocrd_process_workflow
 
@@ -102,7 +96,7 @@ init "$@"
 
   post_process_to_procdir
 
-  kitodo_production_task_action_close
+  webhook_send_completed
 
 ) |& tee -a $WORKDIR/ocrd.log 2>&1 | logger -p user.info -t $TASK &>/dev/null & # without output redirect, ssh will not close the connection upon exit, cf. #9
 

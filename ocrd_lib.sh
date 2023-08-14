@@ -8,7 +8,7 @@ TASK=$(basename $0)
 
 logerr() {
   logger -p user.info -t $TASK "terminating with error \$?=$? from ${BASH_COMMAND} on line $(caller)"
-  kitodo_production_task_action_error_open
+  webhook_send_error
 }
 
 stopbg() {
@@ -27,7 +27,7 @@ init() {
   cd /data
 
   logger -p user.info -t $TASK "ocr_init initialize variables and directory structure"
-  logger -p user.notice -t $TASK "running with $* CONTROLLER=${CONTROLLER:-} ACTIVEMQ=${ACTIVEMQ:-}"
+  logger -p user.notice -t $TASK "running with $* CONTROLLER=${CONTROLLER:-} ASYNC=${ASYNC:-}"
 
   # to be defined by caller
   parse_args "$@"
@@ -238,27 +238,23 @@ post_process_to_mets() {
   # perhaps if URL_PREFIX:  mm-update -m "$METS_PATH" validate -u $URL_PREFIX
 }
 
-kitodo_production_task_action() {
-  ACTION=""
+webhook_send() {
+  EVENT=""
   MESSAGE="${2}"
   JOBCOMPLETE=0
   case ${1} in
     1)
-      ACTION="COMMENT"
+      EVENT="INFO"
       ;;
     2)
-      ACTION="ERROR_OPEN"
+      EVENT="ERROR"
       JOBCOMPLETE=1
       ;;
     3)
-      ACTION="ERROR_CLOSE"
-      JOBCOMPLETE=1
+      EVENT="STARTED"
       ;;
     4)
-      ACTION="PROCESS"
-      ;;
-    5)
-      ACTION="CLOSE"
+      EVENT="COMPLETED"
       JOBCOMPLETE=1
       ;;
     *)
@@ -266,53 +262,44 @@ kitodo_production_task_action() {
       ;;
   esac
 
-  if test -n "$ACTIVEMQ" -a "$ACTIVEMQ" != ":" -a -n "$TASK_ID" -a -n "$ACTION"; then
-    if test "$ACTIVEMQ_CLIENT_QUEUE" == "TaskActionQueue"; then
-      java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "$ACTIVEMQ_CLIENT_QUEUE" $TASK_ID "$MESSAGE" "$ACTION"
-    elif test "$ACTION" == "CLOSE"; then
-      java -Dlog4j2.configurationFile=$ACTIVEMQ_CLIENT_LOG4J2 -jar "$ACTIVEMQ_CLIENT" "tcp://$ACTIVEMQ?closeAsync=false" "$ACTIVEMQ_CLIENT_QUEUE" $TASK_ID "$MESSAGE"
-    fi
+  if test -n "$WEBHOOK_RECEIVER_URL" -a -n "$EVENT"; then
+    echo '{ "taskId": "$TASK_ID", "processId": "$PROCESS_ID", "processId": "$PROCESS_DIR", "event": "$EVENT", "message": "$MESSAGE" }' | curl -k -X POST -H "Content-Type: application/json" -d @- $WEBHOOK_RECEIVER_URL
+
     if ((JOBCOMPLETE)); then
         logret # communicate retval 0
     fi
   fi
 }
 
-kitodo_production_task_action_comment() {
+webhook_send_info() {
   if test -n "${1}"; then
-    kitodo_production_task_action 1 "${1}"
+    webhook_send 1 "${1}"
   else
-    logger -p user.info -t $TASK "Could not send task info cause no message was specified"
+    logger -p user.info -t $TASK "Could not send webhook event info cause no message was specified"
   fi
 }
 
-kitodo_production_task_action_error_open() {
+webhook_send_error() {
   MESSAGE="${1:-Error occured during the OCR processing}"
-  kitodo_production_task_action 2 "$MESSAGE"
+  webhook_send 2 "$MESSAGE"
 }
 
-kitodo_production_task_action_error_close() {
-  MESSAGE="${1:-OCR processing error has been fixed}"
-  kitodo_production_task_action 3 "$MESSAGE"
-}
-
-kitodo_production_task_action_process() {
+webhook_send_started() {
   MESSAGE="${1:-OCR processing started}"
-  kitodo_production_task_action 4 "$MESSAGE"
+  webhook_send 3 "$MESSAGE"
 }
 
-kitodo_production_task_action_close() {
+webhook_send_completed() {
   MESSAGE="${1:-OCR processing completed}"
-  kitodo_production_task_action 5 "$MESSAGE"
+  webhook_send 4 "$MESSAGE"
 }
 
 # exit in async or sync mode
 close() {
-  if test -n "$ACTIVEMQ" -a "$ACTIVEMQ" != ":" -a -n "$TASK_ID"; then
+  if test $ASYNC; then
     logger -p user.info -t $TASK "ocr_exit in async mode - immediate termination of the script"
     # prevent any RETVAL from being written yet
     trap - EXIT
-    # fail so Kitodo will listen to the actual time the job is done via ActiveMQ
     exit 1
   else
     # become synchronous again

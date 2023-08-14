@@ -85,7 +85,7 @@ init "$@"
 
   pre_sync_workdir
 
-  kitodo_production_task_action_process
+  webhook_send_started
 
   ocrd_exec ocrd_enter_workdir ocrd_validate_workflow ocrd_process_workflow
 
@@ -95,7 +95,7 @@ init "$@"
 
   post_process_to_mets
 
-  kitodo_production_task_action_close
+  webhook_send_completed
 
 ) |& tee -a $WORKDIR/ocrd.log 2>&1 | logger -p user.info -t $TASK &>/dev/null & # without output redirect, ssh will not close the connection upon exit, cf. #9
 

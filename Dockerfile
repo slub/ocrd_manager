@@ -47,18 +47,6 @@ RUN apt-get update && \
 # configure writing to ocrd.log for profiling
 COPY ocrd_logging.conf /etc
 
-# add activemq log4j properties
-COPY kitodo-activemq-client-log4j2.properties /opt/kitodo-activemq-client/log4j2.properties
-ENV ACTIVEMQ_CLIENT_LOG4J2 /opt/kitodo-activemq-client/log4j2.properties
-
-# add ActiveMQ client library
-ADD https://github.com/slub/kitodo-production-activemq/releases/download/${KITODO_MQ_CLIENT_VERSION}/kitodo-activemq-client-${KITODO_MQ_CLIENT_VERSION}.jar /opt/kitodo-activemq-client
-ENV ACTIVEMQ_CLIENT /opt/kitodo-activemq-client/kitodo-activemq-client-${KITODO_MQ_CLIENT_VERSION}.jar
-RUN chmod go+r $ACTIVEMQ_CLIENT
-
-# configure ActiveMQ client queue
-ENV ACTIVEMQ_CLIENT_QUEUE FinalizeTaskQueue
-
 # install mets-mods2tei (for METS updates outside of OCR-D workspace)
 RUN pip install mets-mods2tei
 # install page-to-alto (for ALTO conversion outside of OCR-D workflow)
@@ -100,3 +88,5 @@ VOLUME /workflows
 ENV PREFIX=/usr
 ENV VIRTUAL_ENV $PREFIX
 ENV HOME /
+ENV ASYNC=true
+ENV WEBHOOK_RECEIVER_URL=

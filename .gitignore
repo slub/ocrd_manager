@@ -2,3 +2,7 @@
 authorized_keys
 __pycache__/
 .python-version
+
+# test folder
+testdata-production/
+testdata-presentation/

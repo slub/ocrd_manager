@@ -38,9 +38,9 @@ Variables:
 	- CONTROLLER	network address:port for the controller client
 			(must be reachable from the container network)
 	  currently: $(CONTROLLER)
-	- ACTIVEMQ	network address:port for the ActiveMQ client
+	- WEBHOOK_RECEIVER_URL network url for the receiver endpoint
 			(must be reachable from the container network)
-	  currently: $(ACTIVEMQ)
+	  currently: $(WEBHOOK_RECEIVER_URL)
 EOF
 endef
 export HELP
@@ -57,7 +57,7 @@ PORT ?= 9022
 NETWORK ?= bridge
 CONTROLLER_HOST ?= $(shell dig +short $$HOSTNAME)
 CONTROLLER_PORT_SSH ?= 8022
-#ACTIVEMQ ?= $(shell dig +short $$HOSTNAME):61616
+ASYNC=true
 run: $(DATA)
 	docker run -d --rm \
 	-p $(PORT):22 \
@@ -70,7 +70,8 @@ run: $(DATA)
 	--mount type=bind,source=$(PRIVATE),target=/id_rsa \
 	-e UID=$(UID) -e GID=$(GID) -e UMASK=$(UMASK) \
 	-e CONTROLLER=$(CONTROLLER_HOST):$(CONTROLLER_PORT_SSH) \
-	-e ACTIVEMQ=$(ACTIVEMQ) \
+	-e WEBHOOK_RECEIVER_URL=$(WEBHOOK_RECEIVER_URL) \
+	-e ASYNC=false \
 	$(TAGNAME)
 
 $(DATA)/testdata-production:
