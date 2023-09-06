@@ -21,5 +21,11 @@ jobs:
     - name: Checkout repository and submodules
       uses: actions/checkout@v3
 
+    - name: Rename .env.example to .env 
+      run: mv .env.example .env
+
+    - name: Docker Compose build
+      run: docker compose build
+
     - name: Test
       run: make test 
