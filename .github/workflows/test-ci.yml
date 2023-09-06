@@ -31,8 +31,8 @@ jobs:
         
         # Generate ssh keys
         mkdir -p ./ssh
-	      ssh-keygen -t rsa -q -f $MANAGER_KEY -P '' -C 'OCR-D manager key'
-
+	ssh-keygen -t rsa -q -f $MANAGER_KEY -P '' -C 'OCR-D manager key'
+ 
     - name: Docker Compose build
       run: docker compose build
 
