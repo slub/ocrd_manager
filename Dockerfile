@@ -60,7 +60,13 @@ RUN chmod go+r $ACTIVEMQ_CLIENT
 ENV ACTIVEMQ_CLIENT_QUEUE FinalizeTaskQueue
 
 # install mets-mods2tei (for METS updates outside of OCR-D workspace)
-RUN pip install mets-mods2tei
+#RUN pip install mets-mods2tei
+# workaround until https://github.com/slub/mets-mods2tei/pull/68 is merged and released:
+RUN apt-get install git && \
+    git clone --branch adjustments-for-mets-server-option https://github.com/markusweigelt/mets-mods2tei && \
+    cd mets-mods2tei && \
+    pip install .
+
 # install page-to-alto (for ALTO conversion outside of OCR-D workflow)
 RUN pip install ocrd-page-to-alto
 # install mongosh (for job information)
