@@ -231,3 +231,10 @@ To clean up the results, use:
 
     make clean-testdata
 
+## Maintainers
+
+If you have any questions or encounter any problems, please do not hesitate to contact us.
+
+- [Robert Sachunsky](https://github.com/bertsky)
+- [Markus Weigelt](https://github.com/markusweigelt)
+
