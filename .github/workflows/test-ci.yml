@@ -17,24 +17,24 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
 
-    steps:      
+    steps:
     - name: Checkout repository and submodules
       uses: actions/checkout@v3
 
-    - name: Prepare 
+    - name: Prepare
       run: |
-        # Rename example .env file
-        mv .env.example .env
+           # Rename example .env file
+           mv .env.example .env
 
-        # Set environment variables from .env file
-        export $(cat .env | xargs) 
-        
-        # Generate ssh keys
-        mkdir -p ./ssh
-	ssh-keygen -t rsa -q -f $MANAGER_KEY -P '' -C 'OCR-D manager key'
- 
+           # Set environment variables from .env file
+           export $(cat .env | xargs)
+
+           # Generate ssh keys
+           mkdir -p ./ssh
+           ssh-keygen -t rsa -q -f $MANAGER_KEY -P '' -C 'OCR-D manager key'
+
     - name: Docker Compose build
       run: docker compose build
 
     - name: Test
-      run: make test 
+      run: make test
