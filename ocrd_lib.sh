@@ -164,9 +164,10 @@ pre_clone_to_workdir() {
     # now rename the input file grp to the OCR-D default
     # (cannot use ocrd workspace rename-group due to core#913)
     #ocrd workspace -d "$WORKDIR" rename-group $IMAGES_GRP OCR-D-IMG
-    # xmlstarlet ed -L -N mods=http://www.loc.gov/mods/v3 -N mets=http://www.loc.gov/METS/ -N xlink=http://www.w3.org/1999/xlink \
-    #            -u "/mets:mets/mets:fileSec/mets:fileGrp[@USE='$IMAGES_GRP']/@USE" -v OCR-D-IMG "$WORKDIR/mets.xml"
-    mets-alias-filegrp -s input=$IMAGES_GRP -s output=OCR-D-IMG -i "$WORKDIR/mets.xml"
+    xmlstarlet ed -L -N mods=http://www.loc.gov/mods/v3 -N mets=http://www.loc.gov/METS/ -N xlink=http://www.w3.org/1999/xlink \
+               -u "/mets:mets/mets:fileSec/mets:fileGrp[@USE='$IMAGES_GRP']/@USE" -v OCR-D-IMG "$WORKDIR/mets.xml"
+    # broken:
+    #mets-alias-filegrp -s input=$IMAGES_GRP -s output=OCR-D-IMG -i "$WORKDIR/mets.xml"
     # now remove the output file grp, if it exists
     ocrd workspace -d "$WORKDIR" remove-group -fr $RESULT_GRP
   fi
