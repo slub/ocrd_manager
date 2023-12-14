@@ -27,7 +27,7 @@ jobs:
            mv .env.example .env
 
            # Set environment variables from .env file
-           export $(cat .env | xargs)
+           export $(grep -v '^#' .env | xargs)
 
            # Generate ssh keys
            mkdir -p ./ocrd/manager/.ssh
@@ -37,7 +37,7 @@ jobs:
            wget -O .env.ocrd-controller https://raw.githubusercontent.com/slub/ocrd_controller/master/.env.example
 
            # Set environment variables from .env file
-           export $(cat .env.ocrd-controller | xargs)
+           export $(grep -v '^#' .env.ocrd-controller | xargs)
 
            # Add public key of OCR-D Manager
            cp ${MANAGER_KEY}.pub ${CONTROLLER_KEYS}
