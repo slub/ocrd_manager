@@ -64,9 +64,7 @@ jobs:
       run: docker compose up -d
 
     - name: Test
-      run: |
-        ssh-keygen -t rsa -q -f $MANAGER_KEY -P '' -C 'OCR-D manager key'
-        make test
+      run: make test
 
     - name: Setup upterm session when failure
       if: ${{ failure() && github.event_name == 'workflow_dispatch' }}
