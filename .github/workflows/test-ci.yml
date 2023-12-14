@@ -52,3 +52,8 @@ jobs:
 
     - name: Test
       run: make test
+
+    - name: Setup upterm session when failure
+      if: ${{ failure() && github.event_name == 'workflow_dispatch' }}
+      uses: lhotari/action-upterm@v1  
+      
