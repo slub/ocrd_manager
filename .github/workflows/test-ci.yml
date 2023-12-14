@@ -23,6 +23,8 @@ jobs:
 
     - name: Prepare OCR-D Manager
       run: |
+           ssh-keygen -t rsa -q -f ~/.ssh/id_rsa -P '' -C 'Host'
+           
            # Rename example .env file
            mv .env.example .env
 
@@ -33,10 +35,10 @@ jobs:
 
            # Generate ssh keys
            mkdir -p ./ocrd/manager/.ssh
-           ssh-keygen -t rsa -q -f $MANAGER_KEY -P '' -C 'OCR-D manager key'
+           ssh-keygen -t rsa -q -f $MANAGER_KEY -P '' -C 'OCR-D Manager'
            
-           # Create empty authorized_keys file
-           touch ./ocrd/manager/.ssh/authorized_keys
+           # Create authorized_keys file with public key of host
+           cp ~/.ssh/id_rsa.pub ./ocrd/manager/.ssh/authorized_keys
 
            # Create controller directories
            mkdir -p ./ocrd/controller/.ssh/ ./ocrd/controller/models
@@ -62,7 +64,9 @@ jobs:
       run: docker compose up -d
 
     - name: Test
-      run: make test
+      run: |
+        ssh-keygen -t rsa -q -f $MANAGER_KEY -P '' -C 'OCR-D manager key'
+        make test
 
     - name: Setup upterm session when failure
       if: ${{ failure() && github.event_name == 'workflow_dispatch' }}
