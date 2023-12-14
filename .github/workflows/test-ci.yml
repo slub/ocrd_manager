@@ -33,8 +33,6 @@ jobs:
            mkdir -p ./ocrd/manager/.ssh
            ssh-keygen -t rsa -q -f $MANAGER_KEY -P '' -C 'OCR-D manager key'
 
-    - name: Prepare OCR-D Controller
-      run: |
            mkdir -p ./ocrd/controller/.ssh/ ./ocrd/controller/models
            wget -O .env.ocrd-controller https://raw.githubusercontent.com/slub/ocrd_controller/master/.env.example
 
