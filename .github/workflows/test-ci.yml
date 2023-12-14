@@ -26,6 +26,8 @@ jobs:
            # Rename example .env file
            mv .env.example .env
 
+           # Remove empty lines
+           sed -e /^$/d .env 
            # Set environment variables from .env file
            set -a; source .env; set +a
 
@@ -36,7 +38,9 @@ jobs:
            mkdir -p ./ocrd/controller/.ssh/ ./ocrd/controller/models
            wget -O .env.ocrd-controller https://raw.githubusercontent.com/slub/ocrd_controller/master/.env.example
 
-           # Set environment variables from .env file
+           # Remove empty lines
+           sed -e /^$/d .env.ocrd-controller 
+           # Set environment variables from .env.ocrd-controller file
            set -a; source .env.ocrd-controller; set +a
 
            # Add public key of OCR-D Manager
