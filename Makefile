@@ -19,8 +19,8 @@ Variables:
 	  currently: "$(TAGNAME)"
 	- KEYS		file to mount as .ssh/authorized_keys
 	  currently: "$(KEYS)"
-	- PRIVATE 	file to mount as .ssh/id_rsa
-	  currently: "$(PRIVATE)"
+	- MANAGER_KEY 	file to mount as .ssh/id_rsa
+	  currently: "$(MANAGER_KEY)"
 	- DATA		host directory to mount into `/data`
 	  currently: "$(DATA)"
 	- WORKFLOWS	host directory to mount into `/workflows`
@@ -47,7 +47,7 @@ export HELP
 help: ; @eval "$$HELP"
 
 KEYS ?= $(firstword $(wildcard $(HOME)/.ssh/authorized_keys* $(HOME)/.ssh/id_*.pub))
-PRIVATE ?= $(firstword $(filter-out %.pub,$(wildcard $(HOME)/.ssh/id_*)))
+MANAGER_KEY ?= $(firstword $(filter-out %.pub,$(wildcard $(HOME)/.ssh/id_*)))
 DATA ?= $(CURDIR)
 WORKFLOWS ?= $(CURDIR)/workflows
 UID ?= $(shell id -u)
@@ -67,7 +67,7 @@ run: $(DATA)
 	-v $(DATA):/data \
 	-v $(WORKFLOWS):/workflows \
 	--mount type=bind,source=$(KEYS),target=/authorized_keys \
-	--mount type=bind,source=$(PRIVATE),target=/id_rsa \
+	--mount type=bind,source=$(MANAGER_KEY),target=/id_rsa \
 	-e UID=$(UID) -e GID=$(GID) -e UMASK=$(UMASK) \
 	-e CONTROLLER=$(CONTROLLER_HOST):$(CONTROLLER_PORT_SSH) \
 	-e ACTIVEMQ=$(ACTIVEMQ) \
@@ -92,7 +92,7 @@ test-production: CONTAINER != docker container ls -n1 -qf name=ocrd-manager
 test-production: $(DATA)/testdata-production
 ifeq ($(NETWORK),bridge)
 	$(info using ocrd@localhost:$(PORT))
-	ssh -i $(PRIVATE) -Tn -p $(PORT) ocrd@localhost $(SCRIPT) $(<F)
+	ssh -i $(MANAGER_KEY) -Tn -p $(PORT) ocrd@localhost $(SCRIPT) $(<F)
 else
 	$(if $(CONTAINER),$(info using $(CONTAINER)),$(error must run ocrd-manager before $@))
 	if test -t 0 -a -t 1; then TTY=-i; fi; \
@@ -108,7 +108,7 @@ test-presentation: $(DATA)/testdata-presentation
 test-presentation:
 ifeq ($(NETWORK),bridge)
 	$(info using ocrd@localhost:$(PORT))
-	ssh -i $(PRIVATE) -Tn -p $(PORT) ocrd@localhost $(SCRIPT) $(<F)/mets.xml
+	ssh -i $(MANAGER_KEY) -Tn -p $(PORT) ocrd@localhost $(SCRIPT) $(<F)/mets.xml
 else
 	$(if $(CONTAINER),$(info using $(CONTAINER)),$(error must run ocrd-manager before $@))
 	if test -t 0 -a -t 1; then TTY=-i; fi; \
