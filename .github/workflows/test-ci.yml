@@ -18,10 +18,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository and submodules
+    - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Prepare
+    - name: Prepare OCR-D Manager
       run: |
            # Rename example .env file
            mv .env.example .env
@@ -32,6 +32,20 @@ jobs:
            # Generate ssh keys
            mkdir -p ./ssh
            ssh-keygen -t rsa -q -f $MANAGER_KEY -P '' -C 'OCR-D manager key'
+
+    - name: Prepare OCR-D Controller
+      run: |
+           mkdir -p ./ocrd/controller/.ssh/ ./ocrd/controller/models
+           wget -O .env.ocrd-controller https://raw.githubusercontent.com/slub/ocrd_controller/master/.env.example
+
+           # Set environment variables from .env file
+           export $(cat .env.ocrd-controller | xargs)
+
+           # Add public key of OCR-D Manager
+           cp ${MANAGER_KEY}.pub ${CONTROLLER_KEYS}
+
+           # Add model
+           wget -P ${CONTROLLER_MODELS} https://ub-backup.bib.uni-mannheim.de/~stweil/tesstrain/frak2021/tessdata_best/frak2021-0.905.traineddata
 
     - name: Docker Compose build
       run: docker compose build
