@@ -62,7 +62,7 @@ jobs:
       run: docker compose build
 
     - name: Start OCR-D Controller
-      run: docker compose -f docker-compose-controller.yml up -d
+      run: docker compose --env-file=.env.ocrd-controller -f docker-compose-controller.yml up -d
 
     - name: Start OCR-D Manager
       run: docker compose up -d
