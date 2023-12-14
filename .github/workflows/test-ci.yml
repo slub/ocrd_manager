@@ -45,8 +45,11 @@ jobs:
            # Add model
            wget -P ${CONTROLLER_MODELS} https://ub-backup.bib.uni-mannheim.de/~stweil/tesstrain/frak2021/tessdata_best/frak2021-0.905.traineddata
 
-    - name: Docker Compose build
+    - name: Build
       run: docker compose build
+
+    - name: Start
+      run: docker compose up -d
 
     - name: Test
       run: make test
