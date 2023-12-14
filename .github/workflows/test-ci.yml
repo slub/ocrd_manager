@@ -30,7 +30,7 @@ jobs:
            export $(cat .env | xargs)
 
            # Generate ssh keys
-           mkdir -p ~/.ssh
+           mkdir -p ./ocrd/manager/.ssh
            ssh-keygen -t rsa -q -f $MANAGER_KEY -P '' -C 'OCR-D manager key'
 
     - name: Prepare OCR-D Controller
