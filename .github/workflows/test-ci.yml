@@ -21,9 +21,6 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Build OCR-D Manager
-      run: docker compose build
-
     - name: Prepare
       run: |
            ssh-keygen -t rsa -q -f ~/.ssh/id_rsa -P '' -C 'Host'
@@ -61,6 +58,8 @@ jobs:
            # Download controller model
            wget -P ${CONTROLLER_MODELS} https://ub-backup.bib.uni-mannheim.de/~stweil/tesstrain/frak2021/tessdata_best/frak2021-0.905.traineddata
 
+    - name: Build OCR-D Manager
+      run: docker compose build
 
     - name: Start OCR-D Controller
       run: docker compose -f docker-compose-controller.yml up -d
