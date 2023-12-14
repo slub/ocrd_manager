@@ -21,7 +21,10 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Prepare OCR-D Manager
+    - name: Build OCR-D Manager
+      run: docker compose build
+
+    - name: Prepare
       run: |
            ssh-keygen -t rsa -q -f ~/.ssh/id_rsa -P '' -C 'Host'
            
@@ -43,8 +46,9 @@ jobs:
            # Create controller directories
            mkdir -p ./ocrd/controller/.ssh/ ./ocrd/controller/models
            
-           # Download .env.example from master branch of OCR-D Controller repository 
+           # Download necessary files from master of OCR-D Controller repository 
            wget -O .env.ocrd-controller https://raw.githubusercontent.com/slub/ocrd_controller/master/.env.example
+           wget -O docker-compose-controller.yml https://github.com/slub/ocrd_controller/blob/master/docker-compose.yml
 
            # Remove carriage returns in file
            sed -i 's/\r$//' .env.ocrd-controller
@@ -57,10 +61,11 @@ jobs:
            # Download controller model
            wget -P ${CONTROLLER_MODELS} https://ub-backup.bib.uni-mannheim.de/~stweil/tesstrain/frak2021/tessdata_best/frak2021-0.905.traineddata
 
-    - name: Build
-      run: docker compose build
 
-    - name: Start
+    - name: Start OCR-D Controller
+      run: docker compose -f docker-compose-controller.yml up -d
+
+    - name: Start OCR-D Manager
       run: docker compose up -d
 
     - name: Test
