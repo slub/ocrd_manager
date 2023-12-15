@@ -68,7 +68,7 @@ jobs:
         cp ${MANAGER_KEY}.pub ${CONTROLLER_KEYS}
 
         # Download controller model
-        mkdir -p /ocrd/controller/models/ocrd-resources/ocrd-tesserocr-recognize/
+        mkdir -p ./ocrd/controller/models/ocrd-resources/ocrd-tesserocr-recognize/
         wget -O ${CONTROLLER_MODELS}/ocrd-resources/ocrd-tesserocr-recognize/frak2021.traineddata https://ub-backup.bib.uni-mannheim.de/~stweil/tesstrain/frak2021/tessdata_best/frak2021-0.905.traineddata
 
         # TODO checkout OCR-D Monitor directly and extend ocrd-database
