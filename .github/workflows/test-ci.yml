@@ -70,11 +70,11 @@ jobs:
 
            cat >> docker-compose-database.yml << EOL
            services:
-                  ocrd-database:
-                    image: "mongo:latest"
-                    environment:
-                      MONGO_INITDB_ROOT_USERNAME: ${MONITOR_DB_ROOT_USER:-root}
-                      MONGO_INITDB_ROOT_PASSWORD: ${MONITOR_DB_ROOT_PASSWORD:-root_password}
+             ocrd-database:
+               image: "mongo:latest"
+               environment:
+                 MONGO_INITDB_ROOT_USERNAME: ${MONITOR_DB_ROOT_USER:-root}
+                 MONGO_INITDB_ROOT_PASSWORD: ${MONITOR_DB_ROOT_PASSWORD:-root_password}
            EOL 
 
     - name: Build OCR-D Manager
