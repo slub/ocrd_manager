@@ -103,10 +103,7 @@ jobs:
 
     - name: Test
       run: |
-        cat >> ~/.ssh/config << EOF
-        Host *
-            UpdateHostKeys yes
-        EOF
+        ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ocrd@localhost
         make test
 
     - name: Setup upterm session when failure
