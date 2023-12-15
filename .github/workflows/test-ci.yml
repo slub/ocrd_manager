@@ -103,7 +103,7 @@ jobs:
 
     - name: Test
       run: |
-        ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ocrd@localhost
+        alias ssh='ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
         make test
 
     - name: Setup upterm session when failure
