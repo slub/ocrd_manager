@@ -37,6 +37,7 @@ jobs:
            
         # Rename example .env file
         mv .env.example .env
+        export DB_CONNECTION="mongodb://root:root_password@ocrd-database:27017"
 
         # Remove carriage returns in file
         sed -i 's/\r$//' .env 
