@@ -102,6 +102,8 @@ jobs:
 
     - name: Test
       run: |
+        mkdir -p /.ssh
+        touch .ssh/known_hosts
         ssh-keygen -R localhost:9022
         make test
 
