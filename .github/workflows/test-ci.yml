@@ -99,7 +99,9 @@ jobs:
       run: docker compose -f docker-compose.yml -f docker-compose-database.yml up -d
 
     - name: Test
-      run: make test
+      run: |
+        ssh-keygen -R localhost:9022
+        make test
 
     - name: Setup upterm session when failure
       if: ${{ failure() && github.event_name == 'workflow_dispatch' }}
