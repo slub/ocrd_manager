@@ -52,7 +52,7 @@ jobs:
         cp ~/.ssh/id_rsa.pub ./ocrd/manager/.ssh/authorized_keys
 
         # Create controller directories
-        mkdir -p ./ocrd/controller/.ssh/ ./ocrd/controller/models
+        mkdir -p ./ocrd/controller/.ssh/ ./ocrd/controller/models ./ocrd/controller/data
            
         # Download necessary files from master of OCR-D Controller repository 
         wget -O .env.ocrd-controller https://raw.githubusercontent.com/slub/ocrd_controller/master/.env.example
