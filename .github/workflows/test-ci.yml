@@ -68,14 +68,14 @@ jobs:
            # Download controller model
            wget -P ${CONTROLLER_MODELS} https://ub-backup.bib.uni-mannheim.de/~stweil/tesstrain/frak2021/tessdata_best/frak2021-0.905.traineddata
 
-           cat >> docker-compose-database.yml << EOL
-           services:
-             ocrd-database:
-               image: "mongo:latest"
-               environment:
-                 MONGO_INITDB_ROOT_USERNAME: ${MONITOR_DB_ROOT_USER:-root}
-                 MONGO_INITDB_ROOT_PASSWORD: ${MONITOR_DB_ROOT_PASSWORD:-root_password}
-           EOL 
+           cat >> docker-compose-database.yml << EOL \
+           services: \
+             ocrd-database: \
+               image: "mongo:latest" \
+             environment: \
+               MONGO_INITDB_ROOT_USERNAME: ${MONITOR_DB_ROOT_USER:-root} \
+               MONGO_INITDB_ROOT_PASSWORD: ${MONITOR_DB_ROOT_PASSWORD:-root_password} \
+           EOL
 
     - name: Build OCR-D Manager
       run: docker compose build
