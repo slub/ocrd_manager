@@ -57,6 +57,7 @@ jobs:
         # Download necessary files from master of OCR-D Controller repository 
         wget -O .env.ocrd-controller https://raw.githubusercontent.com/slub/ocrd_controller/master/.env.example
         wget -O docker-compose-controller.yml https://raw.githubusercontent.com/slub/ocrd_controller/master/docker-compose.yml
+        # TODO checkout OCR-D Controller directly
 
         # Remove carriage returns in file
         sed -i 's/\r$//' .env.ocrd-controller
@@ -69,6 +70,7 @@ jobs:
         # Download controller model
         wget -P ${CONTROLLER_MODELS}/ocrd-resources/ocrd-tesserocr-recognize/ -O frak2021.traineddata https://ub-backup.bib.uni-mannheim.de/~stweil/tesstrain/frak2021/tessdata_best/frak2021-0.905.traineddata
 
+        # TODO checkout OCR-D Monitor directly and extend ocrd-database
         cat >> docker-compose-database.yml << EOF
         services:
           ocrd-database:
