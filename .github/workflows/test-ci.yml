@@ -102,7 +102,10 @@ jobs:
 
     - name: Test
       run: |
-        sudo ssh-keygen -R localhost:9022
+        cat >> ~/.ssh/config << EOF
+        Host *
+            UpdateHostKeys yes
+        EOF
         make test
 
     - name: Setup upterm session when failure
