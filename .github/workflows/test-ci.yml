@@ -72,9 +72,9 @@ jobs:
         services:
           ocrd-database:
             image: "mongo:latest"
-          environment:
-            MONGO_INITDB_ROOT_USERNAME: ${MONITOR_DB_ROOT_USER:-root}
-            MONGO_INITDB_ROOT_PASSWORD: ${MONITOR_DB_ROOT_PASSWORD:-root_password}
+            environment:
+              MONGO_INITDB_ROOT_USERNAME: root
+              MONGO_INITDB_ROOT_PASSWORD: root_password
         EOF
         
 
