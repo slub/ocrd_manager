@@ -102,9 +102,7 @@ jobs:
 
     - name: Test
       run: |
-        mkdir -p /.ssh
-        touch .ssh/known_hosts
-        ssh-keygen -R localhost:9022
+        sudo ssh-keygen -R localhost:9022
         make test
 
     - name: Setup upterm session when failure
