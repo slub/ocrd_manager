@@ -68,6 +68,15 @@ jobs:
            # Download controller model
            wget -P ${CONTROLLER_MODELS} https://ub-backup.bib.uni-mannheim.de/~stweil/tesstrain/frak2021/tessdata_best/frak2021-0.905.traineddata
 
+           cat >> docker-compose-database.yml << EOL
+           services:
+                  ocrd-database:
+                    image: "mongo:latest"
+                    environment:
+                      MONGO_INITDB_ROOT_USERNAME: ${MONITOR_DB_ROOT_USER:-root}
+                      MONGO_INITDB_ROOT_PASSWORD: ${MONITOR_DB_ROOT_PASSWORD:-root_password}
+           EOL 
+
     - name: Build OCR-D Manager
       run: docker compose build
 
@@ -82,9 +91,10 @@ jobs:
 
     - name: Start OCR-D Controller
       run: docker compose --env-file=.env.ocrd-controller -f docker-compose-controller.yml up -d
+      
 
-    - name: Start OCR-D Manager
-      run: docker compose up -d
+    - name: Start OCR-D Manager & OCR-D Database
+      run: docker compose -f docker-compose.yml -f docker-compose-database.yml up -d
 
     - name: Test
       run: make test
