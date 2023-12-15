@@ -37,7 +37,7 @@ jobs:
            
         # Rename example .env file
         mv .env.example .env
-        export DB_CONNECTION="mongodb://root:root_password@ocrd-database:27017"
+        sed -i "s/${MONITOR_DB_ROOT_USER:-root}:${MONITOR_DB_ROOT_PASSWORD:-root_password}/root:root_password/g" docker-compose.yml
 
         # Remove carriage returns in file
         sed -i 's/\r$//' .env 
