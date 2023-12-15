@@ -33,49 +33,50 @@ jobs:
 
     - name: Prepare
       run: |
-           ssh-keygen -t rsa -q -f ~/.ssh/id_rsa -P '' -C 'Host'
+        ssh-keygen -t rsa -q -f ~/.ssh/id_rsa -P '' -C 'Host'
            
-           # Rename example .env file
-           mv .env.example .env
+        # Rename example .env file
+        mv .env.example .env
 
-           # Remove carriage returns in file
-           sed -i 's/\r$//' .env 
-           # Set environment variables from .env file
-           set -a; source .env; set +a
+        # Remove carriage returns in file
+        sed -i 's/\r$//' .env 
+        # Set environment variables from .env file
+        set -a; source .env; set +a
 
-           # Generate ssh keys
-           mkdir -p ./ocrd/manager/.ssh
-           ssh-keygen -t rsa -q -f $MANAGER_KEY -P '' -C 'OCR-D Manager'
+        # Generate ssh keys
+        mkdir -p ./ocrd/manager/.ssh
+        ssh-keygen -t rsa -q -f $MANAGER_KEY -P '' -C 'OCR-D Manager'
            
-           # Create authorized_keys file with public key of host
-           cp ~/.ssh/id_rsa.pub ./ocrd/manager/.ssh/authorized_keys
+        # Create authorized_keys file with public key of host
+        cp ~/.ssh/id_rsa.pub ./ocrd/manager/.ssh/authorized_keys
 
-           # Create controller directories
-           mkdir -p ./ocrd/controller/.ssh/ ./ocrd/controller/models
+        # Create controller directories
+        mkdir -p ./ocrd/controller/.ssh/ ./ocrd/controller/models
            
-           # Download necessary files from master of OCR-D Controller repository 
-           wget -O .env.ocrd-controller https://raw.githubusercontent.com/slub/ocrd_controller/master/.env.example
-           wget -O docker-compose-controller.yml https://raw.githubusercontent.com/slub/ocrd_controller/master/docker-compose.yml
+        # Download necessary files from master of OCR-D Controller repository 
+        wget -O .env.ocrd-controller https://raw.githubusercontent.com/slub/ocrd_controller/master/.env.example
+        wget -O docker-compose-controller.yml https://raw.githubusercontent.com/slub/ocrd_controller/master/docker-compose.yml
 
-           # Remove carriage returns in file
-           sed -i 's/\r$//' .env.ocrd-controller
-           # Set environment variables from .env.ocrd-controller file
-           set -a; source .env.ocrd-controller; set +a
+        # Remove carriage returns in file
+        sed -i 's/\r$//' .env.ocrd-controller
+        # Set environment variables from .env.ocrd-controller file
+        set -a; source .env.ocrd-controller; set +a
 
-           # Add public key of OCR-D Manager
-           cp ${MANAGER_KEY}.pub ${CONTROLLER_KEYS}
+        # Add public key of OCR-D Manager
+        cp ${MANAGER_KEY}.pub ${CONTROLLER_KEYS}
 
-           # Download controller model
-           wget -P ${CONTROLLER_MODELS} https://ub-backup.bib.uni-mannheim.de/~stweil/tesstrain/frak2021/tessdata_best/frak2021-0.905.traineddata
+        # Download controller model
+        wget -P ${CONTROLLER_MODELS} https://ub-backup.bib.uni-mannheim.de/~stweil/tesstrain/frak2021/tessdata_best/frak2021-0.905.traineddata
 
-           cat >> docker-compose-database.yml << EOL \
-           services: \
-             ocrd-database: \
-               image: "mongo:latest" \
-             environment: \
-               MONGO_INITDB_ROOT_USERNAME: ${MONITOR_DB_ROOT_USER:-root} \
-               MONGO_INITDB_ROOT_PASSWORD: ${MONITOR_DB_ROOT_PASSWORD:-root_password} \
-           EOL
+        cat >> docker-compose-database.yml << EOF
+        services:
+          ocrd-database:
+            image: "mongo:latest"
+          environment:
+            MONGO_INITDB_ROOT_USERNAME: ${MONITOR_DB_ROOT_USER:-root}
+            MONGO_INITDB_ROOT_PASSWORD: ${MONITOR_DB_ROOT_PASSWORD:-root_password}
+        EOF
+        
 
     - name: Build OCR-D Manager
       run: docker compose build
