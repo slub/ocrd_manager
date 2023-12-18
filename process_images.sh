@@ -76,6 +76,7 @@ source ocrd_lib.sh
 
 init "$@"
 
+# Key data to identifiy related entity in the receiver system
 WEBHOOK_KEY_DATA="{\"taskId\" : $TASK_ID}"
 
 # run the workflow script on the Controller non-interactively and log its output locally

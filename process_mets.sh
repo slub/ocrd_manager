@@ -75,6 +75,7 @@ source ocrd_lib.sh
 
 init "$@"
 
+# Key data to identifiy related entity in the receiver system
 WEBHOOK_KEY_DATA="{\"metsPath\" : $METS_PATH}"
 
 # run the workflow script on the Controller non-interactively and log its output locally

@@ -58,4 +58,3 @@ jobs:
 
       - name: Testing using pytest
         run: pdm run pytest tests
-        
