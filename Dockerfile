@@ -90,3 +90,8 @@ ENV VIRTUAL_ENV $PREFIX
 ENV HOME /
 ENV ASYNC=true
 ENV WEBHOOK_RECEIVER_URL=
+
+# install workflow-configuration (for ocrd-make and METS/PAGE XSLT)
+RUN git -C /tmp clone https://github.com/bertsky/workflow-configuration.git && \
+    make -C /tmp/workflow-configuration deps-ubuntu install && \
+    rm -fr /tmp/workflow-configuration

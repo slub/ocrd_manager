@@ -115,7 +115,7 @@ else
 	if test -t 0 -a -t 1; then TTY=-i; fi; \
 	docker exec $$TTY -t -u ocrd $(CONTAINER) $(SCRIPT) $(<F)/mets.xml
 endif
-	diff -u <(docker run --rm -v $(DATA):/data $(TAGNAME) ocrd workspace -d $(<F) find -G FULLTEXT -g PHYS_0017..PHYS_0021) <(for file in FULLTEXT/FULLTEXT_PHYS_00{17..21}.xml; do echo $(PREFIX)/$$file; done)
+	diff -u <(docker run --rm -v $(DATA):/data $(TAGNAME) ocrd workspace -d $(<F) find -G FULLTEXT -g PHYS_0017..PHYS_0021 -k url) <(for file in FULLTEXT/FULLTEXT_PHYS_00{17..21}.xml; do echo $(PREFIX)/$$file; done)
 
 test-ocrd-lib: SCRIPT = process_images.sh --proc-id 1 --lang deu --script Fraktur
 
