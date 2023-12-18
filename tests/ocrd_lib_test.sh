@@ -1,3 +1,3 @@
 #!/bin/bash
 
-source ../ocrd_lib.sh 
+source ocrd_lib.sh 

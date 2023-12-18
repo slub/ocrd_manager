@@ -11,11 +11,12 @@ def webhook_send(httpserver: HTTPServer, keyData: str, event: str, message: str 
     
     if event == "INFO": 
         # including message in bash call
-        subprocess.Popen(['bash', '-c', 'WEBHOOK_RECEIVER_URL={0}; WEBHOOK_KEY_DATA={1}; source ocrd_lib_test.sh; webhook_send_{2} {3}'.format(httpserver.url_for("/endpoint"), keyData, event.lower(), message) ])
+        subprocess.Popen(['bash', '-c', 'WEBHOOK_RECEIVER_URL={0}; WEBHOOK_KEY_DATA={1}; source tests/ocrd_lib_test.sh; webhook_send_{2} {3}'.format(httpserver.url_for("/endpoint"), keyData, event.lower(), message) ], 
+                          stdout=subprocess.PIPE)
     else:    
-        subprocess.Popen(['bash', '-c', 'WEBHOOK_RECEIVER_URL={0}; WEBHOOK_KEY_DATA={1}; source ocrd_lib_test.sh; webhook_send_{2}'.format(httpserver.url_for("/endpoint"), keyData, event.lower()) ])
+        subprocess.Popen(['bash', '-c', 'WEBHOOK_RECEIVER_URL={0}; WEBHOOK_KEY_DATA={1}; source tests/ocrd_lib_test.sh; webhook_send_{2}'.format(httpserver.url_for("/endpoint"), keyData, event.lower()) ])
     
-    time.sleep(0.1)
+    time.sleep(1)
 
     assert len(httpserver.log) == 1
 
