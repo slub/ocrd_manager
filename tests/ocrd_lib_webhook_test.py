@@ -46,3 +46,4 @@ def validateJSON(jsonStr: str) -> Any:
         return json.loads(jsonStr)
     except ValueError:
         assert False, f"The json set to the receiver is not valid."
+    
