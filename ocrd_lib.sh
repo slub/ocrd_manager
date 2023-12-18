@@ -238,6 +238,20 @@ post_process_to_mets() {
   # perhaps if URL_PREFIX:  mm-update -m "$METS_PATH" validate -u $URL_PREFIX
 }
 
+# exit in async or sync mode
+close() {
+  if test $ASYNC; then
+    logger -p user.info -t $TASK "ocr_exit in async mode - immediate termination of the script"
+    # prevent any RETVAL from being written yet
+    trap - EXIT
+    exit 1
+  else
+    # become synchronous again
+    logger -p user.info -t $TASK "ocr_exit in sync mode - wait until the processing is completed"
+    wait $!
+  fi
+}
+
 webhook_send() {
   EVENT=""
   MESSAGE="${2}"
@@ -262,12 +276,14 @@ webhook_send() {
       ;;
   esac
 
-  if test -n "$WEBHOOK_RECEIVER_URL" -a -n "$EVENT"; then
-    echo '{ "taskId": "$TASK_ID", "processId": "$PROCESS_ID", "processId": "$PROCESS_DIR", "event": "$EVENT", "message": "$MESSAGE" }' | curl -k -X POST -H "Content-Type: application/json" -d @- $WEBHOOK_RECEIVER_URL
+  if test -n "$WEBHOOK_RECEIVER_URL" -a -n "$WEBHOOK_KEY_DATA" -a -n "$EVENT"; then
+    echo "{ \"key-data\": \"$WEBHOOK_KEY_DATA\", \"event\": \"$EVENT\", \"message\": \"$MESSAGE\" }" | curl -k -X POST -H "Content-Type: application/json" -d @- $WEBHOOK_RECEIVER_URL
 
     if ((JOBCOMPLETE)); then
         logret # communicate retval 0
     fi
+  else  
+    logger -p user.notice -t $TASK "WEBHOOK_RECEIVER_URL, WEBHOOK_KEY_DATA and suitable webhook event must be set to send a webhook"
   fi
 }
 
@@ -292,18 +308,4 @@ webhook_send_started() {
 webhook_send_completed() {
   MESSAGE="${1:-OCR processing completed}"
   webhook_send 4 "$MESSAGE"
-}
-
-# exit in async or sync mode
-close() {
-  if test $ASYNC; then
-    logger -p user.info -t $TASK "ocr_exit in async mode - immediate termination of the script"
-    # prevent any RETVAL from being written yet
-    trap - EXIT
-    exit 1
-  else
-    # become synchronous again
-    logger -p user.info -t $TASK "ocr_exit in sync mode - wait until the processing is completed"
-    wait $!
-  fi
 }

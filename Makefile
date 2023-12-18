@@ -117,6 +117,8 @@ else
 endif
 	diff -u <(docker run --rm -v $(DATA):/data $(TAGNAME) ocrd workspace -d $(<F) find -G FULLTEXT -g PHYS_0017..PHYS_0021) <(for file in FULLTEXT/FULLTEXT_PHYS_00{17..21}.xml; do echo $(PREFIX)/$$file; done)
 
+test-ocrd-lib: SCRIPT = process_images.sh --proc-id 1 --lang deu --script Fraktur
+
 clean clean-testdata:
 	$(RM) -r $(DATA)/testdata* $(DATA)/ocr-d/testdata*
 
