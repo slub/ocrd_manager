@@ -16,7 +16,7 @@ def webhook_send(httpserver: HTTPServer, keyData: str, event: str, message: str 
     else:    
         subprocess.Popen(['bash', '-c', 'WEBHOOK_RECEIVER_URL={0}; WEBHOOK_KEY_DATA={1}; source tests/ocrd_lib_test.sh; webhook_send_{2}'.format(httpserver.url_for("/endpoint"), keyData, event.lower()) ])
     
-    time.sleep(1)
+    time.sleep(0.1)
 
     assert len(httpserver.log) == 1
 
