@@ -29,8 +29,6 @@ def webhook_send(httpserver: HTTPServer, keyData: str, event: str, message: str 
         assert jsonData["event"] == event
         assert jsonData["message"] == message
       
-
-
 def test_webhook_info(httpserver: HTTPServer) -> None:
     webhook_send(httpserver, "test_info", "INFO", "hello")
 
