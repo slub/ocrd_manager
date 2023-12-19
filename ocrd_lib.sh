@@ -277,14 +277,17 @@ webhook_send() {
   esac
 
   if test -n "$WEBHOOK_RECEIVER_URL" -a -n "$WEBHOOK_KEY_DATA" -a -n "$EVENT"; then
-    echo "{ \"key-data\": \"$WEBHOOK_KEY_DATA\", \"event\": \"$EVENT\", \"message\": \"$MESSAGE\" }" | curl -k -X POST -H "Content-Type: application/json" -d @- $WEBHOOK_RECEIVER_URL
-
+    webhook_request "$WEBHOOK_RECEIVER_URL" "$WEBHOOK_KEY_DATA" "$EVENT" "$MESSAGE"
     if ((JOBCOMPLETE)); then
         logret # communicate retval 0
     fi
   else  
     logger -p user.notice -t $TASK "WEBHOOK_RECEIVER_URL, WEBHOOK_KEY_DATA and suitable webhook event must be set to send a webhook"
   fi
+}
+
+webhook_request() {
+  echo "{ \"key-data\": \"${2}\", \"event\": \"${3}\", \"message\": \"${4}\" }" | curl -k -X POST -H "Content-Type: application/json" -d @- ${1}
 }
 
 webhook_send_info() {
