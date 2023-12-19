@@ -20,6 +20,8 @@ parse_args() {
   VALIDATE=1
   IMAGES_SUBDIR=images
   RESULT_SUBDIR=ocr/alto
+  WEBHOOK_RECEIVER_URL=
+  ACTIVEMQ_QUEUE=FinalizeTaskQueue
   while (($#)); do
     case "$1" in
       --help|-h) cat <<EOF
@@ -28,18 +30,21 @@ SYNOPSIS:
 $0 [OPTIONS] DIRECTORY
 
 where OPTIONS can be any/all of:
- --lang LANGUAGE    overall language of the material to process via OCR
- --script SCRIPT    overall script of the material to process via OCR
- --workflow FILE    workflow file to use for processing, default:
-                    $WORKFLOW
- --no-validate      skip comprehensive validation of workflow results
- --img-subdir IMG   name of the subdirectory to read images from, default:
-                    $IMAGES_SUBDIR
- --ocr-subdir OCR   name of the subdirectory to write OCR results to, default:
-                    $RESULT_SUBDIR
- --proc-id ID       process ID to communicate in webhook
- --task-id ID       task ID to communicate in webhook
- --help             show this message and exit
+ --lang LANGUAGE          overall language of the material to process via OCR
+ --script SCRIPT          overall script of the material to process via OCR
+ --workflow FILE          workflow file to use for processing, default:
+                          $WORKFLOW
+ --no-validate            skip comprehensive validation of workflow results
+ --img-subdir IMG         name of the subdirectory to read images from, default:
+                          $IMAGES_SUBDIR
+ --ocr-subdir OCR         name of the subdirectory to write OCR results to, default:
+                          $RESULT_SUBDIR
+ --proc-id ID             process ID to communicate in webhook
+ --task-id ID             task ID to communicate in webhook
+ --activemq-url           url to the ActiveMQ (webhook receiver url)
+ --activemq-queue         name of the ActiveMQ queue, default:
+                          $ACTIVEMQ_QUEUE
+ --help                   show this message and exit
 
 and DIRECTORY is the local path to process. The script will import
 the images from DIRECTORY/IMG into a new (temporary) METS and
@@ -61,6 +66,8 @@ EOF
       --ocr-subdir) RESULT_SUBDIR="$2"; shift;;
       --proc-id) PROCESS_ID="$2"; shift;;
       --task-id) TASK_ID="$2"; shift;;
+      --activemq-url) WEBHOOK_RECEIVER_URL="$2"; shift;;
+      --activemq-queue) ACTIVEMQ_QUEUE="$2"; shift;;
       *) PROCESS_DIR="$1";
          break;;
     esac
@@ -78,6 +85,37 @@ init "$@"
 
 # Key data to identifiy related entity in the receiver system
 WEBHOOK_KEY_DATA="{\"taskId\" : $TASK_ID}"
+
+# Overwrite webhook_request "$WEBHOOK_RECEIVER_URL" "$WEBHOOK_KEY_DATA" "$EVENT" "$MESSAGE"
+webhook_request() {
+  ACTION=""
+  case ${3} in
+    "INFO")
+      ACTION="COMMENT"
+      ;;
+    "ERROR")
+      ACTION="ERROR_OPEN"
+      ;;
+    "STARTED")
+      ACTION="PROCESS"
+      ;;
+    "COMPLETED")
+      ACTION="CLOSE"
+      ;;
+    *)
+      logger -p user.error -t $TASK "Unknown task action type"
+      ;;
+  esac
+
+  if test -n "$ACTION"; then
+    ACTIVEMQ_CLIENT_COMMAND=`java -Dlog4j2.configurationFile=$KITODO_PRODUCTION_ACTIVEMQ_CLIENT_LOG4J2 -jar "$KITODO_PRODUCTION_ACTIVEMQ_CLIENT"`
+    if test "$ACTIVEMQ_QUEUE" == "TaskActionQueue"; then
+      $ACTIVEMQ_CLIENT_COMMAND "${1}" "$ACTIVEMQ_QUEUE" ${2} "${4}" "$ACTION"
+    elif test "$ACTION" == "CLOSE"; then
+      $ACTIVEMQ_CLIENT_COMMAND "${1}" "$ACTIVEMQ_QUEUE" ${2} "${4}"
+    fi
+  fi
+}
 
 # run the workflow script on the Controller non-interactively and log its output locally
 # subsequently validate and postprocess the results

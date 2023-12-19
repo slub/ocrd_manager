@@ -20,8 +20,6 @@ LABEL \
     org.opencontainers.image.revision=$VCS_REF \
     org.opencontainers.image.created=$BUILD_DATE
 
-ARG KITODO_MQ_CLIENT_VERSION=0.3
-
 # Changelog https://www.mongodb.com/docs/mongodb-shell/changelog/
 # Supported MongoDB Version https://www.mongodb.com/docs/mongodb-shell/connect/#supported-mongodb-versions
 ARG MONGODB_SHELL_VERSION=1.10.1
@@ -46,6 +44,20 @@ RUN apt-get update && \
     apt-get clean
 # configure writing to ocrd.log for profiling
 COPY ocrd_logging.conf /etc
+
+
+## Kitodo.Production ActiveMQ specifics for process_images.sh (for_production.sh)
+# https://github.com/slub/kitodo-production-activemq/tags
+ARG KITODO_PRODUCTION_ACTIVEMQ_CLIENT_VERSION=0.3
+
+# add Kitodo.Production ActiveMQ log4j properties
+COPY kitodo-production-activemq-client-log4j2.properties /opt/kitodo-production-activemq-client/log4j2.properties
+ENV KITODO_PRODUCTION_ACTIVEMQ_CLIENT_LOG4J2 /opt/kitodo-production-activemq-client/log4j2.properties
+
+# add Kitodo.Production client library
+ADD https://github.com/slub/kitodo-production-activemq/releases/download/${KITODO_PRODUCTION_ACTIVEMQ_CLIENT_VERSION}/kitodo-production-activemq-client-${KITODO_PRODUCTION_ACTIVEMQ_CLIENT_VERSION}.jar /opt/kitodo-production-activemq-client
+ENV KITODO_PRODUCTION_ACTIVEMQ_CLIENT /opt/kitodo-production-activemq-client/kitodo-production-activemq-client-${KITODO_PRODUCTION_ACTIVEMQ_CLIENT_VERSION}.jar
+RUN chmod go+r $KITODO_PRODUCTION_ACTIVEMQ_CLIENT
 
 # install mets-mods2tei (for METS updates outside of OCR-D workspace)
 RUN pip install mets-mods2tei
@@ -89,7 +101,6 @@ ENV PREFIX=/usr
 ENV VIRTUAL_ENV $PREFIX
 ENV HOME /
 ENV ASYNC=true
-ENV WEBHOOK_RECEIVER_URL=
 
 # install workflow-configuration (for ocrd-make and METS/PAGE XSLT)
 RUN git -C /tmp clone https://github.com/bertsky/workflow-configuration.git && \

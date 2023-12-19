@@ -21,6 +21,7 @@ parse_args() {
   IMAGES_GRP=DEFAULT
   RESULT_GRP=FULLTEXT
   URL_PREFIX=
+  WEBHOOK_RECEIVER_URL=
   while (($#)); do
     case "$1" in
       --help|-h) cat <<EOF
@@ -29,17 +30,18 @@ SYNOPSIS:
 $0 [OPTIONS] METS
 
 where OPTIONS can be any/all of:
- --workflow FILE    workflow file to use for processing, default:
-                    $WORKFLOW
- --no-validate      skip comprehensive validation of workflow results
- --pages RANGE      selection of physical page range to process
- --img-grp GRP      fileGrp to read input images from, default:
-                    $IMAGES_GRP
- --ocr-grp GRP      fileGrp to write output OCR text to, default:
-                    $RESULT_GRP
- --url-prefix URL   convert result text file refs from local to URL
-                    and prefix them
- --help             show this message and exit
+ --workflow FILE          workflow file to use for processing, default:
+                          $WORKFLOW
+ --no-validate            skip comprehensive validation of workflow results
+ --pages RANGE            selection of physical page range to process
+ --img-grp GRP            fileGrp to read input images from, default:
+                          $IMAGES_GRP
+ --ocr-grp GRP            fileGrp to write output OCR text to, default:
+                          $RESULT_GRP
+ --url-prefix URL         convert result text file refs from local to URL
+                          and prefix them
+ --webhook-receiver-url   url to the webhook receiver (ActiveMQ)
+ --help                   show this message and exit
 
 and METS is the path of the METS file to process. The script will copy
 the METS into a new (temporary) workspace and transfer this to the
@@ -58,6 +60,7 @@ EOF
       --ocr-grp) RESULT_GRP="$2"; shift;;
       --pages) PAGES="$2"; shift;;
       --url-prefix) URL_PREFIX="$2"; shift;;
+      --webhook-receiver-url) WEBHOOK_RECEIVER_URL="$2"; shift;;
       *) METS_PATH="$1";
          PROCESS_ID=$(ocrd workspace -m "$METS_PATH" get-id)
          PROCESS_DIR=$(dirname "$METS_PATH");
