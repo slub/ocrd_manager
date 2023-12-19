@@ -38,9 +38,6 @@ Variables:
 	- CONTROLLER	network address:port for the controller client
 			(must be reachable from the container network)
 	  currently: $(CONTROLLER)
-	- WEBHOOK_RECEIVER_URL network url for the receiver endpoint
-			(must be reachable from the container network)
-	  currently: $(WEBHOOK_RECEIVER_URL)
 EOF
 endef
 export HELP
@@ -70,7 +67,6 @@ run: $(DATA)
 	--mount type=bind,source=$(PRIVATE),target=/id_rsa \
 	-e UID=$(UID) -e GID=$(GID) -e UMASK=$(UMASK) \
 	-e CONTROLLER=$(CONTROLLER_HOST):$(CONTROLLER_PORT_SSH) \
-	-e WEBHOOK_RECEIVER_URL=$(WEBHOOK_RECEIVER_URL) \
 	-e ASYNC=false \
 	$(TAGNAME)
 
