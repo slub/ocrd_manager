@@ -55,8 +55,8 @@ COPY kitodo-production-activemq-client-log4j2.properties /opt/kitodo-production-
 ENV KITODO_PRODUCTION_ACTIVEMQ_CLIENT_LOG4J2 /opt/kitodo-production-activemq-client/log4j2.properties
 
 # add Kitodo.Production client library
-ADD https://github.com/slub/kitodo-production-activemq/releases/download/${KITODO_PRODUCTION_ACTIVEMQ_CLIENT_VERSION}/kitodo-production-activemq-client-${KITODO_PRODUCTION_ACTIVEMQ_CLIENT_VERSION}.jar /opt/kitodo-production-activemq-client
-ENV KITODO_PRODUCTION_ACTIVEMQ_CLIENT /opt/kitodo-production-activemq-client/kitodo-production-activemq-client-${KITODO_PRODUCTION_ACTIVEMQ_CLIENT_VERSION}.jar
+ADD https://github.com/slub/kitodo-production-activemq/releases/download/${KITODO_PRODUCTION_ACTIVEMQ_CLIENT_VERSION}/kitodo-activemq-client-${KITODO_PRODUCTION_ACTIVEMQ_CLIENT_VERSION}.jar /opt/kitodo-production-activemq-client
+ENV KITODO_PRODUCTION_ACTIVEMQ_CLIENT /opt/kitodo-production-activemq-client/kitodo-activemq-client-${KITODO_PRODUCTION_ACTIVEMQ_CLIENT_VERSION}.jar
 RUN chmod go+r $KITODO_PRODUCTION_ACTIVEMQ_CLIENT
 
 # install mets-mods2tei (for METS updates outside of OCR-D workspace)
