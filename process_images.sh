@@ -108,11 +108,10 @@ webhook_request() {
   esac
 
   if test -n "$ACTION"; then
-    ACTIVEMQ_CLIENT_COMMAND=`java -Dlog4j2.configurationFile=$KITODO_PRODUCTION_ACTIVEMQ_CLIENT_LOG4J2 -jar "$KITODO_PRODUCTION_ACTIVEMQ_CLIENT"`
     if test "$ACTIVEMQ_QUEUE" == "TaskActionQueue"; then
-      $ACTIVEMQ_CLIENT_COMMAND "${1}" "$ACTIVEMQ_QUEUE" ${2} "${4}" "$ACTION"
+      java -Dlog4j2.configurationFile=$KITODO_PRODUCTION_ACTIVEMQ_CLIENT_LOG4J2 -jar "$KITODO_PRODUCTION_ACTIVEMQ_CLIENT" "${1}" "$ACTIVEMQ_QUEUE" ${2} "${4}" "$ACTION"
     elif test "$ACTION" == "CLOSE"; then
-      $ACTIVEMQ_CLIENT_COMMAND "${1}" "$ACTIVEMQ_QUEUE" ${2} "${4}"
+      java -Dlog4j2.configurationFile=$KITODO_PRODUCTION_ACTIVEMQ_CLIENT_LOG4J2 -jar "$KITODO_PRODUCTION_ACTIVEMQ_CLIENT" "${1}" "$ACTIVEMQ_QUEUE" ${2} "${4}"
     fi
   fi
 }
