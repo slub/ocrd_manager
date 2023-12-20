@@ -84,7 +84,7 @@ source ocrd_lib.sh
 init "$@"
 
 # Key data to identifiy related entity in the receiver system
-WEBHOOK_KEY_DATA="{\"taskId\" : $TASK_ID}"
+WEBHOOK_KEY_DATA=$TASK_ID
 
 # Overwrite webhook_request "$WEBHOOK_RECEIVER_URL" "$WEBHOOK_KEY_DATA" "$EVENT" "$MESSAGE"
 webhook_request() {
