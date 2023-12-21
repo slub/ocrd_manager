@@ -40,7 +40,7 @@ where OPTIONS can be any/all of:
                           $RESULT_GRP
  --url-prefix URL         convert result text file refs from local to URL
                           and prefix them
- --webhook-receiver-url   url to the webhook receiver (ActiveMQ)
+ --webhook-receiver-url   url to the webhook receiver
  --help                   show this message and exit
 
 and METS is the path of the METS file to process. The script will copy
@@ -86,6 +86,8 @@ WEBHOOK_KEY_DATA="{\"metsPath\" : $METS_PATH}"
 # do all this in a subshell in the background, so we can return immediately
 (
   init_task
+
+  logger -p user.info -t $TASK "after init task"
 
   pre_clone_to_workdir
 

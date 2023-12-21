@@ -24,6 +24,9 @@ init() {
 
   PID=$$
 
+  WEBHOOK_RECEIVER_URL=""
+  WEBHOOK_KEY_DATA=""
+  
   cd /data
 
   logger -p user.info -t $TASK "ocr_init initialize variables and directory structure"
@@ -45,7 +48,6 @@ init() {
   # try to be unique here (to avoid clashes)
   REMOTEDIR="KitodoJob_${PID}_$(basename $PROCESS_DIR)"
 
-  WORKFLOW=$(command -v "$WORKFLOW" || realpath "$WORKFLOW")
   if ! test -f "$WORKFLOW"; then
     logger -p user.error -t $TASK "invalid workflow '$WORKFLOW'"
     exit 3

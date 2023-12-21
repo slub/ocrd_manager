@@ -54,7 +54,6 @@ PORT ?= 9022
 NETWORK ?= bridge
 CONTROLLER_HOST ?= $(shell dig +short $$HOSTNAME)
 CONTROLLER_PORT_SSH ?= 8022
-ASYNC=true
 run: $(DATA)
 	docker run -d --rm \
 	-p $(PORT):22 \
@@ -67,7 +66,6 @@ run: $(DATA)
 	--mount type=bind,source=$(PRIVATE),target=/id_rsa \
 	-e UID=$(UID) -e GID=$(GID) -e UMASK=$(UMASK) \
 	-e CONTROLLER=$(CONTROLLER_HOST):$(CONTROLLER_PORT_SSH) \
-	-e ASYNC=false \
 	$(TAGNAME)
 
 $(DATA)/testdata-production:
@@ -112,8 +110,6 @@ else
 	docker exec $$TTY -t -u ocrd $(CONTAINER) $(SCRIPT) $(<F)/mets.xml
 endif
 	diff -u <(docker run --rm -v $(DATA):/data $(TAGNAME) ocrd workspace -d $(<F) find -G FULLTEXT -g PHYS_0017..PHYS_0021 -k url) <(for file in FULLTEXT/FULLTEXT_PHYS_00{17..21}.xml; do echo $(PREFIX)/$$file; done)
-
-test-ocrd-lib: SCRIPT = process_images.sh --proc-id 1 --lang deu --script Fraktur
 
 clean clean-testdata:
 	$(RM) -r $(DATA)/testdata* $(DATA)/ocr-d/testdata*
