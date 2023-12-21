@@ -82,7 +82,7 @@ $(DATA)/testdata-presentation:
 test: test-production test-presentation
 
 # run synchronous (without ActiveMQ)
-test-production: SCRIPT = process_images.sh --proc-id 1 --lang deu --script Fraktur
+test-production: SCRIPT = process_images.sh --proc-id 1 --lang deu --script Fraktur --async false
 test-production: CONTAINER != docker container ls -n1 -qf name=ocrd-manager
 test-production: $(DATA)/testdata-production
 ifeq ($(NETWORK),bridge)
@@ -97,7 +97,7 @@ endif
 	test -s $</ocr/alto/00000009.tif.original.xml
 
 test-presentation: PREFIX = https://digital.slub-dresden.de/data/kitodo/LankDres_1760234508
-test-presentation: SCRIPT = process_mets.sh --pages PHYS_0017..PHYS_0021 --img-grp ORIGINAL --url-prefix $(PREFIX)
+test-presentation: SCRIPT = process_mets.sh --pages PHYS_0017..PHYS_0021 --img-grp ORIGINAL --url-prefix $(PREFIX) --async false
 test-presentation: CONTAINER != docker container ls -n1 -qf name=ocrd-manager
 test-presentation: $(DATA)/testdata-presentation
 test-presentation:

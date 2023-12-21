@@ -21,6 +21,7 @@ parse_args() {
   IMAGES_GRP=DEFAULT
   RESULT_GRP=FULLTEXT
   URL_PREFIX=
+  ASYNC=true
   WEBHOOK_RECEIVER_URL=
   while (($#)); do
     case "$1" in
@@ -41,6 +42,8 @@ where OPTIONS can be any/all of:
  --url-prefix URL         convert result text file refs from local to URL
                           and prefix them
  --webhook-receiver-url   url to the webhook receiver
+ --async                  run script in asynchronous mode, default:
+                          $ASYNC
  --help                   show this message and exit
 
 and METS is the path of the METS file to process. The script will copy
@@ -60,6 +63,7 @@ EOF
       --ocr-grp) RESULT_GRP="$2"; shift;;
       --pages) PAGES="$2"; shift;;
       --url-prefix) URL_PREFIX="$2"; shift;;
+      --async) ASYNC="$2"; shift;;
       --webhook-receiver-url) WEBHOOK_RECEIVER_URL="$2"; shift;;
       *) METS_PATH="$1";
          PROCESS_ID=$(ocrd workspace -m "$METS_PATH" get-id)

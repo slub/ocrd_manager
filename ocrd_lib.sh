@@ -24,13 +24,10 @@ init() {
 
   PID=$$
 
-  WEBHOOK_RECEIVER_URL=""
-  WEBHOOK_KEY_DATA=""
-  
   cd /data
 
   logger -p user.info -t $TASK "ocr_init initialize variables and directory structure"
-  logger -p user.notice -t $TASK "running with $* CONTROLLER=${CONTROLLER:-} ASYNC=${ASYNC:-}"
+  logger -p user.notice -t $TASK "running with $* CONTROLLER=${CONTROLLER:-}"
 
   # to be defined by caller
   parse_args "$@"
@@ -68,6 +65,9 @@ init() {
   fi
   CONTROLLERHOST=${CONTROLLER%:*}
   CONTROLLERPORT=${CONTROLLER#*:}
+
+  WEBHOOK_RECEIVER_URL=""
+  WEBHOOK_KEY_DATA=""
 
   # create job stats for monitor
   HOME=/tmp mongosh --quiet --norc --eval "use ocrd" --eval "db.OcrdJob.insertOne( {
@@ -242,7 +242,7 @@ post_process_to_mets() {
 
 # exit in async or sync mode
 close() {
-  if test $ASYNC; then
+  if test "$ASYNC" = true; then
     logger -p user.info -t $TASK "ocr_exit in async mode - immediate termination of the script"
     # prevent any RETVAL from being written yet
     trap - EXIT

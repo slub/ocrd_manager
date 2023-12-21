@@ -20,6 +20,7 @@ parse_args() {
   VALIDATE=1
   IMAGES_SUBDIR=images
   RESULT_SUBDIR=ocr/alto
+  ASYNC=true
   WEBHOOK_RECEIVER_URL=
   ACTIVEMQ_QUEUE=FinalizeTaskQueue
   while (($#)); do
@@ -39,8 +40,10 @@ where OPTIONS can be any/all of:
                           $IMAGES_SUBDIR
  --ocr-subdir OCR         name of the subdirectory to write OCR results to, default:
                           $RESULT_SUBDIR
- --proc-id ID             process ID to communicate in webhook
+ --proc-id ID             process ID for the assignment to the process folder
  --task-id ID             task ID to communicate in webhook
+ --async                  run script in asynchronous mode, default:
+                          $ASYNC
  --activemq-url           url to the ActiveMQ (webhook receiver url)
  --activemq-queue         name of the ActiveMQ queue, default:
                           $ACTIVEMQ_QUEUE
@@ -66,6 +69,7 @@ EOF
       --ocr-subdir) RESULT_SUBDIR="$2"; shift;;
       --proc-id) PROCESS_ID="$2"; shift;;
       --task-id) TASK_ID="$2"; shift;;
+      --async) ASYNC="$2"; shift;;
       --activemq-url) WEBHOOK_RECEIVER_URL="$2"; shift;;
       --activemq-queue) ACTIVEMQ_QUEUE="$2"; shift;;
       *) PROCESS_DIR="$1";
