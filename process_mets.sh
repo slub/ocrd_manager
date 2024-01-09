@@ -21,7 +21,7 @@ parse_args() {
   IMAGES_GRP=DEFAULT
   RESULT_GRP=FULLTEXT
   URL_PREFIX=
-  ASYNC=true
+  ASYNC=false
   WEBHOOK_RECEIVER_URL=
   while (($#)); do
     case "$1" in

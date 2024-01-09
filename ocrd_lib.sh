@@ -242,7 +242,7 @@ post_process_to_mets() {
 
 # exit in async or sync mode
 close() {
-  if test "$ASYNC" = true; then
+  if test "$ASYNC" = true -o "$ASYNC" = "true"; then
     logger -p user.info -t $TASK "ocr_exit in async mode - immediate termination of the script"
     # prevent any RETVAL from being written yet
     trap - EXIT

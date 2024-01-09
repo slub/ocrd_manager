@@ -20,7 +20,7 @@ parse_args() {
   VALIDATE=1
   IMAGES_SUBDIR=images
   RESULT_SUBDIR=ocr/alto
-  ASYNC=true
+  ASYNC=false
   WEBHOOK_RECEIVER_URL=
   ACTIVEMQ_QUEUE=FinalizeTaskQueue
   while (($#)); do

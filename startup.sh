@@ -2,12 +2,6 @@
 cat /authorized_keys >>/.ssh/authorized_keys
 cat /id_rsa >>/.ssh/id_rsa
 
-# true if the script should be terminated immediately and false to wait until the processing is completed
-if [ "$ASYNC" == "false" ]
-then
-    ASYNC=false
-fi
-
 # Add ocrd controller as global and  known_hosts if env exist
 if [ -n "$CONTROLLER" ]; then
   CONTROLLER_HOST=${CONTROLLER%:*}
