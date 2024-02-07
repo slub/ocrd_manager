@@ -175,7 +175,7 @@ pre_clone_to_workdir() {
 
 pre_sync_workdir () {
   # copy the data explicitly from Manager to Controller
-  rsync -av -e "ssh -p $CONTROLLERPORT -l ocrd" "$WORKDIR/" $CONTROLLERHOST:/data/$REMOTEDIR
+  rsync -av -e "ssh -p $CONTROLLERPORT -l admin" "$WORKDIR/" $CONTROLLERHOST:/data/$REMOTEDIR
 }
 
 ocrd_validate_workflow () {
