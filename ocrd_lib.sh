@@ -105,7 +105,7 @@ ocrd_format_workflow() {
 # ocrd import from workdir
 ocrd_import_workdir() {
   echo "echo \$\$ > $REMOTEDIR/ocrd.pid"
-  echo "if test -f '$REMOTEDIR/mets.xml'; then OV=--overwrite; else OV=; ocrd-import -i '$REMOTEDIR'; fi"
+  echo "if test -f '$REMOTEDIR/mets.xml'; then OV=--overwrite; else OV=; ocrd-import -j 1 -i '$REMOTEDIR'; fi"
   echo "cd '$REMOTEDIR'"
 }
 
