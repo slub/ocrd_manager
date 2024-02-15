@@ -129,7 +129,7 @@ ocrd_exec() {
     for param in "$@"; do
       $param
     done
-  } | ssh -T -p "${CONTROLLERPORT}" ocrd@${CONTROLLERHOST} 2>&1
+  } | ssh -tt -p "${CONTROLLERPORT}" ocrd@${CONTROLLERHOST} 2>&1
 }
 
 pre_process_to_workdir() {
@@ -175,6 +175,7 @@ pre_clone_to_workdir() {
 
 pre_sync_workdir () {
   # copy the data explicitly from Manager to Controller
+  # use admin instead of ocrd to avoid entering worker semaphore via sshrc
   rsync -av -e "ssh -p $CONTROLLERPORT -l admin" "$WORKDIR/" $CONTROLLERHOST:/data/$REMOTEDIR
 }
 
