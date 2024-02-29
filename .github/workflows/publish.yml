@@ -8,6 +8,9 @@ on:
       image-tag:
         description: Tag name of Docker image
         default: 'latest'
+      ocrd-core-version: 
+        description: Tag of ocrd/core from stage
+        default: 'latest'
 
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository }}
@@ -32,7 +35,7 @@ jobs:
         date -u +"build_date=%Y-%m-%dT%H:%M:%SZ" >> $GITHUB_ENV
         LOCAL_VSC_REF=`git rev-parse --short HEAD`
         echo "vcs_ref=$LOCAL_VSC_REF" >> $GITHUB_ENV
-        echo "cache_key=${{ github.event.inputs.image-tag }}-$LOCAL_VSC_REF" >> $GITHUB_ENV # (input image-tag - vcs_ref)
+        echo "cache_key=${{ github.event.inputs.image-tag }}-${{ github.event.inputs.ocrd-core-version }}-$LOCAL_VSC_REF" >> $GITHUB_ENV # (input image-tag - ocrd-core-version - vcs_ref)
         echo "$LOCAL_VSC_REF" > /tmp/${{ github.event.inputs.image-tag }}-vcs-ref # temporary file to fill cache
 
     - name: Get cache key "${{ env.cache_key }}"
@@ -66,6 +69,7 @@ jobs:
          build-args: |
             BUILD_DATE=${{ env.build_date }}
             VCS_REF=${{ env.vcs_ref }}
+            VERSION=${{ github.event.inputs.ocrd-core-version }}
          cache-from: type=gha
          cache-to: type=gha,mode=max
          

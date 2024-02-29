@@ -1,7 +1,8 @@
 # github.com/OCR-D/core
 # https://hub.docker.com/r/ocrd/core/dockerfile
 # ocrd/core # ubuntu:18.04
-FROM ocrd/core:latest
+ARG VERSION=latest
+FROM ocrd/core:$VERSION
 
 ARG VCS_REF
 ARG BUILD_DATE
