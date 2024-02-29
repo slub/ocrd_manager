@@ -6,15 +6,21 @@ set -o pipefail
 
 TASK=$(basename $0)
 
+cleanupremote() {
+    ssh -Tn -p "${CONTROLLERPORT}" admin@${CONTROLLERHOST} rm -fr /data/$REMOTEDIR
+}
+
 logerr() {
   logger -p user.info -t $TASK "terminating with error \$?=$? from ${BASH_COMMAND} on line $(caller)"
+  cleanupremote &
   webhook_send_error
 }
 
 stopbg() {
   logger -p user.crit -t $TASK "passing SIGKILL to child $!"
+  cleanupremote
   # pass signal on to children
-  kill -KILL $!
+  kill -INT $!
 }
 
 # initialize variables, create ord-d work directory and exit if something is missing
@@ -106,15 +112,15 @@ ocrd_format_workflow() {
 
 # ocrd import from workdir
 ocrd_import_workdir() {
-  echo "echo \$\$ > $REMOTEDIR/ocrd.pid"
-  echo "if test -f '$REMOTEDIR/mets.xml'; then OV=--overwrite; else OV=; ocrd-import -i '$REMOTEDIR'; fi"
   echo "cd '$REMOTEDIR'"
+  echo "echo \$\$ > ocrd.pid"
+  echo "if test -f mets.xml; then OV=--overwrite; else OV=; ocrd-import -j 1 -i; fi"
 }
 
 ocrd_enter_workdir() {
-  echo "echo \$\$ > $REMOTEDIR/ocrd.pid"
-  echo "if test -f '$REMOTEDIR/mets.xml'; then OV=--overwrite; else OV=; fi"
   echo "cd '$REMOTEDIR'"
+  echo "echo \$\$ > ocrd.pid"
+  echo "if test -f mets.xml; then OV=--overwrite; else OV=; fi"
 }
 
 ocrd_process_workflow() {
@@ -131,7 +137,7 @@ ocrd_exec() {
     for param in "$@"; do
       $param
     done
-  } | ssh -T -p "${CONTROLLERPORT}" ocrd@${CONTROLLERHOST} 2>&1
+  } | ssh -tt -p "${CONTROLLERPORT}" ocrd@${CONTROLLERHOST} 2>&1
 }
 
 pre_process_to_workdir() {
@@ -177,7 +183,8 @@ pre_clone_to_workdir() {
 
 pre_sync_workdir () {
   # copy the data explicitly from Manager to Controller
-  rsync -av -e "ssh -p $CONTROLLERPORT -l ocrd" "$WORKDIR/" $CONTROLLERHOST:/data/$REMOTEDIR
+  # use admin instead of ocrd to avoid entering worker semaphore via sshrc
+  rsync -av -e "ssh -p $CONTROLLERPORT -l admin" "$WORKDIR/" $CONTROLLERHOST:/data/$REMOTEDIR
 }
 
 ocrd_validate_workflow () {
@@ -187,9 +194,9 @@ ocrd_validate_workflow () {
 
 post_sync_workdir () {
     # copy the results back from Controller to Manager
-    rsync -av -e "ssh -p $CONTROLLERPORT -l ocrd" $CONTROLLERHOST:/data/$REMOTEDIR/ "$WORKDIR"
-    # TODO: maybe also schedule cleanup (or have a cron job delete dirs in /data which are older than N days)
-    # e.g. `ssh --port $CONTROLLERPORT ocrd@$CONTROLLERHOST rm -fr /data/"$WORKDIR"`
+    rsync -av -e "ssh -p $CONTROLLERPORT -l admin" $CONTROLLERHOST:/data/$REMOTEDIR/ "$WORKDIR"
+    # schedule cleanup
+    cleanupremote
 }
 
 post_validate_workdir() {

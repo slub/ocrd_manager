@@ -1,4 +1,7 @@
 #! /bin/bash
+# avoid repeating file actions when restarting container:
+if ! grep -q ^ocrd: /etc/passwd; then
+
 cat /authorized_keys >>/.ssh/authorized_keys
 cat /id_rsa >>/.ssh/id_rsa
 
@@ -23,7 +26,7 @@ EOF
 fi
 
 # turn off the login banner
-touch /.hushlogin
+> /.hushlogin
 
 set | fgrep -ve BASH >/.ssh/environment
 
@@ -49,6 +52,9 @@ echo ocrd:*:19020:0:99999:7::: >>/etc/shadow
 /bin/sed -i '/imklog/s/^/#/' /etc/rsyslog.conf
 # rsyslog upd reception on port 514
 /bin/sed -i '/imudp/s/^#//' /etc/rsyslog.conf
+
+fi
+
 # start syslog
 service rsyslog start
 
