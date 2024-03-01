@@ -69,7 +69,7 @@ EOF
       --ocr-subdir) RESULT_SUBDIR="$2"; shift;;
       --proc-id) PROCESS_ID="$2"; shift;;
       --task-id) TASK_ID="$2"; shift;;
-      --async) ASYNC="$2"; shift;;
+      --async) ASYNC=true;;
       --activemq-url) WEBHOOK_RECEIVER_URL="$2"; shift;;
       --activemq-queue) ACTIVEMQ_QUEUE="$2"; shift;;
       *) PROCESS_DIR="$1";
