@@ -41,9 +41,8 @@ where OPTIONS can be any/all of:
                           $RESULT_GRP
  --url-prefix URL         convert result text file refs from local to URL
                           and prefix them
- --webhook-receiver-url   url to the webhook receiver
- --async                  run script in asynchronous mode, default:
-                          $ASYNC
+ --webhook-receiver-url   URL of webhook receiver for result callback
+ --async                  run asynchronously (i.e. exit after init, but keep processing in background)
  --help                   show this message and exit
 
 and METS is the path of the METS file to process. The script will copy
