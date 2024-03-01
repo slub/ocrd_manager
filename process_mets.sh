@@ -63,7 +63,7 @@ EOF
       --ocr-grp) RESULT_GRP="$2"; shift;;
       --pages) PAGES="$2"; shift;;
       --url-prefix) URL_PREFIX="$2"; shift;;
-      --async) ASYNC="$2"; shift;;
+      --async) ASYNC=true;;
       --webhook-receiver-url) WEBHOOK_RECEIVER_URL="$2"; shift;;
       *) METS_PATH="$1";
          PROCESS_ID=$(ocrd workspace -m "$METS_PATH" get-id)
