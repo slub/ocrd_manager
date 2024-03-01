@@ -1,0 +1,26 @@
+[project]
+name = "ocrd-manager"
+version = "0.1.0"
+description = ""
+authors = [
+    { name = "Markus Weigelt", email = "markus.weigelt@slub-dresden.de" },
+    { name = "Robert Sachunsky", email = "robert.sachunsky@slub-dresden.de" },
+]
+dependencies = [
+    "requests>=2.31.0",
+    "mypy>=1.7.1",
+]
+requires-python = ">=3.10"
+readme = "README.md"
+license = {text = "MIT"}
+
+[build-system]
+requires = ["pdm-pep517>=1.0"]
+build-backend = "pdm.pep517.api"
+
+[tool.pdm.dev-dependencies]
+test = [
+    "pytest>=7.4.3",
+    "pytest-httpserver>=1.0.8",
+]
+mypy = []

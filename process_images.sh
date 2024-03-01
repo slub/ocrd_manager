@@ -20,6 +20,9 @@ parse_args() {
   VALIDATE=1
   IMAGES_SUBDIR=images
   RESULT_SUBDIR=ocr/alto
+  ASYNC=false
+  WEBHOOK_RECEIVER_URL=
+  ACTIVEMQ_QUEUE=FinalizeTaskQueue
   while (($#)); do
     case "$1" in
       --help|-h) cat <<EOF
@@ -28,18 +31,22 @@ SYNOPSIS:
 $0 [OPTIONS] DIRECTORY
 
 where OPTIONS can be any/all of:
- --lang LANGUAGE    overall language of the material to process via OCR
- --script SCRIPT    overall script of the material to process via OCR
- --workflow FILE    workflow file to use for processing, default:
-                    $WORKFLOW
- --no-validate      skip comprehensive validation of workflow results
- --img-subdir IMG   name of the subdirectory to read images from, default:
-                    $IMAGES_SUBDIR
- --ocr-subdir OCR   name of the subdirectory to write OCR results to, default:
-                    $RESULT_SUBDIR
- --proc-id ID       process ID to communicate in ActiveMQ callback
- --task-id ID       task ID to communicate in ActiveMQ callback
- --help             show this message and exit
+ --lang LANGUAGE          overall language of the material to process via OCR
+ --script SCRIPT          overall script of the material to process via OCR
+ --workflow FILE          workflow file to use for processing, default:
+                          $WORKFLOW
+ --no-validate            skip comprehensive validation of workflow results
+ --img-subdir IMG         name of the subdirectory to read images from, default:
+                          $IMAGES_SUBDIR
+ --ocr-subdir OCR         name of the subdirectory to write OCR results to, default:
+                          $RESULT_SUBDIR
+ --proc-id ID             process ID for the assignment to the process folder
+ --task-id ID             task ID to communicate in ActiveMQ
+ --async                  run asynchronously (i.e. exit after init, but keep processing in background)
+ --activemq-url           URL of ActiveMQ server for result callback
+ --activemq-queue         protocol type of ActiveMQ server (FinalizeTaskQueue|TaskActionQueue), default:
+                          $ACTIVEMQ_QUEUE
+ --help                   show this message and exit
 
 and DIRECTORY is the local path to process. The script will import
 the images from DIRECTORY/IMG into a new (temporary) METS and
@@ -47,16 +54,10 @@ transfer this to the Controller for processing. After resyncing back
 to the Manager, it will then extract OCR results and export them to
 DIRECTORY/OCR.
 
-If ActiveMQ is used, the script will exit directly after initialization,
-and run processing in the background. Completion will then be signalled
-via ActiveMQ network protocol (using the proc and task ID as message).
-
 ENVIRONMENT VARIABLES:
 
  CONTROLLER: host name and port of OCR-D Controller for processing
- ACTIVEMQ: URL of ActiveMQ server for result callback (optional)
- ACTIVEMQ_QUEUE: Protocol type handling result callbacks. Choose between "FinalizeTaskQueue" (default) or "TaskActionQueue" (optional)
- ACTIVEMQ_CLIENT: path to ActiveMQ client library JAR file (optional)
+
 EOF
                  exit;;
       --lang) LANGUAGE="$2"; shift;;
@@ -67,6 +68,9 @@ EOF
       --ocr-subdir) RESULT_SUBDIR="$2"; shift;;
       --proc-id) PROCESS_ID="$2"; shift;;
       --task-id) TASK_ID="$2"; shift;;
+      --async) ASYNC=true;;
+      --activemq-url) WEBHOOK_RECEIVER_URL="$2"; shift;;
+      --activemq-queue) ACTIVEMQ_QUEUE="$2"; shift;;
       *) PROCESS_DIR="$1";
          break;;
     esac
@@ -82,6 +86,40 @@ source ocrd_lib.sh
 
 init "$@"
 
+# Key data to identifiy related entity in the receiver system
+WEBHOOK_KEY_DATA=$TASK_ID
+
+# Overwrite webhook_request "$WEBHOOK_RECEIVER_URL" "$WEBHOOK_KEY_DATA" "$EVENT" "$MESSAGE"
+webhook_request() {
+  ACTION=""
+
+  case "$3" in
+    INFO)
+      ACTION="COMMENT"
+      ;;
+    ERROR)
+      ACTION="ERROR_OPEN"
+      ;;
+    STARTED)
+      ACTION="PROCESS"
+      ;;
+    COMPLETED)
+      ACTION="CLOSE"
+      ;;      
+    *)
+      logger -p user.error -t $TASK "Unknown task action type"
+      ;;
+  esac
+  
+  if test -n "$ACTION"; then
+    if test "$ACTIVEMQ_QUEUE" == "TaskActionQueue"; then
+      java -Dlog4j2.configurationFile=$KITODO_PRODUCTION_ACTIVEMQ_CLIENT_LOG4J2 -jar "$KITODO_PRODUCTION_ACTIVEMQ_CLIENT" "${1}" "$ACTIVEMQ_QUEUE" ${2} "${4}" "$ACTION"
+    elif test "$ACTION" == "CLOSE"; then
+      java -Dlog4j2.configurationFile=$KITODO_PRODUCTION_ACTIVEMQ_CLIENT_LOG4J2 -jar "$KITODO_PRODUCTION_ACTIVEMQ_CLIENT" "${1}" "$ACTIVEMQ_QUEUE" ${2} "${4}"
+    fi
+  fi
+}
+
 # run the workflow script on the Controller non-interactively and log its output locally
 # subsequently validate and postprocess the results
 # do all this in a subshell in the background, so we can return immediately
@@ -92,7 +130,7 @@ init "$@"
 
   pre_sync_workdir
 
-  kitodo_production_task_action_process
+  webhook_send_started
 
   ocrd_exec ocrd_import_workdir ocrd_validate_workflow ocrd_process_workflow
 
@@ -102,7 +140,7 @@ init "$@"
 
   post_process_to_procdir
 
-  kitodo_production_task_action_close
+  webhook_send_completed
 
 ) |& tee -a $WORKDIR/ocrd.log 2>&1 | logger -p user.info -t $TASK &>/dev/null & # without output redirect, ssh will not close the connection upon exit, cf. #9
 

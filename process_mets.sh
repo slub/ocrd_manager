@@ -21,6 +21,8 @@ parse_args() {
   IMAGES_GRP=DEFAULT
   RESULT_GRP=FULLTEXT
   URL_PREFIX=
+  ASYNC=false
+  WEBHOOK_RECEIVER_URL=
   while (($#)); do
     case "$1" in
       --help|-h) cat <<EOF
@@ -29,17 +31,19 @@ SYNOPSIS:
 $0 [OPTIONS] METS
 
 where OPTIONS can be any/all of:
- --workflow FILE    workflow file to use for processing, default:
-                    $WORKFLOW
- --no-validate      skip comprehensive validation of workflow results
- --pages RANGE      selection of physical page range to process
- --img-grp GRP      fileGrp to read input images from, default:
-                    $IMAGES_GRP
- --ocr-grp GRP      fileGrp to write output OCR text to, default:
-                    $RESULT_GRP
- --url-prefix URL   convert result text file refs from local to URL
-                    and prefix them
- --help             show this message and exit
+ --workflow FILE          workflow file to use for processing, default:
+                          $WORKFLOW
+ --no-validate            skip comprehensive validation of workflow results
+ --pages RANGE            selection of physical page range to process
+ --img-grp GRP            fileGrp to read input images from, default:
+                          $IMAGES_GRP
+ --ocr-grp GRP            fileGrp to write output OCR text to, default:
+                          $RESULT_GRP
+ --url-prefix URL         convert result text file refs from local to URL
+                          and prefix them
+ --webhook-receiver-url   URL of webhook receiver for result callback
+ --async                  run asynchronously (i.e. exit after init, but keep processing in background)
+ --help                   show this message and exit
 
 and METS is the path of the METS file to process. The script will copy
 the METS into a new (temporary) workspace and transfer this to the
@@ -58,6 +62,8 @@ EOF
       --ocr-grp) RESULT_GRP="$2"; shift;;
       --pages) PAGES="$2"; shift;;
       --url-prefix) URL_PREFIX="$2"; shift;;
+      --async) ASYNC=true;;
+      --webhook-receiver-url) WEBHOOK_RECEIVER_URL="$2"; shift;;
       *) METS_PATH="$1";
          PROCESS_ID=$(ocrd workspace -m "$METS_PATH" get-id)
          PROCESS_DIR=$(dirname "$METS_PATH");
@@ -75,17 +81,22 @@ source ocrd_lib.sh
 
 init "$@"
 
+# Key data to identifiy related entity in the receiver system
+WEBHOOK_KEY_DATA="{\"metsPath\" : $METS_PATH}"
+
 # run the workflow script on the Controller non-interactively and log its output locally
 # subsequently validate and postprocess the results
 # do all this in a subshell in the background, so we can return immediately
 (
   init_task
 
+  logger -p user.info -t $TASK "after init task"
+
   pre_clone_to_workdir
 
   pre_sync_workdir
 
-  kitodo_production_task_action_process
+  webhook_send_started
 
   ocrd_exec ocrd_enter_workdir ocrd_validate_workflow ocrd_process_workflow
 
@@ -95,7 +106,7 @@ init "$@"
 
   post_process_to_mets
 
-  kitodo_production_task_action_close
+  webhook_send_completed
 
 ) |& tee -a $WORKDIR/ocrd.log 2>&1 | logger -p user.info -t $TASK &>/dev/null & # without output redirect, ssh will not close the connection upon exit, cf. #9
 

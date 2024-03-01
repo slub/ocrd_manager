@@ -21,8 +21,6 @@ LABEL \
     org.opencontainers.image.revision=$VCS_REF \
     org.opencontainers.image.created=$BUILD_DATE
 
-ARG KITODO_MQ_CLIENT_VERSION=0.3
-
 # Changelog https://www.mongodb.com/docs/mongodb-shell/changelog/
 # Supported MongoDB Version https://www.mongodb.com/docs/mongodb-shell/connect/#supported-mongodb-versions
 ARG MONGODB_SHELL_VERSION=1.10.1
@@ -48,17 +46,19 @@ RUN apt-get update && \
 # configure writing to ocrd.log for profiling
 COPY ocrd_logging.conf /etc
 
-# add activemq log4j properties
-COPY kitodo-activemq-client-log4j2.properties /opt/kitodo-activemq-client/log4j2.properties
-ENV ACTIVEMQ_CLIENT_LOG4J2 /opt/kitodo-activemq-client/log4j2.properties
 
-# add ActiveMQ client library
-ADD https://github.com/slub/kitodo-production-activemq/releases/download/${KITODO_MQ_CLIENT_VERSION}/kitodo-activemq-client-${KITODO_MQ_CLIENT_VERSION}.jar /opt/kitodo-activemq-client
-ENV ACTIVEMQ_CLIENT /opt/kitodo-activemq-client/kitodo-activemq-client-${KITODO_MQ_CLIENT_VERSION}.jar
-RUN chmod go+r $ACTIVEMQ_CLIENT
+## Kitodo.Production ActiveMQ specifics for process_images.sh (for_production.sh)
+# https://github.com/slub/kitodo-production-activemq/tags
+ARG KITODO_PRODUCTION_ACTIVEMQ_CLIENT_VERSION=0.3
 
-# configure ActiveMQ client queue
-ENV ACTIVEMQ_CLIENT_QUEUE FinalizeTaskQueue
+# add Kitodo.Production ActiveMQ log4j properties
+COPY kitodo-production-activemq-client-log4j2.properties /opt/kitodo-production-activemq-client/log4j2.properties
+ENV KITODO_PRODUCTION_ACTIVEMQ_CLIENT_LOG4J2 /opt/kitodo-production-activemq-client/log4j2.properties
+
+# add Kitodo.Production client library
+ADD https://github.com/slub/kitodo-production-activemq/releases/download/${KITODO_PRODUCTION_ACTIVEMQ_CLIENT_VERSION}/kitodo-activemq-client-${KITODO_PRODUCTION_ACTIVEMQ_CLIENT_VERSION}.jar /opt/kitodo-production-activemq-client
+ENV KITODO_PRODUCTION_ACTIVEMQ_CLIENT /opt/kitodo-production-activemq-client/kitodo-activemq-client-${KITODO_PRODUCTION_ACTIVEMQ_CLIENT_VERSION}.jar
+RUN chmod go+r $KITODO_PRODUCTION_ACTIVEMQ_CLIENT
 
 # install mets-mods2tei (for METS updates outside of OCR-D workspace)
 RUN pip install mets-mods2tei
