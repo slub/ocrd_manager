@@ -263,22 +263,14 @@ close() {
 }
 
 webhook_send() {
-  EVENT=""
+  EVENT="${1}"
   MESSAGE="${2}"
-  JOBCOMPLETE=0
-  case ${1} in
-    1)
-      EVENT="INFO"
+
+  case "$EVENT" in
+    INFO|STARTED)
+      JOBCOMPLETE=0
       ;;
-    2)
-      EVENT="ERROR"
-      JOBCOMPLETE=1
-      ;;
-    3)
-      EVENT="STARTED"
-      ;;
-    4)
-      EVENT="COMPLETED"
+    ERROR|COMPLETED)
       JOBCOMPLETE=1
       ;;
     *)
@@ -302,7 +294,7 @@ webhook_request() {
 
 webhook_send_info() {
   if test -n "${1}"; then
-    webhook_send 1 "${1}"
+    webhook_send "INFO" "${1}"
   else
     logger -p user.info -t $TASK "Could not send webhook event info cause no message was specified"
   fi
@@ -310,15 +302,15 @@ webhook_send_info() {
 
 webhook_send_error() {
   MESSAGE="${1:-Error occured during the OCR processing}"
-  webhook_send 2 "$MESSAGE"
+  webhook_send "ERROR" "$MESSAGE"
 }
 
 webhook_send_started() {
   MESSAGE="${1:-OCR processing started}"
-  webhook_send 3 "$MESSAGE"
+  webhook_send "STARTED" "$MESSAGE"
 }
 
 webhook_send_completed() {
   MESSAGE="${1:-OCR processing completed}"
-  webhook_send 4 "$MESSAGE"
+  webhook_send "COMPLETED" "$MESSAGE"
 }

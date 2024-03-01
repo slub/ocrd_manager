@@ -92,24 +92,25 @@ WEBHOOK_KEY_DATA=$TASK_ID
 # Overwrite webhook_request "$WEBHOOK_RECEIVER_URL" "$WEBHOOK_KEY_DATA" "$EVENT" "$MESSAGE"
 webhook_request() {
   ACTION=""
-  case ${3} in
-    "INFO")
+
+  case "$3" in
+    INFO)
       ACTION="COMMENT"
       ;;
-    "ERROR")
+    ERROR)
       ACTION="ERROR_OPEN"
       ;;
-    "STARTED")
+    STARTED)
       ACTION="PROCESS"
       ;;
-    "COMPLETED")
+    COMPLETED)
       ACTION="CLOSE"
-      ;;
+      ;;      
     *)
       logger -p user.error -t $TASK "Unknown task action type"
       ;;
   esac
-
+  
   if test -n "$ACTION"; then
     if test "$ACTIVEMQ_QUEUE" == "TaskActionQueue"; then
       java -Dlog4j2.configurationFile=$KITODO_PRODUCTION_ACTIVEMQ_CLIENT_LOG4J2 -jar "$KITODO_PRODUCTION_ACTIVEMQ_CLIENT" "${1}" "$ACTIVEMQ_QUEUE" ${2} "${4}" "$ACTION"
