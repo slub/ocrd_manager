@@ -41,11 +41,10 @@ where OPTIONS can be any/all of:
  --ocr-subdir OCR         name of the subdirectory to write OCR results to, default:
                           $RESULT_SUBDIR
  --proc-id ID             process ID for the assignment to the process folder
- --task-id ID             task ID to communicate in webhook
- --async                  run script in asynchronous mode, default:
-                          $ASYNC
- --activemq-url           url to the ActiveMQ (webhook receiver url)
- --activemq-queue         name of the ActiveMQ queue, default:
+ --task-id ID             task ID to communicate in ActiveMQ
+ --async                  run asynchronously (i.e. exit after init, but keep processing in background)
+ --activemq-url           URL of ActiveMQ server for result callback
+ --activemq-queue         protocol type of ActiveMQ server (FinalizeTaskQueue|TaskActionQueue), default:
                           $ACTIVEMQ_QUEUE
  --help                   show this message and exit
 
