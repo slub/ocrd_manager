@@ -138,7 +138,7 @@ ocrd_exec() {
     for param in "$@"; do
       $param
     done
-  } | ssh -tt -p "${CONTROLLERPORT}" ocrd@${CONTROLLERHOST} 2>&1
+  } | ssh -T -p "${CONTROLLERPORT}" ocrd@${CONTROLLERHOST} 2>&1
 }
 
 pre_process_to_workdir() {
