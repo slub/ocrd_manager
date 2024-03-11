@@ -9,6 +9,10 @@ cat /id_rsa >>/.ssh/id_rsa
 if [ -n "$CONTROLLER" ]; then
   CONTROLLER_HOST=${CONTROLLER%:*}
   CONTROLLER_PORT=${CONTROLLER#*:}
+
+  # wait for OCR-D Controller container
+  wait-for-it.sh -t 120 -h $CONTROLLER_HOST -p ${CONTROLLER_PORT:-22}
+
   CONTROLLER_IP=$(nslookup $CONTROLLER_HOST | grep 'Address\:' | awk 'NR==2 {print $2}')
 
   if test -e /etc/ssh/ssh_known_hosts; then

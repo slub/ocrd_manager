@@ -45,6 +45,7 @@ RUN apt-get update && \
     apt-get clean
 # configure writing to ocrd.log for profiling
 COPY ocrd_logging.conf /etc
+COPY wait-for-it.sh /wait-for-it.sh
 
 
 ## Kitodo.Production ActiveMQ specifics for process_images.sh (for_production.sh)
@@ -73,6 +74,9 @@ RUN wget -O /usr/bin/sampo.sh https://github.com/bertsky/sampo/raw/external-scri
 #COPY sampo.sh /usr/bin/
 COPY sampo.conf /usr/bin/
 RUN chmod +x /usr/bin/sampo.sh
+
+COPY wait-for-it.sh /usr/bin/
+RUN chmod +x /usr/bin/wait-for-it.sh
 
 # run OpenSSH server
 RUN ssh-keygen -A
